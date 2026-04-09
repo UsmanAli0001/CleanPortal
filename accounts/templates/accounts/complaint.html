@@ -1,0 +1,124 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<style>
+
+.complaint-bg{
+
+background-image:url("{% static 'accounts/images/complaintreg.png' %}");
+
+background-size:cover;
+
+background-position:center;
+
+background-repeat:no-repeat;
+
+min-height:100vh;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+}
+
+</style>
+<title>Register Complaint</title>
+
+<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxouuScVSTgirxgMuuFYg5sqgEXXfTuVw&callback=initMap" async defer></script>
+
+</head>
+
+<body>
+
+<body class="complaint-bg">
+
+<div class="form-container">
+
+<h1>Register Complaint</h1>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<label>Name</label>
+<input type="text" name="name" required>
+
+<label>Email</label>
+<input type="email" name="email" required>
+
+<label>Complaint Type</label>
+
+<select name="type">
+
+<option>Garbage Issue</option>
+<option>Drainage Issue</option>
+<option>Street Cleaning</option>
+<option>Water Issue</option>
+
+</select>
+
+<label>Area</label>
+<input type="text" id="area-input" name="area" placeholder="Enter area within Gujrat" required>
+<input type="hidden" id="latitude" name="latitude">
+<input type="hidden" id="longitude" name="longitude">
+<div id="map" style="height:300px; width:100%; border-radius:8px;"></div>
+
+<label>Description</label>
+
+<textarea name="description"></textarea>
+
+<button type="submit" class="btn-orange">
+
+Submit Complaint
+
+</button>
+
+</form>
+
+</div>
+
+
+
+<script>
+
+function initMap(){
+
+var location = {lat:32.5742,lng:74.0789};
+
+var map = new google.maps.Map(
+document.getElementById("map"),
+{
+zoom:13,
+center:location
+}
+);
+
+var marker = new google.maps.Marker({
+position:location,
+map:map,
+draggable:true
+});
+
+google.maps.event.addListener(marker,'dragend',function(event){
+
+document.getElementById("latitude").value = event.latLng.lat();
+
+document.getElementById("longitude").value = event.latLng.lng();
+
+});
+
+}
+
+</script>
+
+</body>
+
+</html>

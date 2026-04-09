@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Clean Pak Portal - Dashboard</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    
+
+    <h2>Clean Pak Portal</h2>
+    
+
+     <div class="nav-links">
+        
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'services' %}">Services</a>
+        <a href="{% url 'reports' %}">Reports</a>
+        <a href="{% url 'contact' %}">Contact</a>
+        
+        
+    </div>
+
+    <div class="nav-buttons">
+
+<a href="{% url 'logout' %}">
+
+<button class="login-btn">
+
+Log out
+
+</button>
+
+</a>
+
+</div>
+
+</div>
+
+<!-- HERO SECTION -->
+<div class="hero">
+    <div class="hero-text">
+        <h1>Welcome to Clean Pak Portal </h1>
+        <h3>Report & Track Municipal Complaints Easily</h3>
+        <div class="hero-buttons">
+            <a href="{% url 'register_complaint' %}"><button class="btn-orange">Register Complaint</button></a>
+            <a href="{% url 'track' %}"><button class="btn-blue">Track Complaint</button></a>
+        </div>
+    </div>
+    <div>
+        <img src="{% static 'accounts/images/dashboard.png' %}" alt="Dashboard Image">
+    </div>
+</div>
+
+<!-- FEATURE BAR -->
+
+<div class="feature-bar">
+
+
+
+<div class="feature">
+<img src="{% static 'accounts/images/register.png' %}">
+<h4>Register Complaint</h4>
+<p>Submit Your Issue</p>
+</div>
+
+
+<div class="feature">
+<img src="{% static 'accounts/images/track.png' %}">
+<h4>Track Complaint</h4>
+<a href="{% url 'track' %}"><button class="feedback-btn">Check your Status</button></a>
+</div>
+
+<div class="feature">
+<img src="{% static 'accounts/images/zone.png' %}">
+<h4>Zone Management</h4>
+<p>Area Coverage</p>
+</div>
+
+<div class="feature">
+<img src="{% static 'accounts/images/vehicle.png' %}">
+<h4>Vehicle Tracking</h4>
+<p>Fleet Monitoring</p>
+</div>
+
+</div>
+
+<!-- PORTAL FEATURES -->
+<div class="portal-section">
+    <h1>Portal Features</h1>
+    <h2>Efficient & Transparent Services</h2>
+    <div class="portal-cards">
+        <div class="card">
+            <img src="{% static 'accounts/images/scheduled.png' %}">
+            <h3>View Cleaning Schedules</h3>
+        </div>
+        <div class="card">
+            <img src="{% static 'accounts/images/payment.png' %}">
+            <h3>Payment</h3>
+        </div>
+        <div class="card">
+            <img src="{% static 'accounts/images/notification.png' %}">
+            <h3>Notifications</h3>
+        </div>
+        <div class="card">
+            <img src="{% static 'accounts/images/report.png' %}">
+            <h3>Reports</h3>
+            <a href="{% url 'reports' %}"><button class="feedback-btn">View Reports</button></a>
+
+        </div>
+       <div class="card">
+    <img src="{% static 'accounts/images/feedback.png' %}">
+    <h3>Feedback</h3>
+    
+
+    <button class="feedback-btn" onclick="openFeedback()">Give Feedback</button>
+</div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div id="feedbackModal" class="feedback-modal">
+    <div class="feedback-content">
+        <span class="close-btn" onclick="closeFeedback()">&times;</span>
+        <h2>Give Your Feedback</h2>
+        <div class="stars">
+            <span onclick="rate(1)">★</span>
+            <span onclick="rate(2)">★</span>
+            <span onclick="rate(3)">★</span>
+            <span onclick="rate(4)">★</span>
+            <span onclick="rate(5)">★</span>
+        </div>
+        <textarea placeholder="Write your feedback..."></textarea>
+        <button class="submit-btn" onclick="submitFeedback()">Submit</button>
+    </div>
+</div>
+
+<div id="toast">Thank you for your feedback!</div>
+
+<script>
+let selectedRating = 0;
+function openFeedback() { document.getElementById("feedbackModal").style.display = "flex"; }
+function closeFeedback() { document.getElementById("feedbackModal").style.display = "none"; }
+function rate(stars){
+    selectedRating = stars;
+    document.querySelectorAll(".stars span").forEach((star,index)=>{
+        star.classList.toggle("active", index < stars);
+    });
+}
+function submitFeedback(){
+    if(selectedRating === 0){ alert("Please select rating"); return; }
+    document.getElementById("toast").style.display = "block";
+    setTimeout(()=>{ document.getElementById("toast").style.display = "none"; }, 3000);
+    closeFeedback();
+}
+</script>
+
+</body>
+</html>

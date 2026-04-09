@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Track Complaint</title>
+
+<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+</head>
+
+<body>
+
+<div class="track-container">
+
+<h1>Track Your Complaint</h1>
+
+<form method="post">
+{% csrf_token %}
+
+<input type="text" name="complaint_id"
+placeholder="Enter Complaint ID" required>
+
+<button type="submit">Track</button>
+
+</form>
+
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+{% if complaint %}
+
+<div class="complaint-details">
+
+<h2>Complaint Details</h2>
+
+<p><strong>ID:</strong> {{ complaint.complaint_id }}</p>
+
+<p><strong>Name:</strong> {{ complaint.name }}</p>
+
+<p><strong>Email:</strong> {{ complaint.email }}</p>
+
+<p><strong>Type:</strong> {{ complaint.complaint_type }}</p>
+
+<p><strong>Area:</strong> {{ complaint.area }}</p>
+
+<p><strong>Description:</strong> {{ complaint.description }}</p>
+
+<p><strong>Submitted on:</strong> {{ complaint.created_at }}</p>
+
+<p><strong>Status:</strong>
+
+{% if complaint.status == "Waiting" %}
+<span class="status-waiting">In Waiting</span>
+
+{% elif complaint.status == "In Progress" %}
+<span class="status-progress">In Progress</span>
+
+{% elif complaint.status == "Done" %}
+<span class="status-done">Done</span>
+
+{% endif %}
+
+</p>
+
+</div>
+
+{% endif %}
+
+</div>
+
+</body>
+</html>

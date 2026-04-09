@@ -1,0 +1,344 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reports - Clean Pak Portal</title>
+<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* Body */
+body{
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    background:#f4f7fb;
+    color:#333;
+}
+
+/* NAVBAR */
+.navbar{
+    background:#035e08;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 100px;
+}
+
+/* NAV LINKS */
+
+.nav-links a{
+    color:white;
+    margin:0 15px;
+    text-decoration:none;
+    font-weight:700; /* bold font */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* clean professional font */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* subtle box/text shadow */
+    transition: color 0.3s ease, text-shadow 0.3s ease; /* smooth transition */
+}
+
+.nav-links a:hover {
+    color:#ffd700; /* hover color */
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.7); /* deeper shadow on hover */
+}
+.nav-buttons button{
+    padding:8px 16px;
+    border:none;
+    border-radius:11px;
+    margin-left:10px;
+    cursor:pointer;
+    font-weight:600;
+    transition: all 0.3s ease; /* smooth transition */
+}
+
+/* Login Button */
+.login-btn{
+    background:#fa7c07;
+    color:white;
+}
+
+.login-btn:hover{
+    background:#ff9800; /* lighter orange on hover */
+    transform: scale(1.05); /* slight growth */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* subtle shadow */
+}
+
+/* Register Button */
+.register-btn{
+    background:#1976d2;
+    color:white;
+}
+
+.register-btn:hover{
+    background:#42a5f5; /* lighter blue on hover */
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* HERO */
+.reports-hero{
+    background:linear-gradient(90deg,#02073b,#109fff);
+    color:#fff;
+    text-align:center;
+    padding:60px 20px;
+}
+.reports-hero h1{
+    font-size:38px;
+    margin-bottom:10px;
+}
+.reports-hero p{
+    font-size:18px;
+    opacity:.95;
+}
+
+/* REPORT CARDS */
+.reports-container{
+    width:85%;
+    margin:40px auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:25px;
+}
+.report-card{
+    background: #fff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 6px 15px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+.report-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 10px 25px rgba(0,0,0,0.12);
+}
+.report-card h3{
+    color: #035e08;
+    margin-bottom:12px;
+}
+.report-card p{
+    color: #555;
+    font-size:15px;
+    line-height:1.6;
+}
+
+/* FILTERS */
+.filters{
+    background:#fff;
+    padding:15px 20px;
+    border-radius:12px;
+    margin-bottom:30px;
+    box-shadow:0 6px 15px rgba(0,0,0,0.08);
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+}
+.filters label{
+    font-weight:500;
+}
+.filters input, .filters select{
+    padding:6px 10px;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+
+/* MINI CHARTS */
+.mini-charts{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+.mini-chart-card{
+    flex:1;
+    min-width:200px;
+    background:#fff;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 6px 15px rgba(0,0,0,0.08);
+    text-align:center;
+}
+
+/* NOTIFICATION BADGE */
+.notification-badge{
+    background:red;
+    color:white;
+    font-size:12px;
+    padding:2px 6px;
+    border-radius:50%;
+    vertical-align:top;
+    margin-left:6px;
+}
+
+/* FOOTER */
+.footer{
+    background: #111827;
+    color:white;
+    text-align:center;
+    padding:25px;
+    font-size:14px;
+    margin-top:50px;
+}
+</style>
+</head>
+<body>
+
+<div class="navbar">
+    
+
+    <h2>Clean Pak Portal</h2>
+    
+
+     <div class="nav-links">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'services' %}">Services</a>
+        <a href="{% url 'reports' %}">Reports</a>
+        <a href="{% url 'contact' %}">Contact</a>
+        
+    </div>
+
+    <div class="nav-buttons">
+        <a href="{% url 'dashboard' %}"><button class="login-btn">Back to Dashboard</button></a>
+
+<a href="{% url 'logout' %}">
+
+<button class="login-btn">
+
+Log out
+
+</button>
+
+</a>
+
+</div>
+
+</div>
+
+<!-- HERO -->
+<div class="reports-hero">
+    <h1>Reports Dashboard</h1>
+    <p>Analytics, graphs, and area-wise insights</p>
+</div>
+
+<!-- FILTERS -->
+<div class="reports-container">
+    <div class="filters">
+        <div>
+            <label>Date:</label>
+            <input type="date" name="report_date">
+        </div>
+        <div>
+            <label>Category:</label>
+            <select name="category">
+                <option>All</option>
+                <option>Garbage</option>
+                <option>Water</option>
+                <option>Maintenance</option>
+            </select>
+        </div>
+        <div>
+            <label>Status:</label>
+            <select name="status">
+                <option>All</option>
+                <option>Resolved</option>
+                <option>Pending</option>
+                <option>In Progress</option>
+            </select>
+        </div>
+        <div>
+            <button style="background: #ff6b00;color:white;padding:10px 20px;
+             border:none;border-radius:6px;cursor:pointer;">Filter</button>
+        </div>
+    </div>
+
+    <!-- ANALYTICS CARDS -->
+    <div class="report-card">
+        <h3>📊 Total Complaints</h3>
+        <p>{{ total_complaints }}</p>
+    </div>
+    <div class="report-card">
+        <h3>📈 Complaints Over Time</h3>
+        <canvas id="lineChart" height="120"></canvas>
+    </div>
+    <div class="report-card">
+        <h3>📍 Area-wise Reports</h3>
+        <canvas id="barChart" height="120"></canvas>
+    </div>
+    <div class="report-card">
+        <h3>Download Reports</h3>
+        <button onclick="window.location.href='{% url 'download_reports' %}'" style="background:#ff6b00;color:white;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;">Download PDF</button>
+    </div>
+</div>
+
+<!-- MINI CHARTS -->
+<div class="services-container mini-charts">
+    <div class="mini-chart-card">
+        <h4>Resolved Complaints</h4>
+        <canvas id="miniChart1" height="80"></canvas>
+    </div>
+    <div class="mini-chart-card">
+        <h4>Pending Complaints</h4>
+        <canvas id="miniChart2" height="80"></canvas>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 Clean Pak Portal | Municipal Digital Services System
+</div>
+
+<!-- CHART.JS SCRIPT -->
+<script>
+const ctxLine = document.getElementById('lineChart').getContext('2d');
+new Chart(ctxLine, {
+    type:'line',
+    data:{
+        labels: {{ report_dates|safe }},
+        datasets:[{
+            label:'Complaints',
+            data: {{ complaints_over_time|safe }},
+            backgroundColor:'rgba(255,107,0,0.2)',
+            borderColor:'#ff6b00',
+            borderWidth:2,
+            fill:true,
+            tension:0.3
+        }]
+    },
+    options:{responsive:true, plugins:{legend:{display:false}}}
+});
+
+const ctxBar = document.getElementById('barChart').getContext('2d');
+new Chart(ctxBar, {
+    type:'bar',
+    data:{
+        labels: {{ areas|safe }},
+        datasets:[{
+            label:'Complaints by Area',
+            data: {{ area_complaints|safe }},
+            backgroundColor:'#ff6b00'
+        }]
+    },
+    options:{responsive:true, plugins:{legend:{display:false}}}
+});
+
+const ctxMini1 = document.getElementById('miniChart1').getContext('2d');
+new Chart(ctxMini1, {
+    type:'doughnut',
+    data:{
+        labels:['Resolved','Other'],
+        datasets:[{data:[{{ resolved_complaints }}, {{ total_complaints|add:"-resolved_complaints" }}],backgroundColor:['#ff6b00','#eee']}]
+    },
+    options:{plugins:{legend:{display:false}},cutout:'70%'}
+});
+
+const ctxMini2 = document.getElementById('miniChart2').getContext('2d');
+new Chart(ctxMini2, {
+    type:'doughnut',
+    data:{
+        labels:['Pending','Other'],
+        datasets:[{data:[{{ pending_complaints }}, {{ total_complaints|add:"-pending_complaints" }}],backgroundColor:['#ff6b00','#eee']}]
+    },
+    options:{plugins:{legend:{display:false}},cutout:'70%'}
+});
+</script>
+
+</body>
+</html>

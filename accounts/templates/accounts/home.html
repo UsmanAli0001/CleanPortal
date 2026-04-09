@@ -1,0 +1,296 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Clean Pak Portal - Home</title>
+
+<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+<style>
+
+.navbar{
+    background:#035e08;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 100px;
+}
+
+/* NAV LINKS */
+
+.nav-links a{
+    color:white;
+    margin:0 15px;
+    text-decoration:none;
+    font-weight:700; /* bold font */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* clean professional font */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* subtle box/text shadow */
+    transition: color 0.3s ease, text-shadow 0.3s ease; /* smooth transition */
+}
+
+.nav-links a:hover {
+    color:#ffd700; /* hover color */
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.7); /* deeper shadow on hover */
+}
+.nav-buttons button{
+    padding:8px 16px;
+    border:none;
+    border-radius:11px;
+    margin-left:10px;
+    cursor:pointer;
+    font-weight:600;
+    transition: all 0.3s ease; /* smooth transition */
+}
+
+/* Login Button */
+.login-btn{
+    background:#fa7c07;
+    color:white;
+}
+
+.login-btn:hover{
+    background:#ff9800; /* lighter orange on hover */
+    transform: scale(1.05); /* slight growth */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* subtle shadow */
+}
+
+/* Register Button */
+.register-btn{
+    background:#1976d2;
+    color:white;
+}
+
+.register-btn:hover{
+    background:#42a5f5; /* lighter blue on hover */
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.page-header{
+
+width:85%;
+margin:30px auto 10px auto;
+
+}
+
+.page-header h1{
+
+font-size:32px;
+color:#222;
+margin-bottom:5px;
+text-align:center;
+
+}
+
+.page-header p{
+
+color:#777;
+font-size:16px;
+text-align:center;
+}
+
+
+/* MAIN CONTAINER */
+
+.container{
+width:85%;
+margin:auto;
+margin-top:40px;
+}
+
+/* CARDS */
+
+.cards{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:25px;
+margin-bottom:40px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 4px 15px rgba(0,0,0,0.06);
+text-align:center;
+transition:.3s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+}
+
+.card h3{
+color:#444;
+margin-bottom:10px;
+}
+
+.card p{
+font-size:28px;
+font-weight:700;
+color:#ff6b00;
+}
+
+/* QUICK BUTTONS */
+
+.quick-actions{
+display:flex;
+justify-content:center;
+gap:25px;
+margin-top:20px;
+}
+
+.quick-actions button{
+
+padding:12px 25px;
+border:none;
+border-radius:8px;
+font-size:15px;
+font-weight:500;
+cursor:pointer;
+transition:.3s;
+}
+
+.quick-actions button:nth-child(1){
+background:#ff6b00;
+color:white;
+}
+
+.quick-actions button:nth-child(2){
+background:#2f80ed;
+color:white;
+}
+
+.quick-actions button:nth-child(3){
+background:#27ae60;
+color:white;
+}
+
+.quick-actions button:hover{
+transform:scale(1.05);
+}
+
+/* BODY */
+
+body{
+background:#f7f9fc;
+font-family:Segoe UI, sans-serif;
+margin:0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    
+
+    <h2>Clean Pak Portal</h2>
+    
+
+     <div class="nav-links">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'services' %}">Services</a>
+        <a href="{% url 'reports' %}">Reports</a>
+        <a href="{% url 'contact' %}">Contact</a>
+        
+    </div>
+
+    <div class="nav-buttons">
+        
+        <a href="{% url 'dashboard' %}"><button class="login-btn">Back to Dashboard</button></a>
+        <a href="{% url 'logout' %}"><button class="login-btn">Log out</button></a>
+    </div>
+
+</div>
+
+<!-- PAGE HEADER -->
+
+<div class="page-header">
+
+<h1>Welcome Dashboard</h1>
+
+<p>Monitor your complaints, reports and services</p>
+
+</div>
+<!-- MAIN -->
+
+<div class="container">
+
+<div class="cards">
+
+<div class="card">
+
+<h3>Total Complaints</h3>
+
+<p>{{ total_complaints }}</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>Resolved Issues</h3>
+
+<p>{{ resolved_issues }}</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>Pending Reports</h3>
+
+<p>{{ pending_reports }}</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>Area Summary</h3>
+
+<p>{{ area_summary }}</p>
+
+</div>
+
+</div>
+
+
+<div class="quick-actions">
+
+<button onclick="window.location.href='{% url 'register_complaint' %}'">
+
+Register Complaint
+
+</button>
+
+
+<button onclick="window.location.href='{% url 'pay_fee' %}'">
+
+Pay Fee
+
+</button>
+
+
+<button onclick="window.location.href='{% url 'reports' %}'">
+
+View Reports
+
+</button>
+
+
+</div>
+
+</div>
+
+
+</body>
+
+</html>

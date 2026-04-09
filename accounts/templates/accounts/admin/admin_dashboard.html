@@ -1,0 +1,67 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'accounts/css/admin.css' %}">
+
+<div class="sidebar">
+
+<h2>Clean Pak Portal Admin</h2>
+
+<a href="{% url 'admin_dashboard' %}">Dashboard</a>
+
+<a href="{% url 'staff' %}">Staff</a>
+
+<a href="{% url 'complaints' %}">Complaints</a>
+
+<a href="#">Payments</a>
+
+<a href="#">Reports</a>
+
+<a href="#">Announcements</a>
+
+<a href="#">Route Alerts</a>
+
+<a href="{% url 'logout' %}">Logout</a>
+
+</div>
+
+<div class="main">
+
+<h1> Admin Dashboard</h1>
+
+<div class="cards">
+
+<div class="card">
+
+<h3>Total Complaints</h3>
+
+<h1>{{total}}</h1>
+
+</div>
+
+<div class="card">
+
+<h3>Pending</h3>
+
+<h1>{{pending}}</h1>
+
+</div>
+
+<div class="card">
+
+<h3>Completed</h3>
+
+<h1>{{completed}}</h1>
+
+</div>
+
+<div class="card">
+
+<h3>Total Staff</h3>
+
+<h1>{{staff}}</h1>
+
+</div>
+
+</div>
+
+</div>

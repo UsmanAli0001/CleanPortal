@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Services - Clean Pak Portal</title>
+<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+<style>
+/* Body */
+body{
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    background:#f4f7fb;
+    color:#333;
+}
+
+/* NAVBAR */
+
+.navbar{
+    background:#035e08;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 100px;
+}
+
+/* NAV LINKS */
+
+.nav-links a{
+    color:white;
+    margin:0 15px;
+    text-decoration:none;
+    font-weight:700; /* bold font */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* clean professional font */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* subtle box/text shadow */
+    transition: color 0.3s ease, text-shadow 0.3s ease; /* smooth transition */
+}
+
+.nav-links a:hover {
+    color:#ffd700; /* hover color */
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.7); /* deeper shadow on hover */
+}
+.nav-buttons button{
+    padding:8px 16px;
+    border:none;
+    border-radius:11px;
+    margin-left:10px;
+    cursor:pointer;
+    font-weight:600;
+    transition: all 0.3s ease; /* smooth transition */
+}
+
+/* Login Button */
+.login-btn{
+    background:#fa7c07;
+    color:white;
+}
+
+.login-btn:hover{
+    background:#ff9800; /* lighter orange on hover */
+    transform: scale(1.05); /* slight growth */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* subtle shadow */
+}
+
+/* Register Button */
+.register-btn{
+    background:#1976d2;
+    color:white;
+}
+
+.register-btn:hover{
+    background:#42a5f5; /* lighter blue on hover */
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+/* HERO */
+.services-hero{
+    background:linear-gradient(90deg,#02073b,#109fff);
+    color:#fff;
+    text-align:center;
+    padding:60px 20px;
+}
+.services-hero h1{
+    font-size:38px;
+    margin-bottom:10px;
+}
+.services-hero p{
+    font-size:18px;
+    opacity:.95;
+}
+
+/* SERVICE CARDS */
+.services-container{
+    width:85%;
+    margin:40px auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:25px;
+}
+.service-card{
+    background: #fff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 6px 15px rgba(0,0,0,0.08);
+    text-align:center;
+    cursor:pointer;
+    transition:0.3s;
+}
+.service-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 10px 25px rgba(0,0,0,0.12);
+}
+.service-card img{
+    width:60px;
+    height:60px;
+    margin-bottom:15px;
+}
+.service-card h3{
+    color: #035e08;
+    margin-bottom:10px;
+}
+.service-card p{
+    color: #555;
+    line-height:1.5;
+    font-size:15px;
+}
+
+/* FOOTER */
+.footer{
+    background:#111827;
+    color:white;
+    text-align:center;
+    padding:25px;
+    font-size:14px;
+    margin-top:50px;
+}
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<!-- NAVBAR -->
+<div class="navbar">
+    
+
+    <h2>Clean Pak Portal</h2>
+    
+
+     <div class="nav-links">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'services' %}">Services</a>
+        <a href="{% url 'reports' %}">Reports</a>
+        <a href="{% url 'contact' %}">Contact</a>
+        
+    </div>
+
+    <div class="nav-buttons">
+        <a href="{% url 'dashboard' %}"><button class="login-btn">Back to Dashboard</button></a>
+
+<a href="{% url 'logout' %}">
+
+<button class="login-btn">
+
+Log out
+
+</button>
+
+</a>
+
+</div>
+
+</div>
+
+<!-- HERO -->
+<div class="services-hero">
+    <h1>Our Services</h1>
+    <p>Explore the features of Clean Pak Portal</p>
+</div>
+
+<!-- SERVICE CARDS -->
+<div class="services-container">
+
+    <div class="service-card" onclick="window.location.href='{% url 'register_complaint' %}'">
+        <img src="{% static 'accounts/images/register.png' %}" alt="Complaint Registration">
+        <h3>Complaint Registration</h3>
+        <p>Submit your municipal complaints digitally and track progress.</p>
+    </div>
+
+    <div class="service-card" onclick="window.location.href='{% url 'pay_fee' %}'">
+        <img src="{% static 'accounts/images/payment.png' %}" alt="Online Payment">
+        <h3>Online Payment</h3>
+        <p>Pay municipal fees, charges, and service bills online securely.</p>
+    </div>
+
+    <div class="service-card" onclick="window.location.href='{% url 'schedule' %}'">
+        <img src="{% static 'accounts/images/scheduled.png' %}" alt="Waste Collection Schedule">
+        <h3>Waste Collection Schedule</h3>
+        <p>View scheduled garbage collection in your area and manage bins efficiently.</p>
+    </div>
+
+    <div class="service-card" onclick="window.location.href='{% url 'maintenance' %}'">
+        <img src="{% static 'accounts/images/maintenance.png' %}" alt="Maintenance Requests">
+        <h3>Maintenance Requests</h3>
+        <p>Report street lights, water leaks, and other maintenance issues online.</p>
+    </div>
+
+    <div class="service-card" onclick="window.location.href='{% url 'emergency' %}'">
+        <img src="{% static 'accounts/images/emergency.png' %}" alt="Emergency Reporting">
+        <h3>Emergency Reporting</h3>
+        <p>Report urgent municipal emergencies and hazards to authorities quickly.</p>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 Clean Pak Portal | Municipal Digital Services System
+</div>
+
+</body>
+</html>

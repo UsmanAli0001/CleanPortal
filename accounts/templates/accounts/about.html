@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>About - Clean Pak Portal</title>
+
+<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+
+<style>
+
+/* ABOUT PAGE */
+.navbar{
+    background: #035e08;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 100px;
+}
+
+.about-container{
+
+
+width:85%;
+
+margin:40px auto;
+
+}
+
+.about-section{
+
+background:white;
+
+padding:25px;
+
+margin-bottom:25px;
+
+border-radius:10px;
+
+box-shadow:0 3px 10px rgba(0,0,0,0.05);
+
+}
+
+.about-section h2{
+
+color: #035e08;
+
+margin-bottom:10px;
+
+}
+
+.about-section p{
+
+color: #555;
+
+line-height:1.6;
+
+}
+
+.stats{
+
+display:flex;
+
+justify-content:space-between;
+
+text-align:center;
+
+margin-top:15px;
+
+}
+
+.stat-box{
+
+flex:1;
+
+padding:15px;
+
+}
+
+.stat-box h3{
+
+color:#035e08;
+
+font-size:28px;
+
+}
+
+.stat-box p{
+
+color:#666;
+
+}
+
+body{
+
+background:#f7f9fc;
+
+font-family:Segoe UI;
+
+margin:0;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    
+
+    <h2>Clean Pak Portal</h2>
+    
+
+     <div class="nav-links">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'services' %}">Services</a>
+        <a href="{% url 'reports' %}">Reports</a>
+        <a href="{% url 'contact' %}">Contact</a>
+        
+    </div>
+
+    <div class="nav-buttons">
+        <a href="{% url 'dashboard' %}"><button class="login-btn">Back to Dashboard</button></a>
+
+<a href="{% url 'logout' %}">
+
+<button class="login-btn">
+
+Log out
+
+</button>
+
+</a>
+
+</div>
+
+</div>
+
+<div class="about-container">
+
+
+<!-- PORTAL INTRO -->
+
+<div class="about-section">
+
+<h2>Portal Introduction</h2>
+
+<p>
+
+Clean Pak Portal is a municipal complaint management system designed to help citizens report sanitation issues, track complaints, and improve city cleanliness through digital services.
+
+</p>
+
+</div>
+
+
+<!-- MISSION -->
+
+<div class="about-section">
+
+<h2>Mission & Vision</h2>
+
+<p>
+
+Our mission is to create a cleaner and healthier city through technology, transparency, and citizen participation.
+
+Our vision is to build a smart municipal system where complaints are resolved efficiently and services are accessible online.
+
+</p>
+
+</div>
+
+
+<!-- AUTHORITY -->
+
+<div class="about-section">
+
+<h2>Authority Information</h2>
+
+<p>
+
+This portal operates under the Municipal Corporation and Waste Management Authority. It supports government initiatives for smart city management and sanitation improvement programs.
+
+</p>
+
+</div>
+
+
+<!-- POLICIES -->
+
+<div class="about-section">
+
+<h2>Policies & Guidelines</h2>
+
+<p>
+
+• Citizens must provide accurate complaint information<br>  
+• False reports may be rejected  <br>
+• Complaints are processed according to municipal policies <br> 
+• Data privacy is maintained under government regulations  
+
+</p>
+
+</div>
+
+
+<!-- IMPACT -->
+
+<div class="about-section">
+
+<h2>Cleanliness Impact</h2>
+
+<div class="stats">
+
+<div class="stat-box">
+
+<h3>1200+</h3>
+
+<p>Complaints Resolved</p>
+
+</div>
+
+
+<div class="stat-box">
+
+<h3>85%</h3>
+
+<p>Resolution Rate</p>
+
+</div>
+
+
+<div class="stat-box">
+
+<h3>25+</h3>
+
+<p>Areas Covered</p>
+
+</div>
+
+
+<div class="stat-box">
+
+<h3>5000+</h3>
+
+<p>Registered Users</p>
+
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+</body>
+
+</html>

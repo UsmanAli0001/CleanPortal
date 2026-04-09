@@ -1,0 +1,57 @@
+<h2>Complaints</h2>
+
+<table>
+
+<tr>
+
+<th>ID</th>
+
+<th>Area</th>
+
+<th>Status</th>
+
+<th>Assign</th>
+
+</tr>
+
+{% for c in complaints %}
+
+<tr>
+
+<td>{{c.complaint_id}}</td>
+
+<td>{{c.area}}</td>
+
+<td>{{c.status}}</td>
+
+<td>
+
+<form method="POST" action="{% url 'assign' c.id %}">
+
+{% csrf_token %}
+
+<select name="staff">
+
+{% for s in staff %}
+
+<option value="{{s.id}}">
+
+{{s.name}}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+<button>Assign</button>
+
+</form>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>

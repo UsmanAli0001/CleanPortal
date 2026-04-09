@@ -1,0 +1,16 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complaint Submitted</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+</head>
+<body>
+    <div class="form-container">
+        <h1>Complaint Submitted</h1>
+        <h3>Your Complaint ID: {{ complaint_id }}</h3>
+        <p>Please save this ID for tracking your complaint.</p>
+        <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+    </div>
+</body>
+</html>

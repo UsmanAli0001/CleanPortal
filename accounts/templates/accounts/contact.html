@@ -1,0 +1,216 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Pak Portal - Contact</title>
+    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxouuScVSTgirxgMuuFYg5sqgEXXfTuVw&callback=initMap" async defer></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f5f7;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-header {
+            text-align: center;
+            margin: 40px 20px 30px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #035e08;
+        }
+
+        .contact-info {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 18px;
+        }
+
+        .contact-info p {
+            margin: 8px 0;
+        }
+
+        #map {
+            width: 90%;
+            max-width: 700px;
+            height: 300px;
+            border-radius: 12px;
+            margin: 0 auto 50px;
+            display: block;
+        }
+
+        .contact-form {
+            max-width: 700px;
+            margin: 0 auto 40px;
+            background: #fff;
+            padding: 40px 100px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .contact-form h3 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+            color: #035e08;
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: #ff6b00;
+        }
+
+        .contact-form button {
+            background: #035e08;
+            color: #fff;
+            padding: 12px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .contact-form button:hover {
+            background: #035e08;
+            transform: translateY(-2px);
+        }
+
+        /* Toast notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 9999;
+            left: 50%;
+            bottom: 40px;
+            font-size: 17px;
+            opacity: 0;
+            transition: opacity 0.5s, bottom 0.5s;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 60px;
+        }
+    </style>
+</head>
+<!-- NAVBAR -->
+<div class="navbar">
+    
+
+    <h2>Clean Pak Portal</h2>
+    
+
+     <div class="nav-links">
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'about' %}">About</a>
+        <a href="{% url 'services' %}">Services</a>
+        <a href="{% url 'reports' %}">Reports</a>
+        <a href="{% url 'contact' %}">Contact</a>
+        
+    </div>
+
+    <div class="nav-buttons">
+
+<a href="{% url 'logout' %}">
+    <a href="{% url 'dashboard' %}"><button class="login-btn">Back to Dashboard</button></a>
+
+<button class="login-btn">
+
+Log out
+
+</button>
+
+</a>
+
+</div>
+
+</div>
+<body>
+
+    <!-- Page Header -->
+    <div class="page-header">Contact Us</div>
+
+    <!-- Contact Info -->
+    <div class="contact-info">
+        <p>📞 Helpline: +92 300 1234567 | +92 300 7654321</p>
+        <p>📧 Email: support@cleanpak.com | info@cleanpak.com</p>
+        <p>📍 Location: Gujrat, Pakistan</p>
+    </div>
+
+    <!-- Fixed Google Map -->
+    <div id="map"></div>
+
+    <!-- Contact Form -->
+    <div class="contact-form">
+        <h3>💬 Send a Message</h3>
+        <form method="POST" action="{% url 'submit_contact' %}">
+            {% csrf_token %}
+            <input type="text" name="name" placeholder="Your Name" required>
+            <input type="email" name="email" placeholder="Your Email" required>
+            <textarea name="message" rows="6" placeholder="Your Message" required></textarea>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">Your message has been sent successfully!</div>
+
+    <script>
+        // Initialize Google Map (fixed location)
+        function initMap() {
+            var gujrat = {lat: 32.5742, lng: 74.0789};
+            var map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: gujrat
+            });
+            new google.maps.Marker({
+                position: gujrat,
+                map: map
+            });
+        }
+
+        // Toast function
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        }
+
+        // Form submit listener
+        document.querySelector(".contact-form form").addEventListener("submit", function(e) {
+            e.preventDefault(); // remove this line if you want actual submission
+            showToast("Your message has been sent successfully!");
+            this.reset();
+        });
+    </script>
+
+</body>
+</html>
