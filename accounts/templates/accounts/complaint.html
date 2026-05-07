@@ -1,123 +1,967 @@
-{% load static %}
-
-<!DOCTYPE html>
-<html>
-
-<head>
-
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
+    :root {
+        --primary-green: #16a34a;
+        --primary-blue: #1a56db;
+        --soft-bg: #f8fafc;
+        --card-bg: #ffffff;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --accent-green: #2ecc71;
+    }
 
-.complaint-bg{
+    body {
+        font-family: 'Outfit', sans-serif;
+        background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+        margin: 0;
+        padding: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        color: var(--text-dark);
+    }
 
-background-image:url("{% static 'accounts/images/complaintreg.png' %}");
+    .complaint-container {
+        width: 100%;
+        max-width: 1200px;
+        background: white;
+        border-radius: 28px;
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.07);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-background-size:cover;
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
 
-background-position:center;
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
-background-repeat:no-repeat;
+    .form-header {
+        background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+        padding: 45px 40px;
+        color: white;
+        text-align: center;
+        position: relative;
+    }
 
-min-height:100vh;
+    .brand-logo {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.2));
+    }
 
-display:flex;
+    .form-header h1 {
+        margin: 0;
+        font-size: 2.4rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
 
-justify-content:center;
+    .form-header p {
+        margin: 10px 0 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+        font-weight: 300;
+    }
 
-align-items:center;
+    .form-content {
+        padding: 45px 60px;
+    }
 
-}
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 25px;
+        color: var(--primary-blue);
+        border-bottom: 2px solid #f1f5f9;
+        padding-bottom: 10px;
+    }
 
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .form-group {
+        margin-bottom: 5px;
+    }
+
+    .form-group.full-width {
+        grid-column: span 3;
+    }
+
+    .form-group.two-thirds {
+        grid-column: span 2;
+    }
+
+    label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="file"],
+    select,
+    textarea {
+        width: 100%;
+        padding: 14px 18px;
+        background: #f1f5f9;
+        border: 2px solid transparent;
+        border-radius: 14px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-sizing: border-box;
+        outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus,
+    #area-input:focus {
+        border-color: var(--primary-blue);
+        background: white;
+        animation: bluePulse 2s infinite;
+        transform: translateY(-2px);
+        outline: none;
+    }
+
+    #map {
+        height: 450px;
+        width: 100%;
+        border-radius: 20px;
+        margin: 10px 0;
+        border: 2px solid #f1f5f9;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .tip-box {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        background: #f8fafc;
+        padding: 15px 20px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 15px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .tip-box i {
+        color: var(--primary-green);
+    }
+
+    #fee-summary {
+        padding: 20px 30px;
+        background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+        border-radius: 18px;
+        border: 1px solid #e2e8f0;
+        display: none;
+        margin-bottom: 30px;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .fee-label {
+        font-weight: 700;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+
+    .fee-amount {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary-green);
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 18px;
+        border: none;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--primary-blue), #1e3a8a);
+        color: white;
+        font-family: inherit;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        box-shadow: 0 10px 25px rgba(26, 86, 219, 0.3);
+        margin-top: 20px;
+        position: relative;
+        overflow: hidden;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(26, 86, 219, 0.4);
+        animation: bluePulse 2s infinite;
+    }
+
+    /* Shimmer effect for button */
+    .submit-btn::after {
+        content: '';
+        position: absolute;
+        left: -100%;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: 0.6s;
+    }
+
+    .submit-btn:hover::after {
+        left: 100%;
+    }
+
+    .form-group {
+        margin-bottom: 5px;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: slideInUpStaggered 0.5s forwards;
+    }
+
+    @keyframes slideInUpStaggered {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Staggered delays for form groups */
+    .form-group:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .form-group:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .form-group:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .form-group:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .form-group:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .form-group:nth-child(6) {
+        animation-delay: 0.6s;
+    }
+
+
+
+    .back-link {
+        text-align: center;
+        margin-top: 30px;
+        opacity: 0;
+        animation: fadeIn 0.8s forwards 1s;
+    }
+
+    .back-link a {
+        color: var(--primary-blue);
+        text-decoration: none;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.3s;
+    }
+
+    .back-link a:hover {
+        transform: translateX(-5px);
+    }
+
+    @media (max-width: 1024px) {
+        .form-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-group.full-width,
+        .form-group.two-thirds {
+            grid-column: span 2;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full-width,
+        .form-group.two-thirds {
+            grid-column: span 1;
+        }
+
+        .form-content {
+            padding: 30px;
+        }
+
+        .form-header h1 {
+            font-size: 1.8rem;
+        }
+    }
+
+    /* Staggered delays for form groups - expanded to ensure all elements show up */
+    .form-group:nth-child(1) {
+        animation-delay: 0.05s;
+    }
+
+    .form-group:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .form-group:nth-child(3) {
+        animation-delay: 0.15s;
+    }
+
+    .form-group:nth-child(4) {
+        animation-delay: 0.2s;
+    }
+
+    .form-group:nth-child(5) {
+        animation-delay: 0.25s;
+    }
+
+    .form-group:nth-child(6) {
+        animation-delay: 0.3s;
+    }
+
+    .form-group:nth-child(7) {
+        animation-delay: 0.35s;
+    }
+
+    .form-group:nth-child(8) {
+        animation-delay: 0.4s;
+    }
+
+    .form-group:nth-child(9) {
+        animation-delay: 0.45s;
+    }
+
+    .form-group:nth-child(10) {
+        animation-delay: 0.5s;
+    }
+
+    .form-group:nth-child(n+11) {
+        animation-delay: 0.55s;
+    }
+
+    /* Fallback for many groups */
+
+    input:focus,
+    select:focus,
+    textarea:focus,
+    #area-input:focus {
+        border-color: var(--primary-blue);
+        background: white;
+        animation: bluePulse 2s infinite;
+        transform: translateY(-2px);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.1);
+    }
+
+    .form-group:focus-within {
+        z-index: 1001;
+        /* Ensure active field stays above others during dropdown */
+    }
+
+    .custom-dropdown-container {
+        position: relative;
+        width: 100%;
+        z-index: 1001;
+    }
+
+    .custom-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #ffffff !important;
+        /* Force solid white background */
+        border-radius: 14px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(26, 86, 219, 0.1);
+        margin-top: 8px;
+        padding: 8px;
+        list-style: none;
+        z-index: 10000;
+        display: none;
+        max-height: 280px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border: 1px solid rgba(26, 86, 219, 0.1);
+        backdrop-filter: blur(15px);
+        width: 100%;
+        box-sizing: border-box;
+        opacity: 1 !important;
+    }
+
+    .custom-dropdown.active {
+        display: flex;
+        flex-direction: column;
+        animation: dropdownFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 1 !important;
+    }
+
+    @keyframes dropdownFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .custom-dropdown li {
+        padding: 12px 18px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        color: var(--text-dark);
+        background-color: #ffffff;
+        /* Solid background for items */
+        transition: all 0.2s;
+        width: 100%;
+        box-sizing: border-box;
+        white-space: normal;
+        word-wrap: break-word;
+        position: relative;
+        opacity: 1;
+    }
+
+    .custom-dropdown li:hover {
+        background: rgba(26, 86, 219, 0.1);
+        color: var(--primary-blue);
+        padding-left: 25px;
+        box-shadow: inset 4px 0 0 var(--primary-blue);
+        transform: translateX(5px);
+    }
+
+    /* Blue animated background glow for areas */
+    .custom-dropdown li::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(26, 86, 219, 0.05), transparent);
+        transform: translateX(-100%);
+        transition: 0.5s;
+        pointer-events: none;
+    }
+
+    .custom-dropdown li:hover::after {
+        transform: translateX(100%);
+    }
+
+    /* Staggered animation delays for the list items */
+    .custom-dropdown li:nth-child(1) {
+        animation-delay: 0.05s;
+    }
+
+    .custom-dropdown li:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .custom-dropdown li:nth-child(3) {
+        animation-delay: 0.15s;
+    }
+
+    .custom-dropdown li:nth-child(4) {
+        animation-delay: 0.2s;
+    }
+
+    .custom-dropdown li:nth-child(5) {
+        animation-delay: 0.25s;
+    }
+
+    .custom-dropdown li:nth-child(6) {
+        animation-delay: 0.3s;
+    }
+
+    .custom-dropdown li:nth-child(7) {
+        animation-delay: 0.35s;
+    }
+
+    .custom-dropdown li:nth-child(8) {
+        animation-delay: 0.4s;
+    }
+
+    .custom-dropdown li:nth-child(9) {
+        animation-delay: 0.45s;
+    }
+
+    .custom-dropdown li:nth-child(10) {
+        animation-delay: 0.5s;
+    }
+
+    .custom-dropdown li:nth-child(11) {
+        animation-delay: 0.55s;
+    }
+
+    .custom-dropdown li:nth-child(12) {
+        animation-delay: 0.6s;
+    }
+
+    .custom-dropdown li:nth-child(13) {
+        animation-delay: 0.65s;
+    }
+
+    .custom-dropdown li:nth-child(14) {
+        animation-delay: 0.7s;
+    }
+
+    .custom-dropdown li:nth-child(15) {
+        animation-delay: 0.75s;
+    }
+
+    .custom-dropdown li:nth-child(16) {
+        animation-delay: 0.8s;
+    }
 </style>
-<title>Register Complaint</title>
-
-<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
-
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxouuScVSTgirxgMuuFYg5sqgEXXfTuVw&callback=initMap" async defer></script>
-
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAxouuScVSTgirxgMuuFYg5sqgEXXfTuVw&callback=initMap" async
+    defer></script>
 </head>
 
 <body>
 
-<body class="complaint-bg">
+    <div class="complaint-container">
+        <div class="form-header">
+            <div class="brand-logo">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="display:block; margin:0 auto;">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5"></path>
+                    <path d="M2 12l10 5 10-5"></path>
+                </svg>
+            </div>
+            <h1>Clean Pak <span>Portal</span></h1>
+            <p>Register Your Complaint — Help Us Build a Cleaner Gujrat</p>
+        </div>
 
-<div class="form-container">
+        <div class="form-content">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
 
-<h1>Register Complaint</h1>
+                <div class="section-title">
+                    <i class="fas fa-info-circle"></i> Basic Information
+                </div>
 
-<form method="POST">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" name="name" placeholder="E.g. Khalid Mansoor" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" name="email" placeholder="name@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type of Grievance</label>
+                        <select name="type" id="grievance-type">
+                            {% for cat in categories %}
+                            <option value="{{ cat.name }}" data-price="{{ cat.base_price }}">{{ cat.name }} (Rs. {{ cat.base_price }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
 
-{% csrf_token %}
+                <div class="section-title">
+                    <i class="fas fa-map-marked-alt"></i> Location & Details
+                </div>
 
-<label>Name</label>
-<input type="text" name="name" required>
+                <div class="form-grid">
+                    <div class="form-group" style="position: relative;">
+                        <label>Specific Area in Gujrat</label>
+                        <div class="custom-dropdown-container">
+                            <input type="text" id="area-input" name="area" placeholder="Select or type an area..."
+                                autocomplete="off" required>
+                            <ul id="area-dropdown" class="custom-dropdown">
+                                <li data-value="Model Town">Model Town</li>
+                                <li data-value="Jalalpur Jattan Road">Jalalpur Jattan Road</li>
+                                <li data-value="Shahdowla Road">Shahdowla Road</li>
+                                <li data-value="Bhimber Road">Bhimber Road</li>
+                                <li data-value="Dinga Road">Dinga Road</li>
+                                <li data-value="Shadiwal Road">Shadiwal Road</li>
+                                <li data-value="G.T. Road Gujrat">G.T. Road Gujrat</li>
+                                <li data-value="Kunjah Road">Kunjah Road</li>
+                                <li data-value="Circular Road">Circular Road</li>
+                                <li data-value="Railway Road">Railway Road</li>
+                                <li data-value="Fawara Chowk">Fawara Chowk</li>
+                                <li data-value="Service Mor">Service Mor</li>
+                                <li data-value="Shadman Colony">Shadman Colony</li>
+                                <li data-value="Rehmania Road">Rehmania Road</li>
+                                <li data-value="Civil Lines">Civil Lines</li>
+                                <li data-value="Sargodha Road">Sargodha Road</li>
+                                <li data-value="Adowal">Adowal</li>
+                                <li data-value="Muslim Pura Road">Muslim Pura Road</li>
+                                <li data-value="Qadir Colony">Qadir Colony</li>
+                                <li data-value="Awan Colony">Awan Colony</li>
+                                <li data-value="Khokhar Colony">Khokhar Colony</li>
+                                <li data-value="Darul Islam Colony">Darul Islam Colony</li>
+                                <li data-value="Star Colony">Star Colony</li>
+                                <li data-value="New Shadman Colony">New Shadman Colony</li>
+                                <li data-value="Gulshan Colony">Gulshan Colony</li>
+                                <li data-value="Ali Pura Road">Ali Pura Road</li>
+                                <li data-value="Jinnah Link Road">Jinnah Link Road</li>
+                                <li data-value="Nathuwal">Nathuwal</li>
+                                <li data-value="Bora">Bora</li>
+                                <li data-value="Piara">Piara</li>
+                                <li data-value="Fatehpur Road">Fatehpur Road</li>
+                                <li data-value="Rashid Colony">Rashid Colony</li>
+                                <li data-value="Muslimabad">Muslimabad</li>
+                                <li data-value="Nawaz Sharif Park">Nawaz Sharif Park</li>
+                                <li data-value="Shah Jahangir Road">Shah Jahangir Road</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Distance Category</label>
+                        <select name="fee_tier" required>
+                            <option value="" disabled selected>Select distance...</option>
+                            {% for price in pricings %}
+                            <option value="{{ price.id }}" data-base="{{ price.base_price }}"
+                                data-urgent="{{ price.urgent_price }}">
+                                {{ price.distance_range }} (Rs. {{ price.base_price }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority Status</label>
+                        <select name="priority" id="priority-select">
+                            <option value="Normal">Normal Status (8-10 hrs)</option>
+                            <option value="Urgent">Urgent Intervention Needed (2-3 hrs)</option>
+                        </select>
+                    </div>
 
-<label>Email</label>
-<input type="email" name="email" required>
+                    <div class="form-group full-width">
+                        <div id="fee-summary">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div class="fee-label">Estimated Service Fee</div>
+                                    <p id="fee-note"
+                                        style="margin: 5px 0 0; font-size: 0.85rem; color: var(--text-muted);"></p>
+                                </div>
+                                <div class="fee-amount" id="estimated-amount">Rs. 0.00</div>
+                            </div>
+                        </div>
+                    </div>
 
-<label>Complaint Type</label>
+                    <div class="form-group full-width">
+                        <label>Visual Evidence (Upload Before Image)</label>
+                        <input type="file" name="image" accept="image/*" required>
+                    </div>
 
-<select name="type">
+                    <div class="form-group full-width">
+                        <label>Pinpoint Precise Location on Interactive Map</label>
+                        <div id="map"></div>
+                        <input type="hidden" id="latitude" name="latitude">
+                        <input type="hidden" id="longitude" name="longitude">
+                        <div class="tip-box">
+                            <i class="fas fa-lightbulb"></i>
+                            <span><strong>Location Security:</strong> The exact spot is automatically pinpointed based
+                                on your selected area to ensure 100% accuracy.</span>
+                        </div>
+                    </div>
 
-<option>Garbage Issue</option>
-<option>Drainage Issue</option>
-<option>Street Cleaning</option>
-<option>Water Issue</option>
+                    <div class="form-group full-width">
+                        <label>Detailed Description</label>
+                        <textarea name="description" rows="4"
+                            placeholder="Please describe the issue in detail..."></textarea>
+                    </div>
+                </div>
 
-</select>
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span>Validate & Proceed to Payment</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
 
-<label>Area</label>
-<input type="text" id="area-input" name="area" placeholder="Enter area within Gujrat" required>
-<input type="hidden" id="latitude" name="latitude">
-<input type="hidden" id="longitude" name="longitude">
-<div id="map" style="height:300px; width:100%; border-radius:8px;"></div>
+            <div class="back-link">
+                <a href="{% url 'dashboard' %}">
+                    <i class="fas fa-arrow-left"></i> Return to Member Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
 
-<label>Description</label>
+    <script>
+        // Exact High-Precision Area Coordinates for Gujrat, Pakistan
+        const areaCoordinates = {
+            "Model Town": { lat: 32.6114, lng: 74.0753 },
+            "Jalalpur Jattan Road": { lat: 32.59591, lng: 74.21345 },
+            "Shahdowla Road": { lat: 32.57002, lng: 74.09313 },
+            "Bhimber Road": { lat: 32.62989, lng: 74.07899 },
+            "Dinga Road": { lat: 32.612581, lng: 73.917435 },
+            "Shadiwal Road": { lat: 32.55021, lng: 74.07072 },
+            "G.T. Road Gujrat": { lat: 33.308878, lng: 73.260654 },
+            "Kunjah Road": { lat: 32.554469, lng: 73.923323 },
+            "Circular Road": { lat: 32.570361, lng: 74.079157 },
+            "Railway Road": { lat: 32.56573811574163, lng: 74.0687959664 },
+            "Fawara Chowk": { lat: 32.571152, lng: 74.075069 },
+            "Service Mor": { lat: 32.590200, lng: 74.049859 },
+            "Shadman Colony": { lat: 32.591496748028824, lng: 74.06076362454759 },
+            "Rehmania Road": { lat: 32.596575, lng: 74.038513 },
+            "Civil Lines": { lat: 32.587998, lng: 74.076684 },
+            "Sargodha Road": { lat: 32.5645, lng: 74.0567 },
+            "Adowal": { lat: 32.5823, lng: 74.0473 },
+            "Muslim Pura Road": { lat: 32.568830, lng: 74.054341 },
+            "Qadir Colony": { lat:32.627162, lng: 74.077725 },
+            "Awan Colony": { lat: 32.621531, lng: 74.080575 },
+            "Khokhar Colony": { lat: 32.645673, lng: 74.085023 },
+            "Darul Islam Colony": { lat:32.616675, lng:74.081940 },
+            "Star Colony": { lat:32.606663, lng:74.080384 },
+            "New Shadman Colony": { lat:32.591180, lng:74.068951 },
+            "Gulshan Colony": { lat:32.589416, lng: 74.076530 },
+            "Ali Pura Road": { lat: 32.581637, lng: 74.069163 },
+            "Jinnah Link Road": { lat:32.581715, lng:74.075132 },
+            "Nathuwal": { lat: 32.631343, lng:74.085857 },
+            "Bora": { lat: 32.641299, lng: 74.095967 },
+            "Piara": { lat: 32.6403, lng: 74.1042 },
+            "Fatehpur Road": { lat:32.697710, lng: 74.132780 },
+            "Rashid Colony": { lat: 32.581542, lng:74.087952 },
+            "Muslimabad": { lat:32.579392, lng:74.083271 },
+            "Nawaz Sharif Park": { lat: 32.5611, lng: 74.0758 },
+            "Shah Jahangir Road": { lat:32.579241, lng: 74.089822 }
+        };
 
-<textarea name="description"></textarea>
+        let map, marker, geocoder;
 
-<button type="submit" class="btn-orange">
+        function initMap() {
+            geocoder = new google.maps.Geocoder();
+            var defaultLoc = { lat: 32.5742, lng: 74.0789 }; // Gujrat Centre
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: defaultLoc,
+                styles: [
+                    {
+                        "featureType": "administrative",
+                        "elementType": "labels.text.fill",
+                        "stylers": [{ "color": "#444444" }]
+                    },
+                    {
+                        "featureType": "landscape",
+                        "elementType": "all",
+                        "stylers": [{ "color": "#f2f2f2" }]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "all",
+                        "stylers": [{ "visibility": "off" }]
+                    },
+                    {
+                        "featureType": "road",
+                        "elementType": "all",
+                        "stylers": [{ "saturation": -100 }, { "lightness": 45 }]
+                    },
+                    {
+                        "featureType": "road.highway",
+                        "elementType": "all",
+                        "stylers": [{ "visibility": "simplified" }]
+                    },
+                    {
+                        "featureType": "water",
+                        "elementType": "all",
+                        "stylers": [{ "color": "#46bcec" }, { "visibility": "on" }]
+                    }
+                ]
+            });
 
-Submit Complaint
+            marker = new google.maps.Marker({
+                position: defaultLoc,
+                map: map,
+                draggable: false, // User cannot move the cursor manually
+                title: "Issue location (Set automatically)",
+                icon: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
+            });
 
-</button>
+            // Initialize hidden inputs
+            document.getElementById("latitude").value = defaultLoc.lat;
+            document.getElementById("longitude").value = defaultLoc.lng;
 
-</form>
+            // Manual movement listeners removed to ensure strict area-based accuracy
+        }
 
-</div>
+        // Fee Calculation Logic
+        const feeTierSelect = document.querySelector('select[name="fee_tier"]');
+        const prioritySelect = document.getElementById('priority-select');
+        const grievanceTypeSelect = document.getElementById('grievance-type');
+        const feeSummary = document.getElementById('fee-summary');
+        const estimatedAmount = document.getElementById('estimated-amount');
+        const feeNote = document.getElementById('fee-note');
 
+        function updateFeeEstimate() {
+            const selectedTier = feeTierSelect.options[feeTierSelect.selectedIndex];
+            const selectedGrievance = grievanceTypeSelect.options[grievanceTypeSelect.selectedIndex];
 
+            if (selectedTier && selectedTier.value) {
+                const basePrice = parseFloat(selectedTier.getAttribute('data-base'));
+                const urgentPrice = parseFloat(selectedTier.getAttribute('data-urgent'));
+                const grievancePrice = selectedGrievance ? parseFloat(selectedGrievance.getAttribute('data-price') || 0) : 0;
+                const isUrgent = prioritySelect.value === 'Urgent';
 
-<script>
+                const finalFee = (isUrgent ? urgentPrice : basePrice) + grievancePrice;
 
-function initMap(){
+                estimatedAmount.innerText = `Rs. ${finalFee.toFixed(2)}`;
+                feeSummary.style.display = 'block';
 
-var location = {lat:32.5742,lng:74.0789};
+                if (isUrgent) {
+                    feeNote.innerText = "Urgent priority: Task will be handled within 2-3 hrs.";
+                    feeNote.style.color = "#e74c3c";
+                } else {
+                    feeNote.innerText = "Normal priority: Task will be handled within 8-10 hrs.";
+                    feeNote.style.color = "#666";
+                }
+            } else {
+                feeSummary.style.display = 'none';
+            }
+        }
 
-var map = new google.maps.Map(
-document.getElementById("map"),
-{
-zoom:13,
-center:location
-}
-);
+        feeTierSelect.addEventListener('change', updateFeeEstimate);
+        prioritySelect.addEventListener('change', updateFeeEstimate);
+        grievanceTypeSelect.addEventListener('change', updateFeeEstimate);
 
-var marker = new google.maps.Marker({
-position:location,
-map:map,
-draggable:true
-});
+        // Custom Blue Animated Dropdown Logic
+        const areaInput = document.getElementById('area-input');
+        const areaDropdown = document.getElementById('area-dropdown');
+        const areaItems = areaDropdown.querySelectorAll('li');
 
-google.maps.event.addListener(marker,'dragend',function(event){
+        function filterAreas() {
+            const val = areaInput.value.toLowerCase();
+            let visibleCount = 0;
 
-document.getElementById("latitude").value = event.latLng.lat();
+            areaItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(val)) {
+                    item.style.display = 'block';
+                    item.style.animationDelay = `${visibleCount * 0.05}s`;
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
 
-document.getElementById("longitude").value = event.latLng.lng();
+            if (visibleCount > 0) {
+                areaDropdown.classList.add('active');
+            } else {
+                areaDropdown.classList.remove('active');
+            }
+        }
 
-});
+        let searchTimeout;
+        function moveMapToArea(areaName) {
+            if (!areaName || areaName.trim().length < 3) return;
 
-}
+            // 1. Try Exact Match first for performance and precision
+            for (const [name, coords] of Object.entries(areaCoordinates)) {
+                if (name.toLowerCase() === areaName.toLowerCase().trim()) {
+                    updateMap(coords);
+                    return;
+                }
+            }
 
-</script>
+            // 2. Geocoding Fallback for manual entry
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const fullAddress = `${areaName}, Gujrat, Pakistan`;
+                geocoder.geocode({ address: fullAddress }, (results, status) => {
+                    if (status === "OK" && results[0]) {
+                        const loc = results[0].geometry.location;
+                        const coords = { lat: loc.lat(), lng: loc.lng() };
+                        updateMap(coords);
+                    }
+                });
+            }, 600); // 600ms debounce
+        }
+
+        function updateMap(coords) {
+            // Prevent redundant moves
+            const currentCenter = map.getCenter();
+            const dist = Math.abs(currentCenter.lat() - coords.lat) + Math.abs(currentCenter.lng() - coords.lng);
+            if (dist < 0.0001 && map.getZoom() === 16) return;
+
+            map.panTo(coords);
+            map.setZoom(16);
+            marker.setPosition(coords);
+            marker.setAnimation(google.maps.Animation.BOUNCE);
+            setTimeout(() => marker.setAnimation(null), 1000);
+
+            document.getElementById("latitude").value = coords.lat;
+            document.getElementById("longitude").value = coords.lng;
+        }
+
+        areaInput.addEventListener('focus', filterAreas);
+        areaInput.addEventListener('input', () => {
+            filterAreas();
+            moveMapToArea(areaInput.value);
+        });
+        areaInput.addEventListener('click', filterAreas);
+
+        areaItems.forEach(item => {
+            item.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Prevent input from losing focus
+                const val = item.getAttribute('data-value');
+                areaInput.value = val;
+                areaDropdown.classList.remove('active');
+                moveMapToArea(val);
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('mousedown', (e) => {
+            if (!areaInput.contains(e.target) && !areaDropdown.contains(e.target)) {
+                areaDropdown.classList.remove('active');
+            }
+        });
+    </script>
 
 </body>
 

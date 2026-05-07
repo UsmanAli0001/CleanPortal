@@ -1,0 +1,1086 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Clean Pak Portal | Municipal Services{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary-blue: #1a1f3c;
+            --secondary-blue: #283593;
+            --accent-green: #10b981;
+            --dark-green: #059669;
+            --text-dark: #1e293b;
+            --bg-light: #f8fafc;
+            --white: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --pak-green: #006600;
+            --pak-gradient: linear-gradient(135deg, #10b981, #059669);
+            --nav-height: 60px;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            &::-webkit-scrollbar {
+                display: none;
+            }
+            /* Hide scrollbar for IE, Edge and Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        html {
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            &::-webkit-scrollbar {
+                display: none;
+            }
+            /* Hide scrollbar for IE, Edge and Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Navbar Styling Redesign */
+        .navbar {
+            background: linear-gradient(135deg, #0f172a, #1e40af);
+            /* Deep Aesthetic Blue Gradient */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            height: var(--nav-height);
+            padding: 0 40px;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: -0.8px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .brand-pak {
+            color: #38bdf8;
+            /* Aesthetic Sky Blue */
+            font-weight: 900;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+            filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.4));
+        }
+
+        .nav-center {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-center a {
+            text-decoration: none;
+            color: var(--white);
+            font-weight: 800;
+            font-size: 0.95rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.25s ease;
+            position: relative;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-center a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--accent-green);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-center a:hover {
+            color: #38bdf8;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-center a:hover::after {
+            width: 20px;
+            background: #38bdf8;
+        }
+
+        /* Services Dropdown Styling */
+        .services-menu-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .services-menu-container>a {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .services-dropdown {
+            position: absolute;
+            top: 150%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: white;
+            min-width: 260px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(30, 41, 59, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: 1002;
+            padding: 10px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .services-menu-container:hover .services-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .services-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-left: 1px solid rgba(226, 232, 240, 0.8);
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .service-dd-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px !important;
+            border-radius: 10px !important;
+            color: var(--text-dark) !important;
+            text-decoration: none !important;
+            transition: 0.2s !important;
+        }
+
+        .service-dd-item::after {
+            display: none !important;
+        }
+
+        .service-dd-item:hover {
+            background: #f8fafc !important;
+            color: var(--accent-green) !important;
+        }
+
+        .service-dd-item i {
+            color: var(--primary-blue);
+            transition: 0.2s;
+            width: 20px;
+            height: 20px;
+        }
+
+        .service-dd-item:hover i {
+            color: var(--accent-green);
+        }
+
+        .service-dd-item div {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .service-dd-item span.title {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .service-dd-item span.desc {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        .service-dd-divider {
+            height: 1px;
+            background: #f1f5f9;
+            margin: 8px 0;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .nav-btn {
+            background: #38bdf8;
+            /* Aesthetic Sky Blue */
+            color: #0f172a !important;
+            /* Dark text for contrast */
+            padding: 9px 20px;
+            border-radius: 10px;
+            font-weight: 800 !important;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.2);
+        }
+
+        /* Main Content Container */
+        main {
+            flex: 1;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--text-dark);
+            color: white;
+            padding: 40px 50px;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo span {
+            color: var(--accent-green);
+        }
+
+        .copyright {
+            opacity: 0.6;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                display: none;
+                /* In a real app we'd have a mobile menu */
+            }
+        }
+
+        /* --- Global Button Micro-animations --- */
+        button,
+        .btn,
+        .nav-btn,
+        .btn-action,
+        .btn-dash {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover,
+        .btn:hover,
+        .nav-btn:hover,
+        .btn-action:hover,
+        .btn-dash:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        button:active,
+        .btn:active,
+        .nav-btn:active,
+        .btn-action:active,
+        .btn-dash:active {
+            transform: scale(0.96);
+        }
+
+        /* --- Splash Screen / Preloader --- */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1e3a8a 0%, #0f172a 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .loader-logo {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .loader-logo span {
+            color: #3b82f6;
+        }
+
+        .loader-bar {
+            width: 300px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            position: relative;
+            margin-top: 40px;
+        }
+
+        .loader-progress {
+            width: 0%;
+            height: 100%;
+            background: #3b82f6;
+            position: absolute;
+            animation: load 2.5s ease-in-out forwards;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes load {
+            0% {
+                width: 0%;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+
+        .preloader-hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Navbar Notification Dropdown Styles */
+        .nav-bell-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-bell {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--white);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-bell i {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-bell:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: #38bdf8;
+        }
+
+        .nav-bell:hover i {
+            animation: bellRing 0.6s ease-in-out infinite alternate;
+        }
+
+        @keyframes bellRing {
+            0% {
+                transform: rotate(-15deg);
+            }
+
+            100% {
+                transform: rotate(15deg);
+            }
+        }
+
+        .nav-bell:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-bell-container:hover .nav-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .nav-bell .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: linear-gradient(135deg, #ff4d4d, #f43f5e);
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 800;
+            min-width: 15px;
+            height: 15px;
+            padding: 0 4px;
+            border-radius: 50%;
+            display: none;
+            border: 1.5px solid #1e40af;
+            /* Match navbar depth */
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
+            z-index: 2;
+        }
+
+        /* Aesthetic Ping Effect for Notifications */
+        .nav-bell .badge::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #f43f5e;
+            opacity: 0.7;
+            animation: badgePing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+            z-index: -1;
+        }
+
+        @keyframes badgePing {
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            70%,
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        .nav-dropdown {
+            position: absolute;
+            top: 45px;
+            right: -10px;
+            width: 340px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid #f1f5f9;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(15px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001;
+            overflow: hidden;
+        }
+
+        .nav-dropdown-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-weight: 800;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafaf9;
+            color: #0f172a;
+        }
+
+        .nav-dropdown-header a {
+            font-size: 0.8rem;
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .nav-dropdown-header a:hover {
+            text-decoration: underline;
+        }
+
+        .nav-dropdown-body {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .nav-dropdown-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f8fafc;
+            display: flex;
+            gap: 14px;
+            transition: 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .nav-dropdown-item:hover {
+            background: #f8fafc;
+        }
+
+        .nav-dropdown-item .icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: 0.3s;
+        }
+
+        .nav-dropdown-item:hover .icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .nav-dropdown-item.info .icon,
+        .nav-dropdown-item[class*="undefined"] .icon {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            color: #0ea5e9;
+            border: 1px solid #bae6fd;
+        }
+
+        .nav-dropdown-item.success .icon {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            color: #10b981;
+            border: 1px solid #bbf7d0;
+        }
+
+        .nav-dropdown-item.warning .icon {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            color: #f59e0b;
+            border: 1px solid #fde68a;
+        }
+
+        .nav-dropdown-item.urgent .icon {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            color: #ef4444;
+            border: 1px solid #fecaca;
+        }
+
+        .nav-dropdown-item.unread {
+            background: linear-gradient(to right, #f8fafc, white);
+            border-left: 3px solid #6366f1;
+        }
+
+        .nav-dropdown-item p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        .nav-dropdown-item h4 {
+            margin: 0 0 5px;
+            font-size: 0.95rem;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .nav-dropdown-empty {
+            padding: 30px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        /* --- Cinematic Toast Notifications --- */
+        #toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .cinematic-toast {
+            pointer-events: auto;
+            width: 400px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 2px solid #3b82f6;
+            border-radius: 24px;
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 
+                        0 0 25px rgba(59, 130, 246, 0.3);
+            transform: translateX(120%) scale(0.9);
+            transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .cinematic-toast:hover {
+            transform: scale(1.02);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2), 
+                        0 0 35px rgba(59, 130, 246, 0.5);
+        }
+
+        .cinematic-toast.show {
+            transform: translateX(0) scale(1);
+        }
+
+        .cinematic-toast::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+            background: #3b82f6;
+            box-shadow: 2px 0 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .toast-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.6rem;
+            background: #eff6ff;
+            color: #3b82f6;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: 0.3s;
+        }
+
+        .cinematic-toast:hover .toast-icon {
+            transform: rotate(12deg) scale(1.1);
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 900;
+            font-size: 1.15rem;
+            color: #0f172a;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-message {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.03);
+            width: 100%;
+        }
+
+        .toast-progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            width: 100%;
+            transform-origin: left;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Toast Variations */
+        .toast-success { border-color: #10b981; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(16, 185, 129, 0.3); }
+        .toast-success:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(16, 185, 129, 0.5); }
+        .toast-success::before { background: #10b981; box-shadow: 2px 0 10px rgba(16, 185, 129, 0.4); }
+        .toast-success .toast-icon { background: #ecfdf5; color: #10b981; }
+        .toast-success .toast-progress-fill { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+
+        .toast-error { border-color: #ef4444; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(239, 68, 68, 0.3); }
+        .toast-error:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(239, 68, 68, 0.5); }
+        .toast-error::before { background: #ef4444; box-shadow: 2px 0 10px rgba(239, 68, 68, 0.4); }
+        .toast-error .toast-icon { background: #fef2f2; color: #ef4444; }
+        .toast-error .toast-progress-fill { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+
+        .toast-warning { border-color: #f59e0b; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(245, 158, 11, 0.3); }
+        .toast-warning:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(245, 158, 11, 0.5); }
+        .toast-warning::before { background: #f59e0b; box-shadow: 2px 0 10px rgba(245, 158, 11, 0.4); }
+        .toast-warning .toast-icon { background: #fffbeb; color: #f59e0b; }
+        .toast-warning .toast-progress-fill { background: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+
+        @keyframes shrink {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+
+        .toast-animate-progress {
+            animation: shrink 5s linear forwards;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    <!-- Splash Screen -->
+    <div id="preloader">
+        <div class="loader-logo">Clean <span class="brand-pak">Pak</span> Portal</div>
+        <div style="position: relative;">
+            <div class="loader-bar">
+                <div class="loader-progress"></div>
+            </div>
+        </div>
+        <p style="margin-top: 25px; font-weight: 400; letter-spacing: 3px; opacity: 0.9; font-size: 0.8rem;">CLEANING
+            PAKISTAN: SMART WASTE MANAGEMENT IN PROGRESS...</p>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="{% url 'dashboard' %}" class="navbar-brand">
+                Clean <span class="brand-pak">Pak</span> Portal
+            </a>
+        </div>
+
+        <div class="nav-center">
+            {% block nav_links %}
+            <a href="{% url 'home' %}">Home</a>
+
+            <a href="{% url 'services' %}">Services</a>
+
+            <a href="{% url 'about' %}">About Us</a>
+            <a href="{% url 'contact' %}">Contact Us</a>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            {% endblock %}
+        </div>
+
+        <div class="nav-right">
+            {% if user.is_authenticated %}
+            <div class="nav-bell-container">
+                <div class="nav-bell">
+                    <i data-lucide="bell"></i>
+                    <div class="badge" id="globalAlertBadge">0</div>
+                </div>
+                <div class="nav-dropdown">
+                    <div class="nav-dropdown-header">
+                        System Alerts
+                        <a href="{% url 'notifications' %}">View Inbox</a>
+                    </div>
+                    <div class="nav-dropdown-body" id="globalNavDropdownList">
+                        <!-- Notifications populated dynamically -->
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'logout' %}" class="nav-btn">Log Out</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">Clean <span class="brand-pak">Pak</span> Portal</div>
+            <p>Empowering citizens for a cleaner, greener tomorrow.</p>
+            <div class="copyright">
+                &copy; {% now "Y" %} Clean Pak Portal Municipal Services. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // CSRF Token Helper
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Splash Screen Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const preloader = document.getElementById('preloader');
+
+            if (sessionStorage.getItem('hasSeenSplash')) {
+                preloader.style.display = 'none';
+                return;
+            }
+
+            setTimeout(() => {
+                preloader.classList.add('preloader-hidden');
+                sessionStorage.setItem('hasSeenSplash', 'true');
+            }, 2800);
+        });
+
+        // Global Navbar Notification Fetcher
+        {% if user.is_authenticated %}
+        function fetchGlobalNotifications() {
+            fetch("{% url 'get_announcements' %}")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const badge = document.getElementById('globalAlertBadge');
+                        const unreadCount = data.announcements.filter(a => !a.is_read).length;
+
+                        if (badge) {
+                            if (unreadCount > 0) {
+                                badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                                badge.style.display = 'block';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }
+
+                        const list = document.getElementById('globalNavDropdownList');
+                        if (list) {
+                            if (data.announcements.length === 0) {
+                                list.innerHTML = '<div class="nav-dropdown-empty"><i data-lucide="check-circle" style="width: 40px; height: 40px; color: #10b981; margin-bottom: 10px;"></i><br>All Caught Up!</div>';
+                            } else {
+                                list.innerHTML = data.announcements.slice(0, 5).map(ann => {
+                                    let icon = 'bell';
+                                    if (ann.type === 'personal') icon = 'mail';
+                                    if (ann.type === 'status_update') icon = 'activity';
+
+                                    return `
+                                    <a href="{% url 'notifications' %}" class="nav-dropdown-item ${ann.is_read ? '' : 'unread'} ${ann.alert_type || 'info'}">
+                                        <div class="icon"><i data-lucide="${icon}" style="width: 14px; height: 14px;"></i></div>
+                                        <div>
+                                            <h4>${ann.title}</h4>
+                                            <p>${ann.message.substring(0, 45)}${ann.message.length > 45 ? '...' : ''}</p>
+                                        </div>
+                                    </a>
+                                    `;
+                                }).join('') + `<a href="{% url 'notifications' %}" style="display: block; text-align: center; padding: 12px; font-size: 0.85rem; color: #6366f1; text-decoration: none; font-weight: 700; background: #f8fafc; border-top: 1px solid #f1f5f9; transition: 0.2s;">View All Notifications</a>`;
+                            }
+                            lucide.createIcons();
+                        }
+                    }
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchGlobalNotifications);
+        {% endif %}
+
+        // Cinematic Toast Controller
+        const Toast = {
+            container: null,
+
+            init() {
+                this.container = document.createElement('div');
+                this.container.id = 'toast-container';
+                document.body.appendChild(this.container);
+            },
+
+            show(title, message, type = 'success', duration = 5000) {
+                if (!this.container) this.init();
+
+                const toast = document.createElement('div');
+                toast.className = `cinematic-toast toast-${type}`;
+                
+                let icon = 'check-circle';
+                if (type === 'error') icon = 'alert-circle';
+                if (type === 'info') icon = 'info';
+                if (type === 'warning') icon = 'alert-triangle';
+
+                toast.innerHTML = `
+                    <div class="toast-icon">
+                        <i data-lucide="${icon}"></i>
+                    </div>
+                    <div class="toast-content">
+                        <div class="toast-title">${title}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                    <div class="toast-progress">
+                        <div class="toast-progress-fill toast-animate-progress" style="animation-duration: ${duration}ms"></div>
+                    </div>
+                `;
+
+                this.container.appendChild(toast);
+                lucide.createIcons();
+
+                // Trigger animation
+                setTimeout(() => toast.classList.add('show'), 100);
+
+                // Auto-dismiss
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 600);
+                }, duration);
+            }
+        };
+
+        // Handle Django Messages
+        {% if messages %}
+        document.addEventListener('DOMContentLoaded', () => {
+            {% for message in messages %}
+                let type = 'info';
+                let title = 'Notification';
+                {% if message.tags == 'success' %}
+                    type = 'success';
+                    title = 'Success!';
+                {% elif message.tags == 'error' %}
+                    type = 'error';
+                    title = 'Error';
+                {% elif message.tags == 'warning' %}
+                    type = 'warning';
+                    title = 'Warning';
+                {% endif %}
+                
+                Toast.show(title, "{{ message|escapejs }}", type);
+            {% endfor %}
+        });
+        {% endif %}
+
+        // Monitor for new System Broadcasts
+        let lastToastId = sessionStorage.getItem('lastBroadcastId');
+        
+        function checkNewBroadcasts(data) {
+            if (data.latest_alert && data.latest_alert.unique_id !== lastToastId) {
+                const alert = data.latest_alert;
+                Toast.show(
+                    alert.title || "System Broadcast",
+                    alert.message,
+                    alert.alert_type || 'info',
+                    8000 // Broadcasts stay longer
+                );
+                lastToastId = alert.unique_id;
+                sessionStorage.setItem('lastBroadcastId', lastToastId);
+            }
+        }
+
+        // Hook into existing fetchGlobalNotifications if it exists
+        const originalFetch = window.fetchGlobalNotifications;
+        if (typeof fetchGlobalNotifications === 'function') {
+            const oldFetch = fetchGlobalNotifications;
+            window.fetchGlobalNotifications = function() {
+                fetch("{% url 'get_announcements' %}")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        checkNewBroadcasts(data);
+                        // Original logic follows
+                        const badge = document.getElementById('globalAlertBadge');
+                        const unreadCount = data.announcements.filter(a => !a.is_read).length;
+
+                        if (badge) {
+                            if (unreadCount > 0) {
+                                badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                                badge.style.display = 'block';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }
+
+                        const list = document.getElementById('globalNavDropdownList');
+                        if (list) {
+                            if (data.announcements.length === 0) {
+                                list.innerHTML = '<div class="nav-dropdown-empty"><i data-lucide="check-circle" style="width: 40px; height: 40px; color: #10b981; margin-bottom: 10px;"></i><br>All Caught Up!</div>';
+                            } else {
+                                list.innerHTML = data.announcements.slice(0, 5).map(ann => {
+                                    let icon = 'bell';
+                                    if (ann.type === 'personal') icon = 'mail';
+                                    if (ann.type === 'status_update') icon = 'activity';
+
+                                    return `
+                                    <a href="{% url 'notifications' %}" class="nav-dropdown-item ${ann.is_read ? '' : 'unread'} ${ann.alert_type || 'info'}">
+                                        <div class="icon"><i data-lucide="${icon}" style="width: 14px; height: 14px;"></i></div>
+                                        <div>
+                                            <h4>${ann.title}</h4>
+                                            <p>${ann.message.substring(0, 45)}${ann.message.length > 45 ? '...' : ''}</p>
+                                        </div>
+                                    </a>
+                                    `;
+                                }).join('') + `<a href="{% url 'notifications' %}" style="display: block; text-align: center; padding: 12px; font-size: 0.85rem; color: #6366f1; text-decoration: none; font-weight: 700; background: #f8fafc; border-top: 1px solid #f1f5f9; transition: 0.2s;">View All Notifications</a>`;
+                            }
+                            lucide.createIcons();
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

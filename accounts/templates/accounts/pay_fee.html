@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Pak Portal - Secure Payment with Stripe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #f4f7f6;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .stripe-container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stripe-logo {
+            width: 150px;
+            margin-bottom: 20px;
+        }
+
+        .payment-details {
+            text-align: left;
+            background: #f9fbfb;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e1e8ed;
+            margin-bottom: 25px;
+        }
+
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 15px;
+            color: #555;
+        }
+        .payment-row.total {
+            font-size: 18px;
+            font-weight: 700;
+            color: #635bff; /* Stripe purple */
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+            margin-top: 5px;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-family: 'Outfit';
+            font-size: 15px;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+        .input-group input:focus {
+            border-color: #e51a2e;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(229, 26, 46, 0.1);
+        }
+
+        .pay-btn {
+            background: linear-gradient(90deg, #635bff, #7a73ff);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(229, 26, 46, 0.3);
+            transition: 0.3s;
+        }
+
+        .pay-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(229, 26, 46, 0.4);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        .back-link:hover {
+            color: #e51a2e;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stripe-container">
+        <!-- Mock Stripe Logo -->
+        <h2 style="color: #635bff; margin-top:0; font-size: 32px; font-weight:800; letter-spacing:-1px;">Stripe</h2>
+        <p style="color: #777; margin-bottom: 30px;">Secure Municipal Payments</p>
+
+        <form action="{% url 'dashboard' %}" method="post" id="payform">
+            {% csrf_token %}
+            <div class="payment-details">
+                <div class="payment-row">
+                    <span>Reference ID:</span>
+                    <strong>INV-90284X</strong>
+                </div>
+                <div class="payment-row">
+                    <span>Service:</span>
+                    <strong>Monthly Clean Pak Portal Fee</strong>
+                </div>
+                <div class="payment-row total">
+                    <span>Total Due:</span>
+                    <span>$120.00</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Cardholder Name</label>
+                <input type="text" placeholder="John Doe" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Card Number</label>
+                <input type="text" placeholder="XXXX XXXX XXXX XXXX" required>
+            </div>
+
+            <div style="display:flex; gap:15px;">
+                <div class="input-group" style="flex:1;">
+                    <label>Expiry</label>
+                    <input type="text" placeholder="MM/YY" required>
+                </div>
+                <div class="input-group" style="flex:1;">
+                    <label>CVV</label>
+                    <input type="password" placeholder="•••" required>
+                </div>
+            </div>
+
+            <button type="button" class="pay-btn" onclick="processPayment()">Complete Payment</button>
+        </form>
+
+        <a href="{% url 'dashboard' %}" class="back-link">← Cancel and return to Dashboard</a>
+    </div>
+
+    <script>
+        function processPayment() {
+            const btn = document.querySelector('.pay-btn');
+            btn.innerHTML = 'Processing...';
+            btn.style.opacity = '0.8';
+            setTimeout(() => {
+                alert("Payment Successful! Thank you for using Stripe.");
+                window.location.href = "{% url 'dashboard' %}";
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

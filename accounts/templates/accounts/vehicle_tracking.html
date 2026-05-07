@@ -1,0 +1,570 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Track Your Vehicle | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --primary: #3b82f6;
+        --primary-dark: #1d4ed8;
+        --accent: #10b981;
+        --accent-glow: rgba(16, 185, 129, 0.3);
+        --primary-glow: rgba(59, 130, 246, 0.3);
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --slate-900: #0f172a;
+        --slate-800: #1e293b;
+        --slate-100: #f1f5f9;
+        --glass: rgba(255, 255, 255, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.5);
+    }
+
+    body {
+        background: radial-gradient(circle at top right, #f0f9ff, #f8fafc);
+    }
+
+    .tracking-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+        padding: 100px 20px;
+        color: white;
+        text-align: center;
+        border-radius: 0 0 80px 80px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: -60px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+
+    .tracking-hero::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: url('https://www.transparenttextures.com/patterns/cubes.png');
+        opacity: 0.05;
+    }
+
+    .tracking-hero h1 {
+        font-size: 4rem;
+        font-weight: 950;
+        margin-bottom: 20px;
+        letter-spacing: -2.5px;
+        text-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        background: linear-gradient(to bottom, #ffffff, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .tracking-hero p {
+        font-size: 1.3rem;
+        color: #cbd5e1;
+        max-width: 700px;
+        margin: 0 auto 40px;
+        font-weight: 500;
+    }
+
+    .search-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+        animation: slideDown 1s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    @keyframes slideDown {
+        from { transform: translateY(-30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .premium-search {
+        background: var(--glass);
+        backdrop-filter: blur(25px);
+        padding: 15px;
+        border-radius: 30px;
+        display: flex;
+        gap: 15px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .premium-search:focus-within {
+        transform: scale(1.03) translateY(-5px);
+        box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.4);
+    }
+
+    .premium-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: 15px 25px;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--slate-900);
+        outline: none;
+    }
+
+    .premium-btn {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        padding: 0 45px;
+        border-radius: 20px;
+        font-weight: 850;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: 0.4s;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .premium-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(59, 130, 246, 0.5);
+        filter: brightness(1.1);
+    }
+
+    .content-area {
+        max-width: 850px;
+        margin: 80px auto 60px;
+        padding: 0 20px;
+    }
+
+    .glass-card {
+        background: var(--glass);
+        backdrop-filter: blur(30px);
+        border-radius: 40px;
+        padding: 35px 45px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 40px 100px -20px rgba(0,0,0,0.08), 
+                    inset 0 0 0 1px rgba(255,255,255,0.5);
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 1s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .glass-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 16px;
+        border-radius: 100px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .status-active { background: #dcfce7; color: #166534; box-shadow: 0 5px 15px rgba(22, 101, 52, 0.1); }
+    .status-transit { background: #dbeafe; color: #1e40af; box-shadow: 0 5px 15px rgba(30, 64, 175, 0.1); }
+    .status-wip { background: #fef3c7; color: #92400e; box-shadow: 0 5px 15px rgba(146, 64, 14, 0.1); }
+
+    .live-radar {
+        position: relative;
+        width: 12px;
+        height: 12px;
+        background: currentColor;
+        border-radius: 50%;
+    }
+
+    .live-radar::before, .live-radar::after {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 100%; height: 100%;
+        background: currentColor;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: radar-ping 2s infinite cubic-bezier(0, 0, 0.2, 1);
+        opacity: 0.5;
+    }
+
+    .live-radar::after {
+        animation-delay: 1s;
+    }
+
+    @keyframes radar-ping {
+        75%, 100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
+    }
+
+    .vehicle-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 40px;
+    }
+
+    .vehicle-id {
+        font-size: 2.5rem;
+        font-weight: 950;
+        color: var(--slate-900);
+        margin: 0;
+        letter-spacing: -2px;
+        line-height: 1;
+    }
+
+    /* Cinematic Timeline */
+    .tracking-timeline {
+        display: flex;
+        justify-content: space-between;
+        margin: 60px 0;
+        position: relative;
+    }
+
+    .tracking-timeline::before {
+        content: '';
+        position: absolute;
+        top: 25px;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        z-index: 0;
+    }
+
+    .timeline-progress {
+        position: absolute;
+        top: 25px;
+        left: 0;
+        height: 8px;
+        background: linear-gradient(90deg, #10b981, #3b82f6, #6366f1);
+        background-size: 200% 100%;
+        border-radius: 10px;
+        transition: width 2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        z-index: 1;
+        animation: gradientMove 3s infinite linear;
+    }
+
+    @keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 200% 50%; }
+    }
+
+    .step {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        width: 80px;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .step.revealed {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .step-icon {
+        width: 52px;
+        height: 52px;
+        background: white;
+        border: 4px solid #e2e8f0;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 1.2rem;
+        color: #94a3b8;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+    .step.active .step-icon {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 15px 30px var(--accent-glow);
+        transform: rotate(360deg);
+    }
+
+    .step.current .step-icon {
+        border-color: var(--primary);
+        background: white;
+        color: var(--primary);
+        box-shadow: 0 20px 40px var(--primary-glow);
+        animation: floatPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes floatPulse {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-10px) scale(1.1); }
+    }
+
+    .step-label {
+        font-size: 0.75rem;
+        font-weight: 850;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .step.active .step-label { color: var(--accent); }
+    .step.current .step-label { color: var(--primary); }
+
+    /* Info Grid */
+    .data-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        background: rgba(15, 23, 42, 0.04);
+        padding: 30px;
+        border-radius: 30px;
+        border: 1px solid rgba(255,255,255,0.4);
+        margin-top: 50px;
+    }
+
+    .data-card {
+        text-align: center;
+        padding: 0 15px;
+        border-right: 1px solid rgba(15, 23, 42, 0.1);
+        transition: all 0.4s ease;
+    }
+
+    .data-card:last-child { border-right: none; }
+
+    .data-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .data-label {
+        font-size: 0.7rem;
+        font-weight: 850;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        letter-spacing: 1.2px;
+    }
+
+    .data-value {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--slate-900);
+    }
+
+    .error-container {
+        text-align: center;
+        padding: 80px;
+        background: rgba(255, 241, 242, 0.8);
+        backdrop-filter: blur(20px);
+        border-radius: 50px;
+        border: 2px dashed #fecaca;
+        color: #991b1b;
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 120px 0;
+    }
+
+    .empty-state i {
+        font-size: 8rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 30px;
+        display: block;
+        animation: float 3s infinite ease-in-out;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+    @media (max-width: 992px) {
+        .data-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+        .data-card { border-right: none; }
+        .data-card:nth-child(odd) { border-right: 1px solid rgba(15, 23, 42, 0.1); }
+    }
+
+    @media (max-width: 768px) {
+        .tracking-hero h1 { font-size: 2.8rem; }
+        .vehicle-header { flex-direction: column; align-items: center; text-align: center; gap: 30px; }
+        .data-grid { grid-template-columns: 1fr; }
+        .data-card { border-right: none !important; border-bottom: 1px solid rgba(15, 23, 42, 0.1); padding: 20px 0; }
+        .data-card:last-child { border-bottom: none; }
+        .tracking-timeline { overflow-x: auto; padding-bottom: 40px; }
+        .step { min-width: 120px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="tracking-hero">
+    <div class="container">
+        <h1>Track Your Vehicle</h1>
+        <p>Real-time waste collection monitoring. Enter your tracking ID below to see exactly where your service vehicle is.</p>
+        
+        <div class="search-wrapper">
+            <form action="{% url 'vehicle_tracking' %}" method="get" class="premium-search">
+                <i class="fas fa-search" style="margin: auto 0 auto 25px; color: var(--slate-900); opacity: 0.4;"></i>
+                <input type="text" name="complaint_id" class="premium-input" placeholder="CMP-1001..." value="{{ search_cid|default:'' }}" required>
+                <button type="submit" class="premium-btn">Track Live</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<div class="content-area">
+    {% if error %}
+        <div class="error-container">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 20px;"></i>
+            <h3 style="font-weight: 800; margin-bottom: 10px;">Tracking Unsuccessful</h3>
+            <p>{{ error }}</p>
+            <a href="{% url 'vehicle_tracking' %}" style="color: var(--primary); font-weight: 700; text-decoration: none; margin-top: 20px; display: inline-block;">Try Another ID</a>
+        </div>
+    {% elif tracked_vehicle %}
+        <div class="glass-card">
+            <div class="vehicle-header">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
+                        <h2 class="vehicle-id" style="font-size: 2.8rem;">{{ tracked_vehicle.vehicle_id }}</h2>
+                        <span class="status-badge {% if tracked_vehicle.status == 'In Transit' %}status-transit{% elif tracked_vehicle.status == 'Work in Progress' %}status-wip{% else %}status-active{% endif %}">
+                            <span class="live-radar"></span> {{ tracked_vehicle.get_status_display }}
+                        </span>
+                    </div>
+                    <p style="color: #64748b; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-truck" style="color: var(--primary);"></i> {{ tracked_vehicle.get_vehicle_type_display }} <span style="opacity: 0.3;">|</span> {{ tracked_vehicle.plate_number }}
+                    </p>
+                </div>
+                <div style="text-align: right;">
+                    <div class="data-label">Assigned To</div>
+                    <div style="font-weight: 900; color: var(--slate-900); font-size: 1.2rem; letter-spacing: -0.5px;">Complaint <span style="color: var(--primary);">#{{ complaint.complaint_id }}</span></div>
+                </div>
+            </div>
+
+            <!-- Enhanced Status Timeline -->
+            <div class="tracking-timeline">
+                {% with status=tracked_vehicle.status %}
+                <div class="timeline-progress" id="progress-bar" style="width: 0%;" data-target="{% if status == 'Active' %}5{% elif status == 'In Transit' %}25{% elif status == 'Arrived' %}50{% elif status == 'Work in Progress' %}75{% elif status == 'Completed' %}100{% else %}0{% endif %}"></div>
+
+                <!-- Step 1: Assigned -->
+                <div class="step {% if status != 'Offline' and status != 'Cancelled' %}active{% endif %}">
+                    <div class="step-icon"><i class="fas fa-truck-pickup"></i></div>
+                    <div class="step-label">Assigned</div>
+                </div>
+
+                <!-- Step 2: Transit -->
+                <div class="step {% if status == 'In Transit' %}current{% elif status == 'Arrived' or status == 'Work in Progress' or status == 'Completed' %}active{% endif %}">
+                    <div class="step-icon"><i class="fas fa-truck-moving"></i></div>
+                    <div class="step-label">In Transit</div>
+                </div>
+
+                <!-- Step 3: Arrived -->
+                <div class="step {% if status == 'Arrived' %}current{% elif status == 'Work in Progress' or status == 'Completed' %}active{% endif %}">
+                    <div class="step-icon"><i class="fas fa-truck"></i></div>
+                    <div class="step-label">Arrived</div>
+                </div>
+
+                <!-- Step 4: WIP -->
+                <div class="step {% if status == 'Work in Progress' %}current{% elif status == 'Completed' %}active{% endif %}">
+                    <div class="step-icon"><i class="fas fa-truck-loading"></i></div>
+                    <div class="step-label">Working</div>
+                </div>
+
+                <!-- Step 5: Completed -->
+                <div class="step {% if status == 'Completed' %}active{% endif %}">
+                    <div class="step-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="step-label">Finished</div>
+                </div>
+                {% endwith %}
+            </div>
+
+            <div class="data-grid">
+                <div class="data-card">
+                    <div class="data-label">Driver Name</div>
+                    <div class="data-value" style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <div style="width: 35px; height: 35px; background: #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #64748b; font-weight: 900;">{{ tracked_vehicle.driver_name|slice:":1" }}</div>
+                        {{ tracked_vehicle.driver_name }}
+                    </div>
+                </div>
+                <div class="data-card">
+                    <div class="data-label">Contact</div>
+                    <div class="data-value">{{ tracked_vehicle.driver_phone }}</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-label">Vehicle Zone</div>
+                    <div class="data-value">{{ tracked_vehicle.assigned_zone }}</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-label">Current Status</div>
+                    <div class="data-value" style="color: var(--accent);">
+                        {% if tracked_vehicle.status == 'Arrived' %}
+                            Reached Location
+                        {% elif tracked_vehicle.status == 'Work in Progress' %}
+                            Cleaning in Progress...
+                        {% elif tracked_vehicle.status == 'Completed' %}
+                            Service Completed
+                        {% elif tracked_vehicle.status == 'In Transit' %}
+                            Approaching (8-12m)
+                        {% else %}
+                            Vehicle Dispatched
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif search_cid %}
+        <div class="error-container" style="background: var(--glass); border: 1px solid var(--glass-border);">
+            <i class="fas fa-search-location" style="font-size: 4rem; color: #94a3b8; margin-bottom: 20px;"></i>
+            <h3 style="font-weight: 800; color: var(--slate-800);">No Live Feed Available</h3>
+            <p>We found the complaint but no vehicle is currently broadcasting live GPS for it. Please check back in a few minutes.</p>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-satellite-dish"></i>
+            <h2 style="font-weight: 800; color: var(--slate-900); margin-bottom: 10px;">Waiting for Tracking ID</h2>
+            <p style="font-size: 1.1rem;">Your live tracking dashboard will appear here once you enter a valid Complaint ID.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const card = document.querySelector('.glass-card');
+        const progressBar = document.getElementById('progress-bar');
+        const steps = document.querySelectorAll('.step');
+
+        if (card) {
+            // Trigger card entrance
+            setTimeout(() => {
+                card.classList.add('visible');
+            }, 100);
+
+            // Animate progress bar
+            if (progressBar) {
+                const targetWidth = progressBar.getAttribute('data-target');
+                setTimeout(() => {
+                    progressBar.style.width = targetWidth + '%';
+                }, 800);
+            }
+
+            // Staggered step entrance
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    step.classList.add('revealed');
+                }, 400 + (index * 150));
+            });
+        }
+    });
+</script>
+{% endblock %}

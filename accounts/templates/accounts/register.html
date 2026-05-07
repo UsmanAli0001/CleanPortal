@@ -1,46 +1,476 @@
 {% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register - Clean Pak Portal</title>
-    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration — Clean Pak Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #16a34a;
+            --primary-blue: #1a56db;
+            --soft-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --error-red: #ef4444;
+            --success-green: #22c55e;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        html::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
+                        url("{% static 'accounts/images/dashboard.png' %}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            color: var(--text-dark);
+            /* Hide scrollbar while keeping functionality */
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
+        }
+
+        body::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            width: 100%;
+            max-width: 460px;
+            padding: 25px 35px;
+            border-radius: 28px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand { text-align: center; margin-bottom: 20px; }
+        .brand-logo { 
+            width: 55px; height: 55px; margin: 0 auto 10px; 
+            background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+            border-radius: 18px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .brand h1 { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+        .brand h1 span { color: var(--primary-blue); }
+        .brand p { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
+
+        .form-group { margin-bottom: 12px; position: relative; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        
+        label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .input-wrapper { position: relative; }
+        
+        input {
+            width: 100%; padding: 14px 18px;
+            background: #f1f5f9; border: 2px solid transparent;
+            border-radius: 14px; font-family: inherit; font-size: 0.95rem;
+            transition: all 0.3s; outline: none;
+        }
+
+        input:focus { border-color: var(--primary-blue); background: #fff; box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.1); }
+        input.error { border-color: var(--error-red); }
+
+        .error-msg { color: var(--error-red); font-size: 0.8rem; font-weight: 600; margin-top: 6px; display: none; }
+
+        /* Power Toggle & Strength Indicator */
+        .pw-toggle {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.1rem;
+        }
+
+        .strength-meter { height: 4px; background: #e2e8f0; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .strength-bar { height: 100%; width: 0; transition: width 0.3s, background-color 0.3s; }
+
+        /* Buttons */
+        .btn-submit {
+            width: 100%; padding: 12px; border: none; border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary-blue), #1e40af);
+            color: #fff; font-family: inherit; font-size: 0.95rem; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 10px 25px rgba(26, 86, 219, 0.3);
+            margin-top: 5px;
+        }
+
+        .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(26, 86, 219, 0.4); }
+        .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .spinner {
+            width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .btn-google {
+            width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0;
+            background: #fff; color: var(--text-dark); font-family: inherit; font-size: 0.9rem;
+            font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .btn-google:hover { 
+            background: #f8fafc; 
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        .btn-google svg { width: 18px; height: 18px; }
+
+        .divider { display: flex; align-items: center; gap: 12px; margin: 15px 0; }
+        .divider span { color: var(--text-muted); font-size: 0.8rem; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+
+        .auth-footer { text-align: center; margin-top: 15px; color: var(--text-muted); font-size: 0.85rem; }
+        .auth-footer a { color: var(--primary-blue); font-weight: 700; text-decoration: none; }
+
+        .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+
+        /* --- Cinematic Toast Notifications --- */
+        #toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .cinematic-toast {
+            pointer-events: auto;
+            width: 400px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 2px solid #3b82f6;
+            border-radius: 24px;
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 
+                        0 0 25px rgba(59, 130, 246, 0.3);
+            transform: translateX(120%) scale(0.9);
+            transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+            margin-bottom: 5px;
+        }
+
+        .cinematic-toast:hover {
+            transform: scale(1.02);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2), 
+                        0 0 35px rgba(59, 130, 246, 0.5);
+        }
+
+        .cinematic-toast.show {
+            transform: translateX(0) scale(1);
+        }
+
+        .cinematic-toast::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+            background: #3b82f6;
+            box-shadow: 2px 0 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .toast-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.6rem;
+            background: #eff6ff;
+            color: #3b82f6;
+            transition: 0.3s;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 900;
+            font-size: 1.15rem;
+            color: #0f172a;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .toast-message {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            background: rgba(0, 0, 0, 0.03);
+            width: 100%;
+        }
+
+        .toast-progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            width: 100%;
+            transform-origin: left;
+            animation: shrink 5s linear forwards;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .toast-success { border-color: #10b981; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(16, 185, 129, 0.3); }
+        .toast-success::before { background: #10b981; }
+        .toast-success .toast-icon { background: #ecfdf5; color: #10b981; }
+        .toast-success .toast-progress-fill { background: #10b981; }
+
+        .toast-error { border-color: #ef4444; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(239, 68, 68, 0.3); }
+        .toast-error::before { background: #ef4444; }
+        .toast-error .toast-icon { background: #fef2f2; color: #ef4444; }
+        .toast-error .toast-progress-fill { background: #ef4444; }
+
+        @keyframes shrink {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+    </style>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-   <!-- CleanPak Portal Header -->
 
-<div class="auth-bg">
-    <div class="auth-card">
-        <div class="portal-header">
-        <img src="{% static 'accounts/images/logo.png' %}" alt="Clean Pak Portal Logo" class="portal-logo">
-        <h3 class="portal-title">Clean Pak Portal</h3>
+<div class="auth-card">
+    <div class="brand">
+        <div class="brand-logo">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+        </div>
+        <h1>Clean Pak <span>Portal</span></h1>
+        <p>Registration System</p>
     </div>
-        <h2>Create Account</h2>
 
-        <!-- Messages -->
-        {% if messages %}
-            {% for message in messages %}
-                <p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
-            {% endfor %}
-        {% endif %}
+    <!-- Toasts replaced alerts -->
 
-        <!-- Registration Form -->
-        <form method="POST" action="{% url 'register' %}">
-            {% csrf_token %}
-            <input type="text" name="first_name" placeholder="First Name" required>
-            <input type="text" name="last_name" placeholder="Last Name" required>
-            <input type="email" name="email" placeholder="Email" required>
-            <div class="password-field">
-    <input type="password" id="password" name="password" placeholder="Password" required>
-    <span class="toggle-password" onclick="togglePassword()"></span>
-</div>
-<p id="password-message" class="password-msg"></p>
-            <input type="password" name="confirm" placeholder="Confirm Password" required>
-            <button type="submit">Register</button>
-        </form>
+    <form id="regForm" method="POST" action="{% url 'register' %}">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" name="first_name" required placeholder="User">
+            </div>
+            <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" name="last_name" required placeholder="Name">
+            </div>
+        </div>
 
-        <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" id="emailInput" required placeholder="name@example.com">
+            <div id="emailError" class="error-msg">Email already exists</div>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <div class="input-wrapper">
+                <input type="password" name="password" id="pwInput" required placeholder="••••••••">
+                <button type="button" class="pw-toggle" onclick="togglePw('pwInput')">👁️</button>
+            </div>
+            <div class="strength-meter"><div id="strengthBar" class="strength-bar"></div></div>
+            <div id="strengthText" style="font-size: 0.75rem; margin-top: 5px; font-weight: 700; color: var(--text-muted);">Strength: <span>None</span></div>
+        </div>
+
+        <div class="form-group">
+            <label>Confirm Password</label>
+            <div class="input-wrapper">
+                <input type="password" name="confirm_password" id="confirmInput" required placeholder="••••••••">
+                <button type="button" class="pw-toggle" onclick="togglePw('confirmInput')">👁️</button>
+            </div>
+            <div id="matchError" class="error-msg">Passwords do not match</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+            <span class="btn-text">Register Account</span>
+            <div class="spinner"></div>
+        </button>
+    </form>
+
+    <div class="divider"><span>Or join with social</span></div>
+    
+    <a href="{% provider_login_url 'google' next='/dashboard/' %}" class="btn-google">
+        <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Continue with Google
+    </a>
+
+    <div class="auth-footer">
+        Already have an account? <a href="{% url 'login' %}">Sign in here</a>
     </div>
 </div>
+
+<script>
+    // Cinematic Toast Controller
+    const Toast = {
+        container: null,
+        init() {
+            this.container = document.createElement('div');
+            this.container.id = 'toast-container';
+            document.body.appendChild(this.container);
+        },
+        show(title, message, type = 'success', duration = 5000) {
+            if (!this.container) this.init();
+            const toast = document.createElement('div');
+            toast.className = `cinematic-toast toast-${type}`;
+            let icon = type === 'success' ? 'check-circle' : 'alert-circle';
+            toast.innerHTML = `
+                <div class="toast-icon"><i data-lucide="${icon}"></i></div>
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <div class="toast-progress">
+                    <div class="toast-progress-fill" style="animation-duration: ${duration}ms"></div>
+                </div>
+            `;
+            this.container.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 600);
+            }, duration);
+        }
+    };
+
+    lucide.createIcons();
+
+    // Handle Django Messages
+    {% if messages %}
+    document.addEventListener('DOMContentLoaded', () => {
+        {% for message in messages %}
+            let type = '{{ message.tags }}' === 'error' ? 'error' : 'success';
+            let title = type === 'success' ? 'Portal Success' : 'Registration Error';
+            Toast.show(title, "{{ message|escapejs }}", type);
+        {% endfor %}
+    });
+    {% endif %}
+
+    const form = document.getElementById('regForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.querySelector('.btn-text');
+    const spinner = document.querySelector('.spinner');
+
+    const emailInput = document.getElementById('emailInput');
+    const emailError = document.getElementById('emailError');
+    const pwInput = document.getElementById('pwInput');
+    const confirmInput = document.getElementById('confirmInput');
+    const matchError = document.getElementById('matchError');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthSpan = document.querySelector('#strengthText span');
+
+    // Toggle Password
+    function togglePw(id) {
+        const input = document.getElementById(id);
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    // Real-time Email Validation
+    emailInput.addEventListener('blur', () => {
+        const email = emailInput.value;
+        if (email) {
+            fetch(`/api/check-email/?email=${email}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.is_taken) {
+                        emailInput.classList.add('error');
+                        emailError.style.display = 'block';
+                    } else {
+                        emailInput.classList.remove('error');
+                        emailError.style.display = 'none';
+                    }
+                });
+        }
+    });
+
+    // Password Matching
+    confirmInput.addEventListener('input', () => {
+        if (confirmInput.value !== pwInput.value) {
+            confirmInput.classList.add('error');
+            matchError.style.display = 'block';
+        } else {
+            confirmInput.classList.remove('error');
+            matchError.style.display = 'none';
+        }
+    });
+
+    // Password Strength
+    pwInput.addEventListener('input', () => {
+        let score = 0;
+        const val = pwInput.value;
+        if (val.length > 5) score += 25;
+        if (/[A-Z]/.test(val)) score += 25;
+        if (/[0-9]/.test(val)) score += 25;
+        if (/[^A-Za-z0-9]/.test(val)) score += 25;
+
+        strengthBar.style.width = score + '%';
+        if (score <= 25) { strengthBar.style.backgroundColor = '#ef4444'; strengthSpan.innerText = 'Weak'; strengthSpan.style.color = '#ef4444'; }
+        else if (score <= 50) { strengthBar.style.backgroundColor = '#f59e0b'; strengthSpan.innerText = 'Fair'; strengthSpan.style.color = '#f59e0b'; }
+        else if (score <= 75) { strengthBar.style.backgroundColor = '#3b82f6'; strengthSpan.innerText = 'Moderate'; strengthSpan.style.color = '#3b82f6'; }
+        else { strengthBar.style.backgroundColor = '#22c55e'; strengthSpan.innerText = 'Strong'; strengthSpan.style.color = '#22c55e'; }
+    });
+
+    // Loading State
+    form.addEventListener('submit', (e) => {
+        if (confirmInput.value !== pwInput.value) {
+            e.preventDefault();
+            return;
+        }
+        submitBtn.disabled = true;
+        btnText.innerText = 'Registering Pak Portal...';
+        spinner.style.display = 'block';
+    });
+</script>
+
 </body>
 </html>

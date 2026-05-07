@@ -1,265 +1,316 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html>
+{% block title %}About Us | Clean Pak Portal{% endblock %}
 
-<head>
-
-<title>About - Clean Pak Portal</title>
-
-<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
-
+{% block extra_head %}
 <style>
-
-/* ABOUT PAGE */
-.navbar{
-    background: #035e08;
-    color:white;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:6px 100px;
+/* ====== HERO ====== */
+.about-hero {
+    position: relative;
+    background: linear-gradient(135deg, #0a0f1e 0%, #0d1f3c 60%, #0a1628 100%);
+    padding: 120px 50px 80px;
+    text-align: center;
+    overflow: hidden;
 }
-
-.about-container{
-
-
-width:85%;
-
-margin:40px auto;
-
+.about-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("{% static 'accounts/images/user_hero_bg.jpg' %}");
+    background-size: cover; background-position: center;
+    opacity: 0.08;
 }
-
-.about-section{
-
-background:white;
-
-padding:25px;
-
-margin-bottom:25px;
-
-border-radius:10px;
-
-box-shadow:0 3px 10px rgba(0,0,0,0.05);
-
+.hero-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.2; }
+.hero-orb-1 { width: 500px; height: 500px; background: #1a56db; top: -200px; left: -100px; }
+.hero-orb-2 { width: 400px; height: 400px; background: #16a34a; bottom: -150px; right: -80px; }
+.about-hero .badge-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(26,86,219,0.15); border: 1px solid rgba(26,86,219,0.3);
+    color: #60a5fa; padding: 8px 20px; border-radius: 100px;
+    font-size: 0.82rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 22px; position: relative; z-index:1;
 }
+.about-hero h1 { font-size: 3rem; font-weight: 800; color: #fff; margin: 0 0 16px; position:relative;z-index:1; line-height: 1.15; }
+.about-hero h1 span { color: #4ade80; }
+.about-hero p { font-size: 1.1rem; color: rgba(255,255,255,0.6); max-width: 600px; margin: 0 auto; line-height: 1.7; position:relative;z-index:1; }
 
-.about-section h2{
-
-color: #035e08;
-
-margin-bottom:10px;
-
+/* ====== SECTION BASE ====== */
+.about-section { padding: 90px 50px; max-width: 1200px; margin: 0 auto; }
+.section-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.25);
+    color: #4ade80; padding: 6px 16px; border-radius: 100px;
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 16px;
 }
+.section-title { font-size: 2rem; font-weight: 800; color: var(--text-dark); margin-bottom: 14px; }
+.section-sub { font-size: 1rem; color: #64748b; line-height: 1.7; max-width: 550px; }
 
-.about-section p{
-
-color: #555;
-
-line-height:1.6;
-
+/* ====== MISSION / VISION ====== */
+.mv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 35px; margin-top: 50px; }
+@media(max-width:768px){ .mv-grid{grid-template-columns:1fr;} }
+.mv-card {
+    background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
+    border: 1px solid rgba(22,163,74,0.15);
+    border-radius: 24px; padding: 45px 40px;
+    transition: all 0.4s cubic-bezier(0.175,.885,.32,1.275);
+    position: relative; overflow: hidden;
 }
-
-.stats{
-
-display:flex;
-
-justify-content:space-between;
-
-text-align:center;
-
-margin-top:15px;
-
+.mv-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+    background: linear-gradient(to right, #16a34a, #4ade80);
 }
-
-.stat-box{
-
-flex:1;
-
-padding:15px;
-
+.mv-card:nth-child(2)::before { background: linear-gradient(to right, #1a56db, #60a5fa); }
+.mv-card:nth-child(2) { background: linear-gradient(135deg, #fff 0%, #eff6ff 100%); border-color: rgba(26,86,219,0.15); }
+.mv-card:hover { transform: translateY(-8px); box-shadow: 0 25px 60px rgba(0,0,0,0.1); }
+.mv-icon {
+    width: 60px; height: 60px; border-radius: 16px;
+    background: linear-gradient(135deg, #dcfce7, #a7f3d0);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; margin-bottom: 22px;
 }
+.mv-card:nth-child(2) .mv-icon { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+.mv-title { font-size: 1.35rem; font-weight: 800; color: var(--text-dark); margin-bottom: 14px; }
+.mv-text { color: #475569; line-height: 1.75; font-size: 0.96rem; }
 
-.stat-box h3{
-
-color:#035e08;
-
-font-size:28px;
-
+/* ====== VALUES ====== */
+.values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; margin-top: 50px; }
+.value-card {
+    background: #fff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 30px 25px;
+    text-align: center; transition: all 0.3s;
 }
+.value-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.08); border-color: rgba(22,163,74,0.2); }
+.value-emoji { font-size: 2.5rem; margin-bottom: 14px; }
+.value-card h4 { font-size: 1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; }
+.value-card p { font-size: 0.85rem; color: #64748b; line-height: 1.6; }
 
-.stat-box p{
-
-color:#666;
-
+/* ====== HOW IT WORKS ====== */
+.how-section { background: linear-gradient(135deg, #0a0f1e, #0d1f3c); padding: 90px 50px; }
+.how-inner { max-width: 1200px; margin: 0 auto; }
+.how-section .section-title { color: #fff; }
+.how-section .section-sub { color: rgba(255,255,255,0.5); }
+.steps-timeline { margin-top: 60px; position: relative; }
+.steps-timeline::before {
+    content: '';
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
+    background: linear-gradient(to bottom, #1a56db, #16a34a);
+    transform: translateX(-50%);
 }
-
-body{
-
-background:#f7f9fc;
-
-font-family:Segoe UI;
-
-margin:0;
-
+@media(max-width:768px){ .steps-timeline::before{left:30px;} }
+.step {
+    display: grid; grid-template-columns: 1fr 80px 1fr;
+    gap: 30px; align-items: center; margin-bottom: 50px;
+    animation: fadeSlide 0.6s ease both;
 }
+.step:nth-child(odd) .step-card { grid-column: 1; text-align: right; }
+.step:nth-child(odd) .step-spacer { grid-column: 2; }
+.step:nth-child(odd) .step-empty { grid-column: 3; }
+.step:nth-child(even) .step-empty { grid-column: 1; }
+.step:nth-child(even) .step-spacer { grid-column: 2; }
+.step:nth-child(even) .step-card { grid-column: 3; text-align: left; }
+@media(max-width:768px){
+    .step { grid-template-columns: 60px 1fr; }
+    .step-spacer { grid-column: 1 !important; }
+    .step-card,.step-empty { grid-column: 2 !important; text-align: left !important; }
+    .step-empty { display: none; }
+}
+.step-bubble {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, #1a56db, #16a34a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; font-weight: 900; color: #fff;
+    margin: 0 auto; position: relative; z-index: 2;
+    box-shadow: 0 0 0 6px rgba(26,86,219,0.2);
+    transition: transform 0.3s;
+}
+.step:hover .step-bubble { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(26,86,219,0.15); }
+.step-card {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 20px; padding: 28px 30px; backdrop-filter: blur(10px);
+    transition: all 0.3s;
+}
+.step-card:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-4px); }
+.step-icon { font-size: 1.8rem; margin-bottom: 10px; }
+.step-card h4 { font-size: 1.05rem; font-weight: 800; color: #fff; margin-bottom: 8px; }
+.step-card p { font-size: 0.87rem; color: rgba(255,255,255,0.55); line-height: 1.65; }
+.step-tag {
+    display: inline-block; background: rgba(26,86,219,0.25); color: #60a5fa;
+    padding: 3px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.5px; margin-top: 10px;
+}
+@keyframes fadeSlide { from{opacity:0;transform:translateX(-20px);}to{opacity:1;transform:translateX(0);} }
 
+/* ====== STATS STRIP ====== */
+.stats-strip {
+    background: linear-gradient(135deg, #16a34a, #14532d);
+    padding: 60px 50px; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 30px; text-align: center;
+}
+.stat { }
+.stat-num { font-size: 2.8rem; font-weight: 900; color: #fff; letter-spacing: -1px; }
+.stat-lbl { font-size: 0.85rem; color: rgba(255,255,255,0.7); font-weight: 600; margin-top: 4px; }
+
+/* ====== CTA ====== */
+.cta-section { padding: 100px 50px; text-align: center; background: #f8fafc; }
+.cta-badge { display:inline-flex;align-items:center;gap:8px;background:rgba(26,86,219,0.08);border:1px solid rgba(26,86,219,0.2);color:#1a56db;padding:6px 18px;border-radius:100px;font-size:0.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:18px; }
+.cta-section h2 { font-size: 2.2rem; font-weight: 800; color: var(--text-dark); margin-bottom: 14px; }
+.cta-section p { color: #64748b; font-size: 1rem; max-width: 500px; margin: 0 auto 35px; line-height: 1.7; }
+.cta-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.cta-btn {
+    padding: 16px 34px; border-radius: 14px; font-weight: 700; font-size: 0.98rem;
+    text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif;
+}
+.cta-btn.primary { background: linear-gradient(135deg, #1a56db, #1648c0); color: #fff; box-shadow: 0 8px 25px rgba(26,86,219,0.3); }
+.cta-btn.secondary { background: #fff; color: var(--text-dark); border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.cta-btn:hover { transform: translateY(-3px); }
+.cta-btn.primary:hover { box-shadow: 0 15px 35px rgba(26,86,219,0.45); }
 </style>
+{% endblock %}
 
-</head>
+{% block content %}
 
-<body>
+<!-- HERO -->
+<section class="about-hero">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="badge-pill">🌿 About Clean Pak Portal</div>
+    <h1>Building a <span>Cleaner</span><br>Gujrat, Together</h1>
+    <p>A citizen-first digital platform connecting residents with municipal services, making complaint resolution faster, transparent, and accountable.</p>
+</section>
 
-<!-- NAVBAR -->
-<div class="navbar">
-    
+<!-- MISSION & VISION -->
+<div style="background: #f8fafc;">
+<div class="about-section">
+    <div class="section-label">🎯 Our Foundation</div>
+    <h2 class="section-title">Mission &amp; Vision</h2>
+    <p class="section-sub">Every initiative is guided by a clear purpose and an ambitious goal for Gujrat's future.</p>
 
-    <h2>Clean Pak Portal</h2>
-    
-
-     <div class="nav-links">
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'about' %}">About</a>
-        <a href="{% url 'services' %}">Services</a>
-        <a href="{% url 'reports' %}">Reports</a>
-        <a href="{% url 'contact' %}">Contact</a>
-        
+    <div class="mv-grid">
+        <div class="mv-card">
+            <div class="mv-icon">🎯</div>
+            <div class="mv-title">Our Mission</div>
+            <p class="mv-text">To empower every citizen of Gujrat with a seamless, transparent, and accountable platform to report municipal issues — from garbage overflow to road damage — ensuring prompt action through intelligent tracking, and fostering a culture of civic responsibility and collaboration between residents and the administration.</p>
+        </div>
+        <div class="mv-card">
+            <div class="mv-icon">🔭</div>
+            <div class="mv-title">Our Vision</div>
+            <p class="mv-text">To position Gujrat as Pakistan's model smart city by 2030 — where every complaint is resolved within 48 hours, municipal fleets are tracked in real-time, and data-driven analytics help officials make proactive decisions before communities are impacted. A city that listens, acts, and improves continuously.</p>
+        </div>
     </div>
-
-    <div class="nav-buttons">
-        <a href="{% url 'dashboard' %}"><button class="login-btn">Back to Dashboard</button></a>
-
-<a href="{% url 'logout' %}">
-
-<button class="login-btn">
-
-Log out
-
-</button>
-
-</a>
-
+</div>
 </div>
 
-</div>
-
-<div class="about-container">
-
-
-<!-- PORTAL INTRO -->
-
+<!-- CORE VALUES -->
+<div style="background: #fff;">
 <div class="about-section">
-
-<h2>Portal Introduction</h2>
-
-<p>
-
-Clean Pak Portal is a municipal complaint management system designed to help citizens report sanitation issues, track complaints, and improve city cleanliness through digital services.
-
-</p>
-
+    <div class="section-label">💎 Core Values</div>
+    <h2 class="section-title">What Drives Us</h2>
+    <div class="values-grid">
+        <div class="value-card"><div class="value-emoji">🔍</div><h4>Transparency</h4><p>Every action, every status update, every report is visible to the citizens it affects.</p></div>
+        <div class="value-card"><div class="value-emoji">⚡</div><h4>Speed</h4><p>SLA-monitored response times ensure no complaint lingers without accountability.</p></div>
+        <div class="value-card"><div class="value-emoji">🤝</div><h4>Accountability</h4><p>Automated routing ensures every issue reaches the right department immediately.</p></div>
+        <div class="value-card"><div class="value-emoji">📊</div><h4>Data-Driven</h4><p>Analytics and heat maps guide resource allocation where the city needs it most.</p></div>
+        <div class="value-card"><div class="value-emoji">🌱</div><h4>Sustainability</h4><p>Fleet monitoring and route optimization reduce emissions and operational waste.</p></div>
+    </div>
+</div>
 </div>
 
-
-<!-- MISSION -->
-
-<div class="about-section">
-
-<h2>Mission & Vision</h2>
-
-<p>
-
-Our mission is to create a cleaner and healthier city through technology, transparency, and citizen participation.
-
-Our vision is to build a smart municipal system where complaints are resolved efficiently and services are accessible online.
-
-</p>
-
+<!-- STATS STRIP -->
+<div class="stats-strip">
+    <div class="stat"><div class="stat-num">35</div><div class="stat-lbl">Gujrat Zones Covered</div></div>
+    <div class="stat"><div class="stat-num">24/7</div><div class="stat-lbl">Complaint Portal Access</div></div>
+    <div class="stat"><div class="stat-num">12h</div><div class="stat-lbl">Target Resolution Time</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-lbl">Transparent Tracking</div></div>
 </div>
 
+<!-- HOW IT WORKS -->
+<section class="how-section">
+    <div class="how-inner">
+        <div class="section-label">⚙️ The Process</div>
+        <h2 class="section-title">How Clean Pak Portal Works</h2>
+        <p class="section-sub">A simple six-step journey from issue discovery to verified resolution.</p>
 
-<!-- AUTHORITY -->
+        <div class="steps-timeline">
+            <!-- Step 1 -->
+            <div class="step">
+                <div class="step-card">
+                    <div class="step-icon">📝</div>
+                    <h4>Step 1: Registration</h4>
+                    <p>Create your free Clean Pak Portal account using your email or via Google. Your identity is securely verified for municipal accountability.</p>
+                    <span class="step-tag">CITIZEN</span>
+                </div>
+                <div class="step-spacer"><div class="step-bubble">1</div></div>
+                <div class="step-empty"></div>
+            </div>
+            <!-- Step 2 -->
+            <div class="step">
+                <div class="step-empty"></div>
+                <div class="step-spacer"><div class="step-bubble">2</div></div>
+                <div class="step-card">
+                    <div class="step-icon">📋</div>
+                    <h4>Step 2: Submit Report about its Complaint</h4>
+                    <p>Lodge your grievance by describing the issue and attaching photo/location proof. A secure payment ensures valid submissions.</p>
+                    <span class="step-tag">CITIZEN</span>
+                </div>
+            </div>
+            <!-- Step 3 -->
+            <div class="step">
+                <div class="step-card">
+                    <div class="step-icon">🎫</div>
+                    <h4>Step 3: Receive Unique Tracking ID</h4>
+                    <p>Your complaint instantly generates a unique GRT Tracking ID. This serves as your reference for the entire resolution process.</p>
+                    <span class="step-tag">AUTO</span>
+                </div>
+                <div class="step-spacer"><div class="step-bubble">3</div></div>
+                <div class="step-empty"></div>
+            </div>
+            <!-- Step 4 -->
+            <div class="step">
+                <div class="step-empty"></div>
+                <div class="step-spacer"><div class="step-bubble">4</div></div>
+                <div class="step-card">
+                    <div class="step-icon">🔍</div>
+                    <h4>Step 4: Track It Anytime</h4>
+                    <p>Use your Unique ID to track the live progress of your report. Watch it move from Pending to In Progress in real-time.</p>
+                    <span class="step-tag">CITIZEN</span>
+                </div>
+            </div>
+            <!-- Step 5 -->
+            <div class="step">
+                <div class="step-card">
+                    <div class="step-icon">🚛</div>
+                    <h4>Step 5: Fleet Monitoring</h4>
+                    <p>Municipal vehicles — garbage trucks, water tankers, sweepers — are assigned and live-tracked on an interactive map so you know help is on the way.</p>
+                    <span class="step-tag">LIVE GPS</span>
+                </div>
+                <div class="step-spacer"><div class="step-bubble">5</div></div>
+                <div class="step-empty"></div>
+            </div>
+            <!-- Step 6 -->
+            <div class="step">
+                <div class="step-empty"></div>
+                <div class="step-spacer"><div class="step-bubble">6</div></div>
+                <div class="step-card">
+                    <div class="step-icon">✅</div>
+                    <h4>Step 6: Admin Side Verification</h4>
+                    <p>The admin reviews the fieldwork, uploads the final proof, and verifies the resolution officially to close the record.</p>
+                    <span class="step-tag">ADMIN</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-<div class="about-section">
+<!-- CTA -->
+<section class="cta-section">
+    <div class="cta-badge">🚀 Get Started Today</div>
+    <h2>Ready to Make Gujrat Cleaner?</h2>
+    <p>Join thousands of citizens who are already making their neighbourhoods better through Clean Pak Portal.</p>
+    <div class="cta-btns">
+        <a href="{% url 'register' %}" class="cta-btn primary">Register Free Account</a>
+        <a href="{% url 'services' %}" class="cta-btn secondary">Explore Services</a>
+    </div>
+</section>
 
-<h2>Authority Information</h2>
-
-<p>
-
-This portal operates under the Municipal Corporation and Waste Management Authority. It supports government initiatives for smart city management and sanitation improvement programs.
-
-</p>
-
-</div>
-
-
-<!-- POLICIES -->
-
-<div class="about-section">
-
-<h2>Policies & Guidelines</h2>
-
-<p>
-
-• Citizens must provide accurate complaint information<br>  
-• False reports may be rejected  <br>
-• Complaints are processed according to municipal policies <br> 
-• Data privacy is maintained under government regulations  
-
-</p>
-
-</div>
-
-
-<!-- IMPACT -->
-
-<div class="about-section">
-
-<h2>Cleanliness Impact</h2>
-
-<div class="stats">
-
-<div class="stat-box">
-
-<h3>1200+</h3>
-
-<p>Complaints Resolved</p>
-
-</div>
-
-
-<div class="stat-box">
-
-<h3>85%</h3>
-
-<p>Resolution Rate</p>
-
-</div>
-
-
-<div class="stat-box">
-
-<h3>25+</h3>
-
-<p>Areas Covered</p>
-
-</div>
-
-
-<div class="stat-box">
-
-<h3>5000+</h3>
-
-<p>Registered Users</p>
-
-</div>
-
-</div>
-
-</div>
-
-
-</div>
-
-</body>
-
-</html>
+{% endblock %}

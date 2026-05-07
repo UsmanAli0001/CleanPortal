@@ -1,296 +1,328 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Clean Pak Portal - Home</title>
+{% block title %}Home | Clean Pak Portal{% endblock %}
 
-<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
-
+{% block extra_head %}
 <style>
-
-.navbar{
-    background:#035e08;
-    color:white;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:6px 100px;
+/* ===== HERO ===== */
+.home-hero {
+    position: relative; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; background: #070d1c;
 }
-
-/* NAV LINKS */
-
-.nav-links a{
-    color:white;
-    margin:0 15px;
-    text-decoration:none;
-    font-weight:700; /* bold font */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* clean professional font */
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* subtle box/text shadow */
-    transition: color 0.3s ease, text-shadow 0.3s ease; /* smooth transition */
+.hero-video-bg {
+    position: absolute; inset: 0;
+    background: 
+        linear-gradient(135deg, rgba(7,13,28,0.75) 0%, rgba(10,20,50,0.6) 50%, rgba(7,13,28,0.75) 100%),
+        url("{% static 'accounts/images/smart_hero.png' %}") center/cover no-repeat;
 }
-
-.nav-links a:hover {
-    color:#ffd700; /* hover color */
-    text-shadow: 2px 2px 5px rgba(0,0,0,0.7); /* deeper shadow on hover */
+/* Animated orbs */
+.h-orb { position:absolute;border-radius:50%;filter:blur(100px);animation:hFloat 15s ease-in-out infinite; }
+.h-orb-1{width:700px;height:700px;background:#1a56db;top:-250px;left:-200px;opacity:0.15;animation-delay:0s}
+.h-orb-2{width:500px;height:500px;background:#16a34a;bottom:-200px;right:-150px;opacity:0.15;animation-delay:-5s}
+.h-orb-3{width:300px;height:300px;background:#7c3aed;top:50%;left:55%;opacity:0.12;animation-delay:-10s}
+@keyframes hFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-40px);}}
+/* Particles */
+.particles { position:absolute;inset:0;overflow:hidden;pointer-events:none; }
+.particle {
+    position:absolute; width:2px; height:2px; border-radius:50%;
+    background: rgba(255,255,255,0.4); animation: floatPart linear infinite;
 }
-.nav-buttons button{
-    padding:8px 16px;
-    border:none;
-    border-radius:11px;
-    margin-left:10px;
-    cursor:pointer;
-    font-weight:600;
-    transition: all 0.3s ease; /* smooth transition */
+@keyframes floatPart { from{transform:translateY(100vh) scale(0);}to{transform:translateY(-100vh) scale(1);opacity:0;} }
+/* Grid lines */
+.hero-grid {
+    position:absolute;inset:0;
+    background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);
+    background-size:60px 60px;
 }
-
-/* Login Button */
-.login-btn{
-    background:#fa7c07;
-    color:white;
+.hero-inner { position:relative;z-index:10;text-align:center;padding:30px 20px;max-width:900px; }
+.hero-badge {
+    display:inline-flex;align-items:center;gap:10px;
+    background:rgba(26,86,219,0.15);border:1px solid rgba(26,86,219,0.35);
+    color:#60a5fa;padding:10px 22px;border-radius:100px;
+    font-size:0.82rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    margin-bottom:28px;animation:fadeIn 1s ease 0.2s both;
 }
-
-.login-btn:hover{
-    background:#ff9800; /* lighter orange on hover */
-    transform: scale(1.05); /* slight growth */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* subtle shadow */
+.hero-badge .dot { width:8px;height:8px;border-radius:50%;background:#4ade80;animation:blink 1.5s ease-in-out infinite; }
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.hero-h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 900; color: #fff; margin: 0 0 20px;
+    line-height: 1.1; letter-spacing: -1.5px;
+    animation: fadeIn 1s ease 0.4s both;
 }
-
-/* Register Button */
-.register-btn{
-    background:#1976d2;
-    color:white;
+.hero-h1 .hl { 
+    background: linear-gradient(135deg, #4ade80, #60a5fa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
-
-.register-btn:hover{
-    background:#42a5f5; /* lighter blue on hover */
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+.hero-sub {
+    font-size: 1.15rem; color: rgba(255,255,255,0.55); max-width: 600px;
+    margin: 0 auto 40px; line-height: 1.75;
+    animation: fadeIn 1s ease 0.6s both;
 }
-
-.page-header{
-
-width:85%;
-margin:30px auto 10px auto;
-
+.hero-actions { display:flex;gap:18px;justify-content:center;flex-wrap:wrap;animation:fadeIn 1s ease 0.8s both; }
+.btn-hero {
+    padding: 17px 36px; border-radius: 14px; font-weight: 700; font-size: 1rem;
+    text-decoration: none; transition: all 0.3s; font-family: 'Outfit', sans-serif; border: none; cursor: pointer;
 }
-
-.page-header h1{
-
-font-size:32px;
-color:#222;
-margin-bottom:5px;
-text-align:center;
-
+.btn-hero.green {
+    background: linear-gradient(135deg, #16a34a, #14532d); color: #fff;
+    box-shadow: 0 10px 30px rgba(22,163,74,0.4);
 }
-
-.page-header p{
-
-color:#777;
-font-size:16px;
-text-align:center;
+.btn-hero.green:hover { transform: translateY(-3px); box-shadow: 0 18px 45px rgba(22,163,74,0.55); }
+.btn-hero.glass {
+    background: rgba(255,255,255,0.08); color: #fff;
+    border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(10px);
 }
+.btn-hero.glass:hover { background: rgba(255,255,255,0.14); transform: translateY(-3px); }
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+/* Scroll indicator */
+.scroll-down { position:absolute;bottom:40px;left:50%;transform:translateX(-50%);z-index:10;text-align:center;animation:fadeIn 1s ease 1.2s both; }
+.scroll-down span { display:block;width:2px;height:50px;background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.5));margin:0 auto;animation:scrollAnim 1.5s ease-in-out infinite; }
+@keyframes scrollAnim{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);}100%{transform:scaleY(0);transform-origin:bottom;}}
 
-
-/* MAIN CONTAINER */
-
-.container{
-width:85%;
-margin:auto;
-margin-top:40px;
+/* ===== STATS STRIP ===== */
+.stats-strip {
+    background: linear-gradient(135deg, #1a56db, #1648c0);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    padding: 45px 60px;
 }
+@media(max-width:768px){.stats-strip{grid-template-columns:1fr 1fr;padding:35px 25px;}}
+.s-stat { text-align:center;border-right:1px solid rgba(255,255,255,0.15);padding:10px 20px; }
+.s-stat:last-child{border-right:none;}
+.s-num { font-size: 2.5rem; font-weight: 900; color: #fff; letter-spacing: -1px; }
+.s-lbl { font-size: 0.82rem; color: rgba(255,255,255,0.65); font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* CARDS */
-
-.cards{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:25px;
-margin-bottom:40px;
+/* ===== FEATURES ===== */
+.features-section { padding: 100px 60px; background: #f8fafc; }
+.sec-header { text-align:center;margin-bottom:60px; }
+.sec-pill { display:inline-flex;align-items:center;gap:8px;background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.25);color:#15803d;padding:6px 18px;border-radius:100px;font-size:0.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px; }
+.sec-h2 { font-size:2.2rem;font-weight:900;color:var(--text-dark);margin:0 0 12px;letter-spacing:-0.5px; }
+.sec-sub { color:#64748b;font-size:1rem;max-width:520px;margin:0 auto;line-height:1.7; }
+.features-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:28px;max-width:1200px;margin:0 auto; }
+.f-card {
+    background:#fff;border:1px solid #f1f5f9;border-radius:24px;padding:40px 35px;
+    transition:all 0.4s cubic-bezier(0.175,.885,.32,1.275);position:relative;overflow:hidden;
 }
+.f-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(26,86,219,0.0),rgba(22,163,74,0.04));opacity:0;transition:opacity 0.3s;}
+.f-card:hover{transform:translateY(-10px);box-shadow:0 30px 70px rgba(0,0,0,0.1);border-color:transparent;}
+.f-card:hover::after{opacity:1;}
+.f-icon-wrap{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin-bottom:22px;transition:transform 0.3s;}
+.f-card:hover .f-icon-wrap{transform:scale(1.1) rotate(-3deg);}
+.f-card h3 { font-size:1.15rem;font-weight:800;color:var(--text-dark);margin:0 0 10px; }
+.f-card p { font-size:0.88rem;color:#64748b;line-height:1.7;margin-bottom:22px; }
+.f-link { font-size:0.85rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:gap 0.2s; }
+.f-link:hover{gap:10px;}
 
-.card{
-background:white;
-padding:25px;
-border-radius:10px;
-box-shadow:0 4px 15px rgba(0,0,0,0.06);
-text-align:center;
-transition:.3s;
+/* ===== HOW IT WORKS (Mini) ===== */
+.how-mini { padding:100px 60px;background:#070d1c;position:relative;overflow:hidden; }
+.how-mini-orb{position:absolute;border-radius:50%;filter:blur(120px);pointer-events:none;}
+.how-mini-orb-1{width:600px;height:600px;background:#1a56db;top:-200px;left:-150px;opacity:0.1;}
+.how-mini-orb-2{width:500px;height:500px;background:#16a34a;bottom:-150px;right:-100px;opacity:0.1;}
+.how-mini-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:25px;max-width:1200px;margin:50px auto 0;position:relative;z-index:2; }
+.hw-card {
+    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;padding:32px 26px;text-align:center;transition:all 0.3s;
 }
+.hw-card:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.18);transform:translateY(-6px);}
+.hw-num{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#1a56db,#16a34a);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:#fff;margin:0 auto 18px;}
+.hw-card h4{font-size:0.98rem;font-weight:800;color:#fff;margin:0 0 8px;}
+.hw-card p{font-size:0.82rem;color:rgba(255,255,255,0.5);line-height:1.65;}
 
-.card:hover{
-transform:translateY(-5px);
-}
+/* ===== TESTIMONIALS ===== */
+.testimonials { padding:90px 60px;background:#f0fdf4; }
+.t-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:25px;max-width:1100px;margin:50px auto 0;}
+.t-card{background:#fff;border-radius:22px;padding:34px;border:1px solid rgba(22,163,74,0.15);box-shadow:0 8px 25px rgba(0,0,0,0.04);transition:all 0.3s;}
+.t-card:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(0,0,0,0.08);}
+.t-stars{color:#f59e0b;font-size:1rem;margin-bottom:14px;letter-spacing:2px;}
+.t-quote{font-size:0.92rem;color:#475569;line-height:1.75;margin-bottom:20px;font-style:italic;}
+.t-author{display:flex;align-items:center;gap:12px;}
+.t-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#1a56db,#16a34a);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff;}
+.t-name{font-size:0.9rem;font-weight:800;color:var(--text-dark);}
+.t-area{font-size:0.78rem;color:#94a3b8;}
 
-.card h3{
-color:#444;
-margin-bottom:10px;
-}
-
-.card p{
-font-size:28px;
-font-weight:700;
-color:#ff6b00;
-}
-
-/* QUICK BUTTONS */
-
-.quick-actions{
-display:flex;
-justify-content:center;
-gap:25px;
-margin-top:20px;
-}
-
-.quick-actions button{
-
-padding:12px 25px;
-border:none;
-border-radius:8px;
-font-size:15px;
-font-weight:500;
-cursor:pointer;
-transition:.3s;
-}
-
-.quick-actions button:nth-child(1){
-background:#ff6b00;
-color:white;
-}
-
-.quick-actions button:nth-child(2){
-background:#2f80ed;
-color:white;
-}
-
-.quick-actions button:nth-child(3){
-background:#27ae60;
-color:white;
-}
-
-.quick-actions button:hover{
-transform:scale(1.05);
-}
-
-/* BODY */
-
-body{
-background:#f7f9fc;
-font-family:Segoe UI, sans-serif;
-margin:0;
-}
-
+/* ===== CTA ===== */
+.home-cta{padding:90px 60px;text-align:center;background:linear-gradient(135deg,#0a0f1e,#0d1f3c);position:relative;overflow:hidden;}
+.home-cta h2{font-size:2.5rem;font-weight:900;color:#fff;margin:0 0 14px;position:relative;z-index:2;}
+.home-cta p{color:rgba(255,255,255,0.5);font-size:1rem;max-width:480px;margin:0 auto 36px;line-height:1.7;position:relative;z-index:2;}
+.home-cta .cta-actions{display:flex;gap:16px;justify-content:center;position:relative;z-index:2;}
+.cta-a{padding:16px 34px;border-radius:14px;font-weight:700;font-size:0.98rem;text-decoration:none;transition:all 0.3s;}
+.cta-a.g{background:linear-gradient(135deg,#16a34a,#14532d);color:#fff;box-shadow:0 10px 30px rgba(22,163,74,0.35);}
+.cta-a.g:hover{transform:translateY(-3px);box-shadow:0 18px 45px rgba(22,163,74,0.5);}
+.cta-a.w{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);}
+.cta-a.w:hover{background:rgba(255,255,255,0.15);transform:translateY(-3px);}
 </style>
+{% endblock %}
 
-</head>
+{% block content %}
 
-<body>
+<!-- HERO -->
+<section class="home-hero">
+    <div class="hero-video-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="h-orb h-orb-1"></div>
+    <div class="h-orb h-orb-2"></div>
+    <div class="h-orb h-orb-3"></div>
 
-<!-- NAVBAR -->
-<div class="navbar">
-    
+    <!-- Floating particles -->
+    <div class="particles" id="particles"></div>
 
-    <h2>Clean Pak Portal</h2>
-    
-
-     <div class="nav-links">
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'about' %}">About</a>
-        <a href="{% url 'services' %}">Services</a>
-        <a href="{% url 'reports' %}">Reports</a>
-        <a href="{% url 'contact' %}">Contact</a>
-        
+    <div class="hero-inner">
+        <div class="hero-badge">
+            <div class="dot"></div>
+            Live Municipal System — Gujrat, Pakistan
+        </div>
+        <h1 class="hero-h1">
+            Gujrat Deserves a<br>
+            <span class="hl">Cleaner Tomorrow</span>
+        </h1>
+        <p class="hero-sub">
+            Clean Pak Portal is a state-of-the-art municipal management system. We combine real-time GPS tracking, instant citizen reporting, and deep analytical monitoring to ensure our cities stay clean, green, and smart.
+        </p>
+        <div class="hero-actions">
+            {% if user.is_authenticated %}
+            <a href="{% url 'register_complaint' %}" class="btn-hero green">🚨 Report an Issue</a>
+            <a href="{% url 'dashboard' %}" class="btn-hero glass">📊 Open Dashboard</a>
+            {% else %}
+            <a href="{% url 'register' %}" class="btn-hero green">🚀 Get Started Free</a>
+            <a href="{% url 'about' %}" class="btn-hero glass">Learn How it Works</a>
+            {% endif %}
+        </div>
     </div>
+    <div class="scroll-down"><span></span></div>
+</section>
 
-    <div class="nav-buttons">
-        
-        <a href="{% url 'dashboard' %}"><button class="login-btn">Back to Dashboard</button></a>
-        <a href="{% url 'logout' %}"><button class="login-btn">Log out</button></a>
+<!-- STATS STRIP -->
+<div class="stats-strip">
+    <div class="s-stat"><div class="s-num">{{ total_complaints }}</div><div class="s-lbl">Total Reports</div></div>
+    <div class="s-stat"><div class="s-num">35</div><div class="s-lbl">Zones Covered</div></div>
+    <div class="s-stat"><div class="s-num">5</div><div class="s-lbl">Service Types</div></div>
+    <div class="s-stat"><div class="s-num">24/7</div><div class="s-lbl">System Uptime</div></div>
+</div>
+
+<!-- FEATURES -->
+<section class="features-section">
+    <div class="sec-header">
+        <div class="sec-pill">✨ Platform Features</div>
+        <h2 class="sec-h2">Everything You Need,<br>In One Place</h2>
+        <p class="sec-sub">Clean Pak Portal brings municipal services into the digital era — fast, transparent, and citizen-first.</p>
     </div>
+    <div class="features-grid">
+        <div class="f-card">
+            <div class="f-icon-wrap" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe)">🚨</div>
+            <h3>Instant Complaint Submission</h3>
+            <p>Report garbage overflow, road damage, water issues or sanitation problems with photo proof and GPS pinning — in under 2 minutes.</p>
+            <a href="{% url 'register_complaint' %}" class="f-link" style="color:#1a56db">Report Now →</a>
+        </div>
+        <div class="f-card">
+            <div class="f-icon-wrap" style="background:linear-gradient(135deg,#dcfce7,#a7f3d0)">🔍</div>
+            <h3>Live Complaint Tracking</h3>
+            <p>Use your unique Complaint ID (GRT-2026-XXXX) to follow every step of your issue's resolution — no guessing, no waiting on hold.</p>
+            <a href="{% url 'track' %}" class="f-link" style="color:#16a34a">Track Status →</a>
+        </div>
+        <div class="f-card">
+            <div class="f-icon-wrap" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8)">🚛</div>
+            <h3>Fleet Live Monitoring</h3>
+            <p>Watch garbage trucks, water tankers, and road sweepers move across Gujrat in real-time on an interactive GPS map.</p>
+            <a href="{% url 'vehicle_tracking' %}" class="f-link" style="color:#db2777">View Fleet →</a>
+        </div>
+        <div class="f-card">
+            <div class="f-icon-wrap" style="background:linear-gradient(135deg,#fef3c7,#fde68a)">📅</div>
+            <h3>Service Scheduling</h3>
+            <p>Check the city-wide cleaning and maintenance schedule. Know exactly when your area gets serviced and book priority services.</p>
+            <a href="{% url 'schedule' %}" class="f-link" style="color:#d97706">View Schedule →</a>
+        </div>
+        <div class="f-card">
+            <div class="f-icon-wrap" style="background:linear-gradient(135deg,#f3e8ff,#e9d5ff)">🗺️</div>
+            <h3>Zone Boundary Mapping</h3>
+            <p>Visualise Gujrat's municipal zones with real-time cleanliness status — Clean, Moderate, or Critical — colour-coded on an interactive map.</p>
+            <a href="{% url 'zone_management' %}" class="f-link" style="color:#7c3aed">View Zones →</a>
+        </div>
+        <div class="f-card">
+            <div class="f-icon-wrap" style="background:linear-gradient(135deg,#fee2e2,#fecaca)">📊</div>
+            <h3>City-Wide Analytics</h3>
+            <p>Admins access animated heat maps, trend graphs, and SLA dashboards that give a complete picture of the city's municipal health.</p>
+            <a href="{% url 'about' %}" class="f-link" style="color:#dc2626">Learn More →</a>
+        </div>
+    </div>
+</section>
 
-</div>
+<!-- HOW IT WORKS MINI -->
+<section class="how-mini">
+    <div class="how-mini-orb how-mini-orb-1"></div>
+    <div class="how-mini-orb how-mini-orb-2"></div>
+    <div style="max-width:1200px;margin:0 auto;position:relative;z-index:2;">
+        <div class="sec-header" style="margin-bottom:20px;">
+            <div class="sec-pill" style="background:rgba(26,86,219,0.15);border-color:rgba(26,86,219,0.3);color:#60a5fa;">⚙️ The Process</div>
+            <h2 class="sec-h2" style="color:#fff;">Your Journey in 4 Steps</h2>
+            <p class="sec-sub" style="color:rgba(255,255,255,0.5);">From complaint to resolution — fully digital, fully traceable.</p>
+        </div>
+        <div class="how-mini-grid">
+            <div class="hw-card"><div class="hw-num">1</div><h4>Register &amp; Login</h4><p>Create your free account or sign in with Google in seconds.</p></div>
+            <div class="hw-card"><div class="hw-num">2</div><h4>Submit Report</h4><p>Describe the issue, attach photos, pin the location. Done.</p></div>
+            <div class="hw-card"><div class="hw-num">3</div><h4>Get Tracking ID</h4><p>Receive your unique GRT ID instantly. Share &amp; track anytime.</p></div>
+            <div class="hw-card"><div class="hw-num">4</div><h4>Issue Resolved</h4><p>Fleet dispatched, work done, admin confirms with after-image.</p></div>
+        </div>
+    </div>
+</section>
 
-<!-- PAGE HEADER -->
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+    <div class="sec-header">
+        <div class="sec-pill">💬 Citizen Voices</div>
+        <h2 class="sec-h2">What Gujrat Residents Say</h2>
+        <p class="sec-sub">Real feedback from citizens who have used Clean Pak Portal to improve their neighbourhoods.</p>
+    </div>
+    <div class="t-grid">
+        <div class="t-card">
+            <div class="t-stars">★★★★★</div>
+            <p class="t-quote">"I submitted a garbage complaint near Model Town and the truck arrived the next morning. The tracking ID kept me updated the entire time. Amazing service."</p>
+            <div class="t-author"><div class="t-avatar">AK</div><div><div class="t-name">Ahmed Khan</div><div class="t-area">Model Town, Gujrat</div></div></div>
+        </div>
+        <div class="t-card">
+            <div class="t-stars">★★★★★</div>
+            <p class="t-quote">"The zone map showed my area was 'Critical'. I reported the blocked drain and within 48 hours I could see it was marked In Progress. Incredible transparency."</p>
+            <div class="t-author"><div class="t-avatar">SR</div><div><div class="t-name">Sana Rehman</div><div class="t-area">Civil Lines, Gujrat</div></div></div>
+        </div>
+        <div class="t-card">
+            <div class="t-stars">★★★★☆</div>
+            <p class="t-quote">"I love being able to see the garbage truck on the live map. Now I know exactly when to put my waste outside. This is exactly what our city needed."</p>
+            <div class="t-author"><div class="t-avatar">MI</div><div><div class="t-name">Muhammad Irfan</div><div class="t-area">G.T. Road, Gujrat</div></div></div>
+        </div>
+    </div>
+</section>
 
-<div class="page-header">
+<!-- CTA -->
+<section class="home-cta">
+    <div class="h-orb h-orb-1" style="opacity:0.08;"></div>
+    <h2>Join the Clean Gujrat Movement</h2>
+    <p>Every complaint you report makes our city cleaner. Be part of the change today.</p>
+    <div class="cta-actions">
+        <a href="{% url 'register' %}" class="cta-a g">🚀 Create Free Account</a>
+        <a href="{% url 'services' %}" class="cta-a w">Explore Our Services</a>
+    </div>
+</section>
 
-<h1>Welcome Dashboard</h1>
+{% endblock %}
 
-<p>Monitor your complaints, reports and services</p>
-
-</div>
-<!-- MAIN -->
-
-<div class="container">
-
-<div class="cards">
-
-<div class="card">
-
-<h3>Total Complaints</h3>
-
-<p>{{ total_complaints }}</p>
-
-</div>
-
-
-<div class="card">
-
-<h3>Resolved Issues</h3>
-
-<p>{{ resolved_issues }}</p>
-
-</div>
-
-
-<div class="card">
-
-<h3>Pending Reports</h3>
-
-<p>{{ pending_reports }}</p>
-
-</div>
-
-
-<div class="card">
-
-<h3>Area Summary</h3>
-
-<p>{{ area_summary }}</p>
-
-</div>
-
-</div>
-
-
-<div class="quick-actions">
-
-<button onclick="window.location.href='{% url 'register_complaint' %}'">
-
-Register Complaint
-
-</button>
-
-
-<button onclick="window.location.href='{% url 'pay_fee' %}'">
-
-Pay Fee
-
-</button>
-
-
-<button onclick="window.location.href='{% url 'reports' %}'">
-
-View Reports
-
-</button>
-
-
-</div>
-
-</div>
-
-
-</body>
-
-</html>
+{% block extra_js %}
+<script>
+// Generate particles
+const container = document.getElementById('particles');
+for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+        left: ${Math.random() * 100}%;
+        animation-duration: ${8 + Math.random() * 12}s;
+        animation-delay: ${-Math.random() * 20}s;
+        opacity: ${0.2 + Math.random() * 0.4};
+        width: ${1 + Math.random() * 3}px;
+        height: ${1 + Math.random() * 3}px;
+    `;
+    container.appendChild(p);
+}
+</script>
+{% endblock %}

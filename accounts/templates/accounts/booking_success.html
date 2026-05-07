@@ -1,0 +1,109 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Booking Successful | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .success-container {
+        padding: 80px 20px;
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: var(--accent-green);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin: 0 auto 30px;
+        box-shadow: 0 10px 30px rgba(46, 125, 50, 0.2);
+        animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes scaleIn {
+        from { transform: scale(0); }
+        to { transform: scale(1); }
+    }
+    h1 { color: var(--primary-blue); margin-bottom: 20px; font-weight: 700; }
+    p { opacity: 0.7; line-height: 1.6; margin-bottom: 40px; }
+    .ticket {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        text-align: left;
+        margin-bottom: 40px;
+        position: relative;
+    }
+    .ticket::before, .ticket::after {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background: var(--bg-light);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    .ticket::before { left: -10px; }
+    .ticket::after { right: -10px; }
+    
+    .ticket-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+    .ticket-row:last-child { border: none; margin-bottom: 0; }
+    .label { opacity: 0.6; font-size: 0.9rem; font-weight: 600; }
+    .value { font-weight: 700; color: var(--primary-blue); }
+
+    .btn-group { display: flex; gap: 20px; justify-content: center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-icon">
+        <i class="lucide-check"></i>
+    </div>
+    <h1>Booking Confirmed!</h1>
+    <p>Your request has been received and scheduled. Our team will arrive at the specified address on the scheduled date.</p>
+
+    <div class="ticket">
+        <div class="ticket-row">
+            <span class="label">Service Type</span>
+            <span class="value">{{ booking.service.name }}</span>
+        </div>
+        <div class="ticket-row">
+            <span class="label">Date</span>
+            <span class="value">{{ booking.scheduled_date }}</span>
+        </div>
+        <div class="ticket-row">
+            <span class="label">Urgency</span>
+            <span class="value">{{ booking.urgency }}</span>
+        </div>
+        <div class="ticket-row">
+            <span class="label">Amount Paid</span>
+            <span class="value">Rs. {{ booking.total_cost }}</span>
+        </div>
+        {% if booking.advance_fee_paid > 0 %}
+        <div class="ticket-row">
+            <span class="label">Includes Advance Fee</span>
+            <span class="value">Rs. {{ booking.advance_fee_paid }}</span>
+        </div>
+        {% endif %}
+        <div class="ticket-row">
+            <span class="label">Reference No.</span>
+            <span class="value">#SRV-{% now "Y" %}-{{ booking.id|stringformat:"04d" }}</span>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <a href="{% url 'dashboard' %}" class="btn-prev">Dashboard</a>
+        <a href="javascript:window.print()" class="nav-btn">Print Receipt</a>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+</script>
+{% endblock %}

@@ -11,21 +11,40 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5%m#px*z_s)n2%t$c6o*2g6on%e4l=@e_pg0vgxy62)wy*d1r#'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    'petty-overfill-armchair.ngrok-free.dev',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:5000',
+    'http://localhost:5000',
+    'https://petty-overfill-armchair.ngrok-free.dev',
+]
+
 
 
 # Application definition
@@ -37,7 +56,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-     'accounts',
+    'django.contrib.sites',
+    'accounts',
+    'captcha',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'CleanPortal.urls'
@@ -78,7 +104,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'CleanPortal',
         'USER': 'postgres',
-        'PASSWORD': 'un124743',
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -103,13 +129,63 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SITE_ID = 1
+
+# Allauth settings
+ACCOUNT_LOGIN_METHODS = {'email'}
+
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*']
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_CONFIRM_EMAIL_ON_GET = False
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
+
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'
+
+# Social Account Providers
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APPS': [
+            {
+                'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
+                'secret': os.environ.get('GOOGLE_CLIENT_SECRET'),
+                'key': ''
+            },
+        ],
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
+
+
+
+
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Karachi'
 
 USE_I18N = True
 
@@ -121,14 +197,18 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST='smtp.gmail.com'
 
 EMAIL_PORT=587
 
-EMAIL_USE_TLS=True
+EMAIL_USE_TLS=True  
 
-EMAIL_HOST_USER='daku84525@gmail.com'
-
-EMAIL_HOST_PASSWORD='piaqzuulxyxvrtoz'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = f'Clean Pak Portal <{EMAIL_HOST_USER}>'
+ACCOUNT_EMAIL_SUBJECT_PREFIX = '[Clean Pak Portal] '

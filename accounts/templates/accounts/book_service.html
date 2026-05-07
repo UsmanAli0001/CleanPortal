@@ -1,0 +1,462 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Book a Service | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<!-- Google Fonts & Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<style>
+    .booking-wrapper {
+        padding: 60px 20px;
+        background: linear-gradient(135deg, #f4f7f6 0%, #e8efeb 100%);
+        min-height: calc(100vh - 80px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .booking-card {
+        background: var(--white);
+        width: 100%;
+        max-width: 800px;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .booking-header {
+        background: var(--primary-blue);
+        color: white;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .booking-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .booking-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.8;
+        font-size: 1.1rem;
+    }
+
+    /* Progress Stepper */
+    .stepper {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        padding: 30px;
+        background: #fdfdfd;
+        border-bottom: 1px solid #efefef;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        opacity: 0.3;
+        transition: 0.3s;
+    }
+
+    .step.active { opacity: 1; }
+    .step.completed { opacity: 1; color: var(--accent-green); }
+
+    .step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .step.active .step-icon { background: var(--primary-blue); color: white; }
+    .step.completed .step-icon { background: var(--accent-green); color: white; }
+
+    .step-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Form Content */
+    .booking-body {
+        padding: 40px;
+        min-height: 400px;
+    }
+
+    .step-content {
+        display: none;
+        animation: slideIn 0.5s ease forwards;
+    }
+
+    .step-content.active { display: block; }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .feature-card {
+        background: white; border-radius: 24px; padding: 40px; text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid #f1f5f9; display: flex; flex-direction: column; align-items: center;
+        position: relative;
+        cursor: pointer;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .feature-card:hover { transform: translateY(-10px); box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
+    
+    .feature-card.selected { 
+        border-color: var(--accent-green); 
+        background: rgba(46, 125, 50, 0.05);
+        box-shadow: 0 15px 40px rgba(46, 125, 50, 0.15);
+    }
+
+    .feature-icon { width: 64px; height: 64px; margin-bottom: 25px; font-size: 2.5rem; color: var(--primary-blue); }
+    .feature-card h3 { margin: 0 0 15px; font-size: 1.3rem; color: var(--text-dark); }
+    .feature-card p { margin: 0 0 20px; font-size: 0.95rem; opacity: 0.6; }
+
+    .btn-dash {
+        margin-top: auto; padding: 12px 25px; background: #f1f5f9; color: var(--primary-blue);
+        text-decoration: none; border-radius: 10px; font-weight: 700; transition: 0.3s;
+        border: none; cursor: pointer;
+    }
+
+    .feature-card:hover .btn-dash, .feature-card.selected .btn-dash { background: var(--primary-blue); color: white; }
+
+    /* Inputs */
+    .form-group { margin-bottom: 25px; }
+    .form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: var(--primary-blue); }
+    .form-group input, .form-group textarea, .form-group select {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #eee;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: 0.3s;
+    }
+
+    .form-group input:focus { border-color: var(--primary-blue); outline: none; }
+
+    /* Urgency Toggle */
+    .urgency-toggle {
+        display: flex;
+        background: #f0f0f0;
+        padding: 5px;
+        border-radius: 12px;
+        gap: 5px;
+    }
+
+    .urgency-btn {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        transition: 0.3s;
+    }
+
+    .urgency-btn.active {
+        background: white;
+        color: var(--primary-blue);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .urgency-btn.urgent.active { color: #d32f2f; }
+
+    /* Price Preview */
+    .price-card {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 30px;
+        margin-top: 30px;
+        border: 1px dashed #cbd5e1;
+    }
+
+    .price-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .price-total { border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px; font-weight: 700; font-size: 1.4rem; color: var(--accent-green); }
+
+    /* Footer Navigation */
+    .booking-footer {
+        padding: 0 40px 40px 40px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .btn-prev { background: #eee; color: #666; padding: 15px 30px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; }
+    .btn-next { background: var(--primary-blue); color: white; padding: 15px 40px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+    .btn-next:hover { background: var(--secondary-blue); transform: scale(1.02); }
+
+    @media (max-width: 600px) {
+        .stepper { gap: 15px; padding: 20px; }
+        .step-label { display: none; }
+        .booking-body { padding: 25px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-wrapper">
+    <div class="booking-card">
+        <div class="booking-header">
+            <h1 id="dynamicTitle">Our payment Services</h1>
+            <p>Eco-friendly urban maintenance at your doorstep.</p>
+        </div>
+
+        <div class="stepper">
+            <div class="step active" id="s1">
+                <div class="step-icon">1</div>
+                <div class="step-label">Service</div>
+            </div>
+            <div class="step" id="s2">
+                <div class="step-icon">2</div>
+                <div class="step-label">Details</div>
+            </div>
+            <div class="step" id="s3">
+                <div class="step-icon">3</div>
+                <div class="step-label">Review</div>
+            </div>
+        </div>
+
+        <form id="bookingForm" method="POST">
+            {% csrf_token %}
+            <!-- Hidden inputs for backend -->
+            <input type="hidden" name="service_id" id="svc_id">
+            <input type="hidden" name="urgency" id="urgency_val" value="Normal">
+            <input type="hidden" name="is_advance" id="is_advance_val" value="false">
+            <input type="hidden" name="cost" id="total_cost_val">
+
+            <div class="booking-body">
+                <!-- Step 1: Service Selection -->
+                <div class="step-content active" id="step1">
+                    <h2 style="margin-bottom: 30px; text-align: center; color: var(--primary-blue);">Select an Issue to Resolve</h2>
+                    <div class="services-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px;">
+                        {% for cat in categories %}
+                        <div class="feature-card" onclick="selectService('{{ cat.id }}', '{{ cat.name }}', '{{ cat.base_price }}', '{{ cat.urgent_price }}', '{{ cat.advance_booking_fee }}', this)">
+                            <i class="bi {{ cat.icon }} feature-icon"></i>
+                            <h3>{{ cat.name }}</h3>
+                            <p>Premium service starting at Rs. {{ cat.base_price }}</p>
+                            <button type="button" class="btn-dash">Book Now</button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Step 2: Date & Details -->
+                <div class="step-content" id="step2">
+                    <h2 style="margin-bottom: 25px;">When & Where?</h2>
+                    
+                    <div class="form-group">
+                        <label>Preferred Date</label>
+                        <input type="date" name="date" id="bookDate" required min="{% now 'Y-m-d' %}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Service Urgency</label>
+                        <div class="urgency-toggle">
+                            <div class="urgency-btn active" id="uNormal" onclick="setUrgency('Normal')">Normal</div>
+                            <div class="urgency-btn urgent" id="uUrgent" onclick="setUrgency('Urgent')">Urgent</div>
+                        </div>
+                        <p style="font-size: 0.85rem; margin-top: 10px; opacity: 0.7;" id="urgencyDesc">Standard response time (24-48 hours).</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Service Address</label>
+                        <textarea name="address" rows="3" placeholder="Enter the full location details..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Advance Booking Option</label>
+                        <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0; display:flex; align-items:center; gap:15px; cursor:pointer" onclick="toggleAdvance()">
+                            <div id="advanceCheck" style="width:24px; height:24px; border:2px solid var(--primary-blue); border-radius:6px; display:flex; align-items:center; justify-content:center; color:white">
+                                <i class="bi bi-check-lg" style="display:none"></i>
+                            </div>
+                            <div>
+                                <strong style="color:var(--primary-blue); display:block">Pay Advance Fee</strong>
+                                <span style="font-size:0.85rem; opacity:0.7">Secure your slot in advance for an additional fee of <span id="advFeeS2">Rs. 0</span>.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Review & Pricing -->
+                <div class="step-content" id="step3">
+                    <h2 style="margin-bottom: 25px;">Booking Summary</h2>
+                    <div class="price-card">
+                        <div class="price-row">
+                            <span>Service:</span>
+                            <span id="summSvc" style="font-weight: 700;">-</span>
+                        </div>
+                        <div class="price-row">
+                            <span>Service Price (<span id="summLabelType">Base</span>):</span>
+                            <span id="summBase">-</span>
+                        </div>
+                        <div id="advanceRow" class="price-row" style="display: none; color: #8b5cf6;">
+                            <span>Advance Booking Fee:</span>
+                            <span id="summAdvanceCharge"></span>
+                        </div>
+                        <div class="price-total">
+                            <span>Estimated Total:</span>
+                            <span id="summTotal">Rs. 0.00</span>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.9rem; opacity: 0.6; margin-top: 20px; text-align: center;">By proceeding, you agree to our service terms and conditions.</p>
+                </div>
+            </div>
+
+            <div class="booking-footer">
+                <button type="button" class="btn-prev" id="prevBtn" style="visibility: hidden;" onclick="prevStep()">Back</button>
+                <button type="button" class="btn-next" id="nextBtn" onclick="nextStep()" disabled>
+                    <span id="btnText">Continue</span>
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentStep = 1;
+    let selectedSvc = null;
+    let isAdvance = false;
+
+    function selectService(id, name, basePrice, urgentPrice, advanceFee, el) {
+        selectedSvc = { 
+            id, 
+            name, 
+            basePrice: parseFloat(basePrice), 
+            urgentPrice: parseFloat(urgentPrice), 
+            advanceFee: parseFloat(advanceFee) 
+        };
+        
+        // UI feedback
+        document.querySelectorAll('.feature-card').forEach(opt => opt.classList.remove('selected'));
+        el.classList.add('selected');
+        
+        // Update hidden
+        document.getElementById('svc_id').value = id;
+        document.getElementById('nextBtn').disabled = false;
+        
+        // Update labels
+        document.getElementById('advFeeS2').innerText = 'Rs. ' + selectedSvc.advanceFee.toFixed(2);
+        
+        // Update summary
+        document.getElementById('summSvc').innerText = name;
+        
+        updatePrice();
+    }
+
+    function toggleAdvance() {
+        isAdvance = !isAdvance;
+        document.getElementById('is_advance_val').value = isAdvance;
+        const check = document.querySelector('#advanceCheck i');
+        const box = document.getElementById('advanceCheck');
+        
+        if(isAdvance) {
+            check.style.display = 'block';
+            box.style.background = 'var(--primary-blue)';
+            document.getElementById('advanceRow').style.display = 'flex';
+        } else {
+            check.style.display = 'none';
+            box.style.background = 'transparent';
+            document.getElementById('advanceRow').style.display = 'none';
+        }
+        updatePrice();
+    }
+
+    function setUrgency(type) {
+        document.getElementById('urgency_val').value = type;
+        document.querySelectorAll('.urgency-btn').forEach(btn => btn.classList.remove('active'));
+        
+        if(type === 'Urgent') {
+            document.getElementById('uUrgent').classList.add('active');
+            document.getElementById('urgencyDesc').innerText = 'Priority response (within 6 hours). Urgent rates apply.';
+            document.getElementById('summLabelType').innerText = 'Urgent Rate';
+        } else {
+            document.getElementById('uNormal').classList.add('active');
+            document.getElementById('urgencyDesc').innerText = 'Standard response time (24-48 hours).';
+            document.getElementById('summLabelType').innerText = 'Base Rate';
+        }
+        
+        updatePrice();
+    }
+
+    function updatePrice() {
+        if(!selectedSvc) return;
+        
+        let urgency = document.getElementById('urgency_val').value;
+        let price = (urgency === 'Urgent') ? selectedSvc.urgentPrice : selectedSvc.basePrice;
+        let total = price;
+        
+        document.getElementById('summBase').innerText = 'Rs. ' + price.toFixed(2);
+        
+        if(isAdvance) {
+            total += selectedSvc.advanceFee;
+            document.getElementById('summAdvanceCharge').innerText = '+ Rs. ' + selectedSvc.advanceFee.toFixed(2);
+        }
+        
+        document.getElementById('summTotal').innerText = 'Rs. ' + total.toFixed(2);
+        document.getElementById('total_cost_val').value = total.toFixed(2);
+    }
+
+    function nextStep() {
+        if(currentStep === 1) {
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('s1').classList.add('completed');
+            document.getElementById('s2').classList.add('active');
+            document.getElementById('prevBtn').style.visibility = 'visible';
+            document.getElementById('dynamicTitle').innerText = 'Tell us more';
+            currentStep = 2;
+        } else if(currentStep === 2) {
+            // Validate inputs
+            const date = document.getElementById('bookDate').value;
+            const address = document.querySelector('textarea[name="address"]').value;
+            if(!date || !address) {
+                alert('Please fill in all details.');
+                return;
+            }
+            
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.add('active');
+            document.getElementById('s2').classList.add('completed');
+            document.getElementById('s3').classList.add('active');
+            document.getElementById('btnText').innerText = 'Confirm & Pay';
+            document.getElementById('dynamicTitle').innerText = 'Final Review';
+            currentStep = 3;
+        } else if(currentStep === 3) {
+            document.getElementById('bookingForm').submit();
+        }
+    }
+
+    function prevStep() {
+        if(currentStep === 2) {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('s2').classList.remove('active');
+            document.getElementById('s1').classList.remove('completed');
+            document.getElementById('prevBtn').style.visibility = 'hidden';
+            currentStep = 1;
+        } else if(currentStep === 3) {
+            document.getElementById('step3').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('s3').classList.remove('active');
+            document.getElementById('s2').classList.remove('completed');
+            document.getElementById('btnText').innerText = 'Continue';
+            currentStep = 2;
+        }
+    }
+</script>
+{% endblock %}

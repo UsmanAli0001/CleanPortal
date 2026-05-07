@@ -1,0 +1,322 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% block title %}Pricing Catalog | Clean Pak Portal Gujrat{% endblock %}
+
+{% block extra_head %}
+<!-- Bootstrap Icons for Model-based Categories -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    /* ====== PREMIUM HERO ====== */
+    .catalog-hero {
+        position: relative;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 140px 50px 100px;
+        text-align: center;
+        overflow: hidden;
+    }
+    .catalog-hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+        background-size: 40px 40px;
+    }
+    .hero-glow {
+        position: absolute;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+        top: -200px; left: -100px;
+        filter: blur(80px);
+    }
+    .hero-glow-2 {
+        position: absolute;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+        bottom: -150px; right: -50px;
+        filter: blur(80px);
+    }
+    .catalog-hero .badge-pill {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #10b981; padding: 10px 24px; border-radius: 100px;
+        font-size: 0.85rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+        margin-bottom: 30px; position: relative; z-index: 1;
+        backdrop-filter: blur(10px);
+    }
+    .catalog-hero h1 { 
+        font-size: 3.5rem; font-weight: 900; color: #fff; margin: 0 0 20px; 
+        position: relative; z-index: 1; line-height: 1.1; letter-spacing: -1.5px; 
+    }
+    .catalog-hero h1 span { 
+        background: linear-gradient(to right, #10b981, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .catalog-hero p { 
+        font-size: 1.2rem; color: #94a3b8; max-width: 700px; margin: 0 auto; 
+        line-height: 1.8; position: relative; z-index: 1; font-weight: 400;
+    }
+
+    /* ====== SECTION STYLING ====== */
+    .main-content { 
+        background-color: #f8fafc; 
+        padding: 80px 50px;
+        background-image: linear-gradient(#eef2f7 1px, transparent 1px), linear-gradient(90deg, #eef2f7 1px, transparent 1px);
+        background-size: 50px 50px;
+    }
+    .container { max-width: 1300px; margin: 0 auto; }
+    
+    .section-header { text-align: center; margin-bottom: 70px; }
+    .section-tag {
+        font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
+        color: #10b981; margin-bottom: 12px; display: block;
+    }
+    .section-title { 
+        font-size: 2.5rem; font-weight: 800; color: #0f172a; margin-bottom: 20px; 
+        letter-spacing: -0.5px;
+    }
+    .section-desc { color: #64748b; font-size: 1.1rem; max-width: 650px; margin: 0 auto; line-height: 1.7; }
+
+    /* ====== DYNAMIC GRID ====== */
+    .catalog-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
+        gap: 24px; 
+        margin-bottom: 60px;
+    }
+
+    .catalog-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 30px;
+        padding: 24px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .catalog-card:hover {
+        transform: translateY(-10px);
+        background: white;
+        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
+        border-color: #10b98122;
+    }
+
+    .card-icon {
+        width: 55px; height: 55px;
+        background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; color: #0f172a;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    .catalog-card:hover .card-icon {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        transform: rotate(-5deg) scale(1.1);
+    }
+
+    .catalog-card h3 { 
+        font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 10px; 
+    }
+    .catalog-card p { 
+        color: #64748b; font-size: 0.95rem; line-height: 1.6; margin-bottom: 25px; 
+    }
+
+    .price-tag {
+        margin-top: auto;
+        padding-top: 25px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+    .price-label { font-size: 0.85rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
+    .price-value { font-size: 1.4rem; font-weight: 900; color: #0f172a; }
+    .price-unit { font-size: 0.8rem; font-weight: 600; color: #64748b; }
+
+    /* ====== PREMIUM COMPARISON TABLE ====== */
+    .pricing-table-wrap {
+        background: white;
+        border-radius: 40px;
+        padding: 60px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.03);
+        margin-top: 50px;
+        border: 1px solid #f1f5f9;
+    }
+
+    .urgency-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-top: 40px;
+    }
+
+    @media (max-width: 991px) {
+        .urgency-panel { grid-template-columns: 1fr; }
+        .catalog-hero h1 { font-size: 2.5rem; }
+    }
+
+    .urg-card {
+        padding: 35px;
+        border-radius: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    .urg-normal { background: #f8fafc; border: 1px solid #e2e8f0; }
+    .urg-urgent { 
+        background: linear-gradient(135deg, #0f172a, #1e293b); 
+        color: white; 
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+    }
+
+    .urg-card i { font-size: 1.5rem; margin-bottom: 15px; display: block; }
+    .urg-card h4 { font-size: 1.25rem; font-weight: 800; margin-bottom: 10px; }
+    .urg-card p { font-size: 0.95rem; opacity: 0.7; line-height: 1.6; }
+
+    .popular-tag {
+        position: absolute;
+        top: 20px; right: 20px;
+        background: #10b981; color: white;
+        padding: 5px 12px; border-radius: 100px;
+        font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+    }
+
+    /* ====== MUNICIPAL TIERS (Hardcoded Premium) ====== */
+    .tier-section { margin-top: 100px; }
+    .tier-card {
+        background: #fff; border-radius: 30px; padding: 45px;
+        border: 1px solid #f1f5f9; transition: 0.3s;
+        text-align: center;
+    }
+    .tier-card:hover { border-color: #10b981; transform: translateY(-5px); }
+    .tier-card .icon { 
+        font-size: 2.5rem; color: #10b981; margin-bottom: 20px; 
+        display: inline-block; padding: 20px; background: #f0fdf4; border-radius: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PREMIUM HERO -->
+<section class="catalog-hero">
+    <div class="hero-glow"></div>
+    <div class="hero-glow-2"></div>
+    <div class="container">
+        <div class="badge-pill">
+            <i data-lucide="shield-check" style="width:16px;"></i> 
+            Authorized Fee Structure 2026
+        </div>
+        <h1>Our Transparent <span>Service Catalog</span></h1>
+        <p>Explore our comprehensive list of municipal services, specialized waste collection, and residential maintenance fees tailored for Gujrat City residents.</p>
+    </div>
+</section>
+
+<div class="main-content">
+    <div class="container">
+        
+        <!-- SECTION 1: CORE MUNICIPAL SERVICES (DATABASE DRIVEN) -->
+        <div class="section-header">
+            <span class="section-tag">Direct Services</span>
+            <h2 class="section-title">Municipal Service Fees</h2>
+            <p class="section-desc">Standard utility and maintenance services provided by the municipal corporation with fixed base rates.</p>
+        </div>
+
+        <div class="catalog-grid">
+            {% for category in service_categories %}
+            <div class="catalog-card">
+                <div class="card-icon">
+                    {% if 'Drainage' in category.name %}
+                        <i data-lucide="waves"></i>
+                    {% elif 'Water' in category.name %}
+                        <i data-lucide="droplet"></i>
+                    {% elif 'Light' in category.name %}
+                        <i data-lucide="lightbulb"></i>
+                    {% elif 'Cleaning' in category.name %}
+                        <i data-lucide="wind"></i>
+                    {% elif 'Garbage' in category.name %}
+                        <i data-lucide="trash-2"></i>
+                    {% else %}
+                        <i data-lucide="settings"></i>
+                    {% endif %}
+                </div>
+                <h3>{{ category.name }}</h3>
+                <p>{{ category.description|default:"Professional municipal maintenance and support services for citizens." }}</p>
+                
+                <div class="price-tag">
+                    <span class="price-label">Starting From</span>
+                    <div>
+                        <span class="price-value">Rs. {{ category.base_price|floatformat:0 }}</span>
+                        <span class="price-unit">/complaint</span>
+                        <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 600; margin-top: 2px;">(Distance-based)</div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 50px; background: white; border-radius: 30px; color: #94a3b8;">
+                <i data-lucide="alert-circle" style="width: 48px; height: 48px; margin-bottom: 15px;"></i>
+                <p>No service categories found in the database. Please check back later.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+
+
+        <!-- SECTION 3: PRICING LOGIC -->
+        <div class="pricing-table-wrap">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 30px;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h3 style="font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-bottom: 15px;">Understanding Our Tiers</h3>
+                    <p style="color: #64748b; line-height: 1.7;">Fees are calculated per complaint based on the distance from main collection hubs and the urgency level selected during booking. All charges are transparently listed and can be paid via our secure digital wallet.</p>
+                    
+                    <ul style="list-style: none; padding: 0; margin: 30px 0 0; display: flex; flex-direction: column; gap: 15px;">
+                        <li style="display: flex; align-items: center; gap: 12px; color: #475569; font-weight: 600;">
+                            <i data-lucide="check-circle-2" style="color: #10b981; width: 20px;"></i> No Hidden Charges
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 12px; color: #475569; font-weight: 600;">
+                            <i data-lucide="check-circle-2" style="color: #10b981; width: 20px;"></i> Digital Receipt Generated
+                        </li>
+                        <li style="display: flex; align-items: center; gap: 12px; color: #475569; font-weight: 600;">
+                            <i data-lucide="check-circle-2" style="color: #10b981; width: 20px;"></i> 24/7 Support for Billing Queries
+                        </li>
+                    </ul>
+                </div>
+
+                <div style="flex: 1.2; min-width: 300px;">
+                    <div class="urgency-panel">
+                        <div class="urg-card urg-normal">
+                            <i data-lucide="clock" style="color: #64748b;"></i>
+                            <h4>Normal Priority</h4>
+                            <p>Handled within 8-10 hours. Subject to standard base rates.</p>
+                            <div style="margin-top: 15px; font-weight: 800; color: #0f172a;">Base Price</div>
+                        </div>
+                        <div class="urg-card urg-urgent">
+                            <i data-lucide="zap" style="color: #fbbf24;"></i>
+                            <h4>Urgent Priority</h4>
+                            <p>Handled within 2-3 hours. Includes express surcharge.</p>
+                            <div style="margin-top: 15px; font-weight: 800; color: #10b981;">Base x 1.5</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+</script>
+{% endblock %}

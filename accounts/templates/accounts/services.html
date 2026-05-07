@@ -1,223 +1,420 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Services - Clean Pak Portal</title>
-<link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
+{% block title %}The Platform Hub | Gujrat City Services{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* Body */
-body{
-    margin:0;
-    font-family:'Segoe UI', sans-serif;
-    background:#f4f7fb;
-    color:#333;
-}
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --secondary: #10b981;
+        --accent: #f59e0b;
+        --danger: #ef4444;
+        --bg-main: #f8fafc;
+        --glass: rgba(255, 255, 255, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --card-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+    }
 
-/* NAVBAR */
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--bg-main);
+        color: #1e293b;
+    }
 
-.navbar{
-    background:#035e08;
-    color:white;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:6px 100px;
-}
+    /* ====== HERO SECTION ====== */
+    .hero-v3 {
+        position: relative;
+        padding: 100px 5% 80px;
+        background: url('/static/accounts/images/hero_gujrat.png');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        text-align: center;
+        overflow: hidden;
+        color: white;
+    }
 
-/* NAV LINKS */
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
 
-.nav-links a{
-    color:white;
-    margin:0 15px;
-    text-decoration:none;
-    font-weight:700; /* bold font */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* clean professional font */
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* subtle box/text shadow */
-    transition: color 0.3s ease, text-shadow 0.3s ease; /* smooth transition */
-}
+    .hero-v3::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(-45deg, rgba(30, 64, 175, 0.9), rgba(10, 29, 71, 0.7), rgba(14, 48, 102, 0.7), rgba(2, 22, 78, 0.9));
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        z-index: 0;
+    }
 
-.nav-links a:hover {
-    color:#ffd700; /* hover color */
-    text-shadow: 2px 2px 5px rgba(0,0,0,0.7); /* deeper shadow on hover */
-}
-.nav-buttons button{
-    padding:8px 16px;
-    border:none;
-    border-radius:11px;
-    margin-left:10px;
-    cursor:pointer;
-    font-weight:600;
-    transition: all 0.3s ease; /* smooth transition */
-}
+    .hero-v3 .container {
+        position: relative;
+        z-index: 1;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
 
-/* Login Button */
-.login-btn{
-    background:#fa7c07;
-    color:white;
-}
+    .badge-premium {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 8px 18px;
+        border-radius: 100px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
 
-.login-btn:hover{
-    background:#ff9800; /* lighter orange on hover */
-    transform: scale(1.05); /* slight growth */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* subtle shadow */
-}
+    .hero-v3 h1 {
+        font-size: clamp(2.8rem, 6vw, 4.2rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        margin-bottom: 20px;
+        color: white;
+    }
 
-/* Register Button */
-.register-btn{
-    background:#1976d2;
-    color:white;
-}
+    .hero-v3 h1 span {
+        background: linear-gradient(to right, #ffffff, #93c5fd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 900;
+    }
 
-.register-btn:hover{
-    background:#42a5f5; /* lighter blue on hover */
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-/* HERO */
-.services-hero{
-    background:linear-gradient(90deg,#02073b,#109fff);
-    color:#fff;
-    text-align:center;
-    padding:60px 20px;
-}
-.services-hero h1{
-    font-size:38px;
-    margin-bottom:10px;
-}
-.services-hero p{
-    font-size:18px;
-    opacity:.95;
-}
+    .hero-v3 p {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.6;
+        font-weight: 500;
+    }
 
-/* SERVICE CARDS */
-.services-container{
-    width:85%;
-    margin:40px auto;
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:25px;
-}
-.service-card{
-    background: #fff;
-    padding:25px;
-    border-radius:12px;
-    box-shadow:0 6px 15px rgba(0,0,0,0.08);
-    text-align:center;
-    cursor:pointer;
-    transition:0.3s;
-}
-.service-card:hover{
-    transform:translateY(-5px);
-    box-shadow:0 10px 25px rgba(0,0,0,0.12);
-}
-.service-card img{
-    width:60px;
-    height:60px;
-    margin-bottom:15px;
-}
-.service-card h3{
-    color: #035e08;
-    margin-bottom:10px;
-}
-.service-card p{
-    color: #555;
-    line-height:1.5;
-    font-size:15px;
-}
+    /* ====== HUB GRID ====== */
+    .hub-section {
+        padding: 60px 5% 100px;
+        max-width: 1400px;
+        margin: 0 auto;
+        position: relative;
+    }
 
-/* FOOTER */
-.footer{
-    background:#111827;
-    color:white;
-    text-align:center;
-    padding:25px;
-    font-size:14px;
-    margin-top:50px;
-}
+    .hub-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hub-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 28px;
+        padding: 25px;
+        height: 350px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 15px 35px rgba(37, 99, 235, 0.05);
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hub-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 40px 80px rgba(37, 99, 235, 0.15);
+        border-color: var(--primary);
+        background: white;
+    }
+
+    .hub-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--primary);
+        margin-bottom: 20px;
+        transition: all 0.4s ease;
+    }
+
+    .hub-card:hover .hub-icon {
+        background: var(--primary);
+        color: white;
+        transform: rotate(15deg) scale(1.1);
+    }
+
+    .hub-card h3 {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+    }
+
+    .hub-card p {
+        font-size: 0.9rem;
+        color: #64748b;
+        line-height: 1.5;
+        margin: 0;
+        font-weight: 500;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .card-footer {
+        margin-top: auto;
+        padding-top: 15px;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .card-footer span {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .info-badge {
+        font-size: 0.6rem;
+        font-weight: 800;
+        background: #f1f5f9;
+        color: #64748b;
+        padding: 3px 8px;
+        border-radius: 100px;
+        text-transform: uppercase;
+    }
+
+    /* SCROLL ANIMATION */
+    .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    @media (max-width: 640px) {
+        .hub-grid { grid-template-columns: 1fr; }
+        .hero-v3 { padding: 60px 5%; }
+        .hub-card { height: auto; min-height: 320px; }
+    }
 </style>
-</head>
-<body>
+{% endblock %}
 
-<!-- NAVBAR -->
-<!-- NAVBAR -->
-<div class="navbar">
-    
+{% block content %}
+<!-- PREMIUM HERO SECTION -->
+<section class="hero-v3">
+    <div class="container">
+        <div class="badge-premium">
+            <i data-lucide="sparkles"></i> SMART CITY INITIATIVE
+        </div>
+        <h1>Our Digital <span>Ecosystem.</span></h1>
+        <p>A unified portal designed to streamline municipal operations and enhance citizen engagement through cutting-edge technology and transparent processes.</p>
+    </div>
+</section>
 
-    <h2>Clean Pak Portal</h2>
-    
-
-     <div class="nav-links">
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'about' %}">About</a>
-        <a href="{% url 'services' %}">Services</a>
-        <a href="{% url 'reports' %}">Reports</a>
-        <a href="{% url 'contact' %}">Contact</a>
+<!-- THE PLATFORM HUB -->
+<section class="hub-section" id="hub-section">
+    <div class="section-spotlight" id="spotlight"></div>
+    <div class="hub-grid">
         
+        <!-- 1. Register Complaint -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="shield-check"></i></div>
+            <h3>Smart Registration</h3>
+            <p>Empower your voice with our seamless reporting system. Capture real-time images, attach GPS coordinates, and settle fees instantly via Stripe to trigger a priority response.</p>
+            <div class="card-footer">
+                <span>Official Municipal Service</span>
+                <div class="info-badge">Process</div>
+            </div>
+        </div>
+
+        <!-- 2. Track Progress -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="activity"></i></div>
+            <h3>Live Status Tracker</h3>
+            <p>Experience total transparency. Use your unique Tracking ID to follow your complaint's journey in high-definition detail, from the moment it's logged to its successful completion.</p>
+            <div class="card-footer">
+                <span>Real-time Monitoring</span>
+                <div class="info-badge">Live</div>
+            </div>
+        </div>
+
+        <!-- 3. Zone Coverage -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="map-pin"></i></div>
+            <h3>Zone Coverage</h3>
+            <p>Navigate the hygiene landscape of Gujrat with our dynamic coverage map. We analyze city-wide data to categorize areas ensuring resources go exactly where they are needed most.</p>
+            <div class="card-footer">
+                <span>City Intelligence</span>
+                <div class="info-badge">Map</div>
+            </div>
+        </div>
+
+        <!-- 4. Fleet Monitor -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="gauge"></i></div>
+            <h3>Fleet Monitoring </h3>
+            <p>Watch our infrastructure in motion. Our fleet monitoring system provides real-time visibility into vehicle locations and operational phases: Assigned, In Transit, and Finished.</p>
+            <div class="card-footer">
+                <span>Infrastructure Control</span>
+                <div class="info-badge">Logistics</div>
+            </div>
+        </div>
+
+        <!-- 5. Payment Details -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="wallet"></i></div>
+            <h3>Payment Transparency</h3>
+            <p>Know exactly what you're paying for. We provide a clear breakdown of service costs, distinguishing between standard Base pricing and Urgent priority rates for time-sensitive tasks.</p>
+            <div class="card-footer">
+                <span>Financial Integrity</span>
+                <div class="info-badge">Secure</div>
+            </div>
+        </div>
+
+        <!-- 6. Service Schedule -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="calendar-days"></i></div>
+            <h3>Cleaning Schedule</h3>
+            <p>Stay ahead of the cleanup cycle. Our comprehensive schedules show exactly when, where, and who is working on city maintenance, including worker profiles and targets.</p>
+            <div class="card-footer">
+                <span>Public Coordination</span>
+                <div class="info-badge">Planning</div>
+            </div>
+        </div>
+
+        <!-- 7. System Alerts -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="zap"></i></div>
+            <h3>Pulse Notifications</h3>
+            <p>Never miss a beat with our administration-direct alert system. Get instant push notifications regarding service windows, emergency directives, and city updates.</p>
+            <div class="card-footer">
+                <span>Direct Communication</span>
+                <div class="info-badge">Instant</div>
+            </div>
+        </div>
+
+        <!-- 8. Citizen Voice -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="heart"></i></div>
+            <h3>Citizen Reviews</h3>
+            <p>Join the conversation and shape the future of Gujrat. Submit detailed reviews and provide actionable feedback about your experiences to help us iterate and improve daily.</p>
+            <div class="card-footer">
+                <span>Community Feedback</span>
+                <div class="info-badge">Social</div>
+            </div>
+        </div>
+
+        <!-- 9. History -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="clock-rewind"></i></div>
+            <h3>Service History</h3>
+            <p>Your history, preserved. Access a beautifully organized archive of all your past complaints, payment receipts, and resolution timelines to track your contribution.</p>
+            <div class="card-footer">
+                <span>Personal Archive</span>
+                <div class="info-badge">Records</div>
+            </div>
+        </div>
+
+        <!-- 10. City Analytics -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="bar-chart-big"></i></div>
+            <h3>City Analytics</h3>
+            <p>Dive deep into city-wide performance metrics. Our analytics dashboard visualizes waste management efficiency, resolution success rates, and community impact.</p>
+            <div class="card-footer">
+                <span>Data-Driven Growth</span>
+                <div class="info-badge">Insights</div>
+            </div>
+        </div>
+
+        <!-- 11. Pricing Catalog -->
+        <div class="hub-card reveal">
+            <div class="hub-icon"><i data-lucide="layers"></i></div>
+            <h3>Service Catalog</h3>
+            <p>Explore our full range of offerings. From residential waste pickup to industrial-scale cleanup projects, our pricing catalog provides a detailed menu of services.</p>
+            <div class="card-footer">
+                <span>Service Excellence</span>
+                <div class="info-badge">Pricing</div>
+            </div>
+        </div>
+
     </div>
+</section>
 
-    <div class="nav-buttons">
-        <a href="{% url 'dashboard' %}"><button class="login-btn">Back to Dashboard</button></a>
-
-<a href="{% url 'logout' %}">
-
-<button class="login-btn">
-
-Log out
-
-</button>
-
-</a>
-
-</div>
-
-</div>
-
-<!-- HERO -->
-<div class="services-hero">
-    <h1>Our Services</h1>
-    <p>Explore the features of Clean Pak Portal</p>
-</div>
-
-<!-- SERVICE CARDS -->
-<div class="services-container">
-
-    <div class="service-card" onclick="window.location.href='{% url 'register_complaint' %}'">
-        <img src="{% static 'accounts/images/register.png' %}" alt="Complaint Registration">
-        <h3>Complaint Registration</h3>
-        <p>Submit your municipal complaints digitally and track progress.</p>
+<!-- CTA SECTION -->
+<section style="padding: 100px 5%; background: linear-gradient(135deg, #1e293b, #0f172a); text-align: center; color: white;">
+    <div class="container" style="max-width: 800px; margin: 0 auto;">
+        <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 24px; letter-spacing: -0.02em;">Better City, <span>Better Life.</span></h2>
+        <p style="font-size: 1.1rem; opacity: 0.8; line-height: 1.6; margin-bottom: 40px;">Gujrat is evolving every day. Be part of the digital transformation and help us maintain the beauty of our heritage city.</p>
+        <div style="display: flex; justify-content: center; gap: 20px;">
+            <a href="{% url 'register_complaint' %}" class="btn btn-primary" style="padding: 18px 45px; border-radius: 12px; font-weight: 700; background: var(--primary); border: none;">Go to Dashboard</a>
+            <a href="{% url 'contact' %}" class="btn btn-outline-light" style="padding: 18px 45px; border-radius: 12px; font-weight: 700; border: 2px solid rgba(255,255,255,0.2); background: transparent; color: white;">Support Center</a>
+        </div>
     </div>
+</section>
 
-    <div class="service-card" onclick="window.location.href='{% url 'pay_fee' %}'">
-        <img src="{% static 'accounts/images/payment.png' %}" alt="Online Payment">
-        <h3>Online Payment</h3>
-        <p>Pay municipal fees, charges, and service bills online securely.</p>
-    </div>
+{% endblock %}
 
-    <div class="service-card" onclick="window.location.href='{% url 'schedule' %}'">
-        <img src="{% static 'accounts/images/scheduled.png' %}" alt="Waste Collection Schedule">
-        <h3>Waste Collection Schedule</h3>
-        <p>View scheduled garbage collection in your area and manage bins efficiently.</p>
-    </div>
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 
-    <div class="service-card" onclick="window.location.href='{% url 'maintenance' %}'">
-        <img src="{% static 'accounts/images/maintenance.png' %}" alt="Maintenance Requests">
-        <h3>Maintenance Requests</h3>
-        <p>Report street lights, water leaks, and other maintenance issues online.</p>
-    </div>
+    // Dynamic Spotlight Effect
+    const hubSection = document.getElementById('hub-section');
+    const spotlight = document.getElementById('spotlight');
 
-    <div class="service-card" onclick="window.location.href='{% url 'emergency' %}'">
-        <img src="{% static 'accounts/images/emergency.png' %}" alt="Emergency Reporting">
-        <h3>Emergency Reporting</h3>
-        <p>Report urgent municipal emergencies and hazards to authorities quickly.</p>
-    </div>
+    hubSection.addEventListener('mousemove', (e) => {
+        const rect = hubSection.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        spotlight.style.setProperty('--x', `${(x / rect.width) * 100}%`);
+        spotlight.style.setProperty('--y', `${(y / rect.height) * 100}%`);
+    });
+    // Scroll Reveal Animation
+    const reveals = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                revealObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
 
-</div>
-
-<!-- FOOTER -->
-<div class="footer">
-    © 2026 Clean Pak Portal | Municipal Digital Services System
-</div>
-
-</body>
-</html>
+    reveals.forEach(el => revealObserver.observe(el));
+});
+</script>
+{% endblock %}

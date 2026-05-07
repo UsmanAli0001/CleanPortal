@@ -1,0 +1,599 @@
+{% extends 'accounts/admin/admin_base.html' %}
+{% load static custom_filters %}
+
+{% block title %}Zone Management | Clean Pak Portal{% endblock %}
+
+{% block admin_extra_css %}
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.3);
+        --primary-gradient: linear-gradient(135deg, #1A237E, #283593);
+        --accent-gradient: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    .zone-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: var(--glass-bg);
+        padding: 24px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-card .icon-box {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .bg-clean { background: #d1fae5; color: #10b981; }
+    .bg-moderate { background: #fef3c7; color: #f59e0b; }
+    .bg-critical { background: #fee2e2; color: #ef4444; }
+    .bg-total { background: #e0e7ff; color: #3b82f6; }
+
+    .stat-info h3 { margin: 0; font-size: 1.8rem; font-weight: 800; color: #1e293b; letter-spacing: -1px; }
+    .stat-info p { margin: 0; font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+    .zone-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    .viz-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        border-radius: 30px;
+        padding: 30px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .viz-header {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .viz-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .viz-title i { color: var(--primary-blue); }
+
+    canvas#statusChart {
+        max-height: 400px;
+        width: 100% !important;
+    }
+
+    .zone-list-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        border-radius: 30px;
+        padding: 0;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-header {
+        padding: 30px;
+        background: rgba(255, 255, 255, 0.5);
+        border-bottom: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-header h2 { margin: 0; font-size: 1.2rem; font-weight: 800; color: #1e293b; }
+
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-clean { background: #d1fae5; color: #065f46; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2); }
+    .status-moderate { background: #fef3c7; color: #92400e; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2); }
+    .status-critical { background: #fee2e2; color: #991b1b; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2); }
+
+    .zone-table-wrapper {
+        flex: 1;
+        overflow-y: auto;
+        max-height: 460px;
+    }
+
+    .zone-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .zone-table th {
+        text-align: left;
+        padding: 16px 30px;
+        background: rgba(248, 250, 252, 0.5);
+        font-size: 0.7rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 800;
+        letter-spacing: 1px;
+        position: sticky;
+        top: 0;
+    }
+
+    .zone-table td {
+        padding: 18px 30px;
+        border-bottom: 1px solid var(--glass-border);
+        font-size: 0.9rem;
+        color: #334155;
+    }
+
+    .zone-table tr:hover { background: rgba(255, 255, 255, 0.6); }
+
+    .action-group { display: flex; gap: 10px; }
+    
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e2e8f0;
+        background: white;
+        cursor: pointer;
+    }
+
+    .btn-edit { color: #64748b; }
+    .btn-edit:hover { background: var(--primary-blue); color: white; border-color: var(--primary-blue); }
+    .btn-delete { color: #f87171; }
+    .btn-delete:hover { background: #ef4444; color: white; border-color: #ef4444; }
+
+/* Custom Modal Aesthetic */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px);
+        overflow-y: auto;
+        padding: 60px 20px;
+    }
+
+    .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid white;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        margin: 0 auto;
+        width: 100%;
+        max-width: 420px;
+        border-radius: 24px;
+        overflow: hidden;
+        animation: modalSlideUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    @keyframes modalSlideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+        background: var(--primary-gradient);
+        padding: 20px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .close-modal {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .close-modal:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 10px 16px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        font-size: 0.9rem;
+        color: #1e293b;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.1);
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        color: white;
+        font-weight: 800;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        background: var(--primary-gradient);
+        box-shadow: 0 10px 20px rgba(26, 35, 126, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 25px rgba(26, 35, 126, 0.3);
+    }
+
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <div>
+        <h1>Zone Management</h1>
+        <p>Define service areas and monitor local cleanliness levels.</p>
+    </div>
+    <div style="display: flex; gap: 12px;">
+        <button class="nav-btn" style="background: var(--primary-blue); color: white !important; border: none;" onclick="openAddModal()">
+            <i data-lucide="plus" style="width: 18px; margin-right: 8px;"></i> Add New Zone
+        </button>
+    </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="zone-stats">
+    <div class="stat-card">
+        <div class="icon-box bg-total"><i data-lucide="map"></i></div>
+        <div class="stat-info">
+            <h3>{{ stats.total }}</h3>
+            <p>Total Zones</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon-box bg-clean"><i data-lucide="check-circle"></i></div>
+        <div class="stat-info">
+            <h3>{{ stats.clean }}</h3>
+            <p>Clean Areas</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon-box bg-moderate"><i data-lucide="alert-triangle"></i></div>
+        <div class="stat-info">
+            <h3>{{ stats.moderate }}</h3>
+            <p>Moderate</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon-box bg-critical"><i data-lucide="flame"></i></div>
+        <div class="stat-info">
+            <h3>{{ stats.critical }}</h3>
+            <p>Critical</p>
+        </div>
+    </div>
+</div>
+
+<div class="zone-grid">
+    <!-- Zone List Table -->
+    <div class="zone-list-card">
+        <div class="card-header">
+            <h2>Active Zones</h2>
+            <div style="font-size: 0.8rem; color: #94a3b8;">{{ zones|length }} Areas Registered</div>
+        </div>
+        <div class="zone-table-wrapper">
+            <table class="zone-table">
+                <thead>
+                    <tr>
+                        <th>Zone Name</th>
+                        <th>Status</th>
+                        <th>Supervisor</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for z in zones %}
+                    <tr>
+                        <td><span style="font-weight: 700;">{{ z.name }}</span></td>
+                        <td><span class="status-badge status-{{ z.status|lower }}">{{ z.status }}</span></td>
+                        <td><span style="color: #64748b; font-size: 0.85rem;">{% if z.assigned_staff %}{{ z.assigned_staff.first_name|default:z.assigned_staff.username }}{% else %}Unassigned{% endif %}</span></td>
+                        <td>
+                            <div class="action-group">
+                                <button class="btn-icon btn-edit" onclick='openEditModal("{{ z.id }}", "{{ z.name }}", "{{ z.status }}", "{% if z.assigned_staff %}{{ z.assigned_staff.id }}{% endif %}")'>
+                                    <i data-lucide="edit-3" style="width: 14px;"></i>
+                                </button>
+                                <form method="POST" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="{{ z.id }}">
+                                    <button type="submit" class="btn-icon btn-delete" onclick="return confirm('Delete this zone?')">
+                                        <i data-lucide="trash-2" style="width: 14px;"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" style="text-align:center; color: #94a3b8; padding: 40px;">No zones defined yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Status Distribution Graph -->
+    <div class="viz-card">
+        <div class="viz-header">
+            <h3 class="viz-title"><i data-lucide="pie-chart"></i> Zone Status Distribution</h3>
+            <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 700;">LIVE ANALYSIS</span>
+        </div>
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; min-height: 400px;">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="zoneModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add New Zone</h2>
+            <button class="close-modal" onclick="closeModal()">
+                <i data-lucide="x" style="width: 20px;"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="zoneForm" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" id="formAction" value="add">
+                <input type="hidden" name="id" id="zone_id">
+                <input type="hidden" name="boundary" id="zone_boundary">
+
+                <div class="form-group">
+                    <label>Zone Name</label>
+                    <input type="text" name="name" id="zone_name" placeholder="e.g. Model Town Sector A" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Cleanliness Status</label>
+                    <select name="status" id="zone_status">
+                        <option value="Clean">Clean</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Assigned Supervisor</label>
+                    <select name="assigned_staff" id="zone_staff">
+                        <option value="">-- Select Staff --</option>
+                        {% for s in staff_members %}
+                        <option value="{{ s.id }}">{{ s.first_name }} {{ s.last_name }} ({{ s.username }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px dashed #e2e8f0; padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 25px;">
+                    <i data-lucide="info" style="width: 24px; color: #94a3b8; margin-bottom: 10px;"></i>
+                    <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Map boundary drawing is disabled. Administrative zones are now managed by metadata tags and proximity settings.</p>
+                </div>
+
+                <button type="submit" class="btn-primary">Save Zone Configuration</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block admin_extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize Chart
+    function initCharts() {
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        
+        // Data from stats context
+        const data = {
+            labels: ['Clean', 'Moderate', 'Critical'],
+            datasets: [{
+                data: [{{ stats.clean }}, {{ stats.moderate }}, {{ stats.critical }}],
+                backgroundColor: [
+                    '#10b981', // Clean (Green)
+                    '#f59e0b', // Moderate (Amber)
+                    '#ef4444'  // Critical (Red)
+                ],
+                borderWidth: 0,
+                hoverOffset: 20,
+                borderRadius: 10
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 25,
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 12,
+                                weight: '600'
+                            },
+                            color: '#64748b'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#1e293b',
+                        bodyColor: '#64748b',
+                        borderColor: '#e2e8f0',
+                        borderWidth: 1,
+                        padding: 15,
+                        displayColors: true,
+                        boxPadding: 8,
+                        usePointStyle: true,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const value = context.raw;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return ` ${context.label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: false
+            },
+            plugins: [{
+                id: 'centerText',
+                beforeDraw: function(chart) {
+                    const width = chart.width,
+                          height = chart.height,
+                          ctx = chart.ctx;
+                    ctx.restore();
+                    
+                    const fontSize = (height / 150).toFixed(2);
+                    ctx.font = `800 ${fontSize}em 'Inter'`;
+                    ctx.textBaseline = "middle";
+                    ctx.fillStyle = "#1e293b";
+
+                    const text = "{{ stats.total }}",
+                          textX = Math.round((width - ctx.measureText(text).width) / 2),
+                          textY = height / 2 - 10;
+
+                    ctx.fillText(text, textX, textY);
+
+                    ctx.font = "700 0.8rem 'Inter'";
+                    ctx.fillStyle = "#94a3b8";
+                    const subText = "TOTAL ZONES",
+                          subX = Math.round((width - ctx.measureText(subText).width) / 2),
+                          subY = height / 2 + 25;
+                    
+                    ctx.fillText(subText, subX, subY);
+                    ctx.save();
+                }
+            }]
+        });
+    }
+
+    // Modal Controls
+    function openAddModal() {
+        document.getElementById('modalTitle').innerText = "Add New Zone";
+        document.getElementById('formAction').value = "add";
+        document.getElementById('zone_id').value = "";
+        document.getElementById('zone_name').value = "";
+        document.getElementById('zone_status').value = "Clean";
+        document.getElementById('zone_staff').value = "";
+        document.getElementById('zone_boundary').value = "{}";
+        document.getElementById('zoneModal').style.display = 'block';
+    }
+
+    function openEditModal(id, name, status, staffId) {
+        document.getElementById('modalTitle').innerText = "Edit Zone";
+        document.getElementById('formAction').value = "edit";
+        document.getElementById('zone_id').value = id;
+        document.getElementById('zone_name').value = name;
+        document.getElementById('zone_status').value = status;
+        document.getElementById('zone_staff').value = staffId;
+        document.getElementById('zone_boundary').value = "{}";
+        document.getElementById('zoneModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('zoneModal').style.display = 'none';
+    }
+
+    window.onload = () => {
+        initCharts();
+    };
+
+    // Close modal on click outside
+    window.onclick = (e) => {
+        if(e.target == document.getElementById('zoneModal')) closeModal();
+    };
+
+</script>
+{% endblock %}

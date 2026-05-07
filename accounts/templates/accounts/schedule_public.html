@@ -1,0 +1,509 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Public Service Schedule | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<!-- Google Fonts: Outfit -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.65);
+        --glass-border: rgba(255, 255, 255, 0.5);
+        --accent-emerald: #10b981;
+        --accent-indigo: #6366f1;
+        --accent-violet: #8b5cf6;
+        --primary-blue: #2563eb;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Outfit', sans-serif;
+        background: #f8fafc;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    .animated-bg-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 50%, #f1f5f9 0%, #e2e8f0 100%);
+    }
+
+    .blob {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+        filter: blur(80px);
+        border-radius: 50%;
+        z-index: -1;
+        animation: float 20s infinite alternate cubic-bezier(0.45, 0, 0.55, 1);
+    }
+
+    .blob-1 {
+        top: -100px;
+        right: -100px;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+        animation-duration: 25s;
+    }
+
+    .blob-2 {
+        bottom: -150px;
+        left: -150px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%);
+        animation-duration: 30s;
+        animation-delay: -5s;
+    }
+
+    .blob-3 {
+        top: 40%;
+        left: 30%;
+        width: 300px;
+        height: 300px;
+        background: rgba(139, 92, 246, 0.1);
+        animation-duration: 22s;
+        animation-delay: -10s;
+    }
+
+    @keyframes float {
+        0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+        33% { transform: translate(30px, -50px) scale(1.1) rotate(10deg); }
+        66% { transform: translate(-20px, 20px) scale(0.9) rotate(-10deg); }
+        100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    }
+
+    .schedule-page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+    }
+
+    /* Hero Section */
+    .schedule-hero {
+        text-align: center;
+        margin-bottom: 60px;
+        padding: 40px 0;
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    .schedule-hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        letter-spacing: -2px;
+        background: linear-gradient(135deg, #1e293b 30%, #475569);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 15px;
+        line-height: 1.1;
+    }
+
+    .schedule-hero p {
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        max-width: 650px;
+        margin: 0 auto;
+        font-weight: 500;
+        line-height: 1.6;
+    }
+
+    /* City Badge */
+    .city-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        padding: 8px 16px;
+        border-radius: 50px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--accent-indigo);
+        margin-bottom: 25px;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* Search Section */
+    .search-wrapper {
+        max-width: 800px;
+        margin: -30px auto 40px;
+        position: relative;
+        z-index: 100;
+    }
+
+    .premium-search {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        padding: 10px;
+        border-radius: 30px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        display: flex;
+        gap: 12px;
+        transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .premium-search:focus-within {
+        transform: translateY(-8px);
+        box-shadow: 0 30px 70px rgba(99, 102, 241, 0.12), inset 0 0 0 1px rgba(99, 102, 241, 0.2);
+        background: white;
+    }
+
+    .premium-search input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        font-weight: 500;
+        outline: none;
+        color: var(--text-dark);
+        letter-spacing: -0.3px;
+    }
+
+    .premium-search-btn {
+        background: linear-gradient(135deg, var(--accent-indigo), var(--accent-violet));
+        color: white;
+        border: none;
+        padding: 0 40px;
+        border-radius: 22px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: 0.4s;
+        font-size: 1.05rem;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .premium-search-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
+        filter: brightness(1.1);
+    }
+
+    /* Grid Layout */
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+
+    /* Premium Card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 28px;
+        padding: 30px;
+        transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+    }
+
+    .glass-card:hover {
+        transform: translateY(-15px);
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.08);
+        border-color: white;
+    }
+
+    .glass-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 70%);
+        pointer-events: none;
+    }
+
+    /* Card Header */
+    .card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+    }
+
+    .service-badge {
+        background: #f8fafc;
+        padding: 12px 20px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--accent-indigo);
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+    }
+
+    .service-badge i { width: 22px; height: 22px; }
+
+    .service-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+
+    /* Status Badges */
+    .status-pill {
+        padding: 6px 14px;
+        border-radius: 12px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .status-pill.active { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+    .status-pill.delayed { background: #fffbeb; color: #b45309; border: 1px solid #fef3c7; }
+    .status-pill.upcoming { background: #f0f9ff; color: #0369a1; border: 1px solid #e0f2fe; }
+    .status-pill.holiday { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
+    .status-pill.completed { background: #f8fafc; color: #64748b; border: 1px solid #f1f5f9; }
+
+    /* Card Details */
+    .detail-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 20px;
+        color: #475569;
+        font-weight: 500;
+        font-size: 0.95rem;
+        padding: 4px 0;
+    }
+
+    .detail-row i {
+        color: var(--accent-indigo);
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        opacity: 0.7;
+    }
+
+    .detail-row strong { color: var(--text-dark); margin-right: 4px; font-weight: 600; }
+
+    /* Admin Notes */
+    .card-footer-notes {
+        background: rgba(0, 0, 0, 0.03);
+        padding: 18px;
+        border-radius: 18px;
+        margin-top: 25px;
+        font-size: 0.9rem;
+        border-left: 4px solid #cbd5e1;
+    }
+
+    .card-footer-notes strong { color: #64748b; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 5px; }
+
+    /* Holiday & Alert Banners */
+    .premium-alert {
+        background: linear-gradient(135deg, #ef4444, #b91c1c);
+        color: white;
+        padding: 25px 35px;
+        border-radius: 24px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        box-shadow: 0 15px 35px rgba(239, 68, 68, 0.2);
+    }
+
+    .premium-holiday {
+        background: linear-gradient(135deg, var(--accent-indigo), var(--accent-violet));
+        color: white;
+        padding: 50px;
+        border-radius: 40px;
+        margin-bottom: 50px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 25px 60px rgba(99, 102, 241, 0.2);
+    }
+
+    .holiday-icon { font-size: 3rem; margin-bottom: 15px; display: block; }
+
+    /* Animations Removed */
+
+    @media (max-width: 768px) {
+        .schedule-grid { grid-template-columns: 1fr; }
+        .schedule-hero h1 { font-size: 2.5rem; }
+        .premium-holiday { padding: 30px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animated-bg-container">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<div class="schedule-page-container">
+    
+    <!-- Hero Header -->
+    <header class="schedule-hero">
+        <div class="city-label">
+            <i data-lucide="map-pin" style="width: 14px; height: 14px;"></i>
+            Gujrat Municipal Corporation
+        </div>
+        <h1>City Service Schedule</h1>
+        <p>Real-time municipal timings, operational status, and urban service updates for a cleaner Gujrat City.</p>
+    </header>
+
+    <!-- Search Section -->
+    <section class="search-wrapper">
+        <form method="GET" class="premium-search">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by area, street or union council...">
+            <button type="submit" class="premium-search-btn">
+                <i data-lucide="search"></i> Search
+            </button>
+        </form>
+    </section>
+
+    <!-- Main Live Section -->
+    <section class="main-content">
+        
+        <!-- Regional Emergency Alerts -->
+        {% for alert in alerts %}
+        <div class="premium-alert">
+            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 50%;">
+                <i data-lucide="alert-triangle" style="width: 32px; height: 32px;"></i>
+            </div>
+            <div>
+                <h4 style="margin: 0; font-size: 1.2rem; font-weight: 800;">{{ alert.title }} | {{ alert.area }}</h4>
+                <p style="margin: 8px 0 0 0; opacity: 0.9; font-weight: 500;">{{ alert.message }}</p>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Active Holiday Protocol -->
+        {% if holiday %}
+        <div class="premium-holiday" style="background: linear-gradient(135deg, {% if holiday.holiday_type == 'Eid' %}#059669, #064e3b{% elif holiday.holiday_type == 'Emergency' %}#dc2626, #7f1d1d{% else %}#4f46e5, #4338ca{% endif %});">
+            <span class="holiday-icon">
+                {% if holiday.holiday_type == 'Eid' %}🌙{% elif holiday.holiday_type == 'Festive' %}🎁{% elif holiday.holiday_type == 'Emergency' %}🚨{% else %}📅{% endif %}
+            </span>
+            <h2 style="font-size: 2.8rem; font-weight: 800; margin-bottom: 20px;">{{ holiday.name }}</h2>
+            
+            <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 35px; flex-wrap: wrap;">
+                <span style="background: rgba(255,255,255,0.15); padding: 8px 20px; border-radius: 50px; font-weight: 700;">
+                    <i data-lucide="calendar" style="width: 16px; margin-right: 8px;"></i>{{ holiday.date|date:"M d, Y" }}
+                </span>
+                <span style="background: rgba(255,255,255,0.15); padding: 8px 20px; border-radius: 50px; font-weight: 700;">
+                    <i data-lucide="shield-check" style="width: 16px; margin-right: 8px;"></i>{{ holiday.service_status }}
+                </span>
+            </div>
+
+            <p style="font-size: 1.2rem; max-width: 800px; margin: 0 auto 40px; line-height: 1.6; opacity: 0.9;">
+                {{ holiday.special_plan|default:"Municipal schedules are optimized to maintain city sanitation during this public holiday." }}
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: left;">
+                <div style="background: rgba(255,255,255,0.1); padding: 25px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
+                    <h5 style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; color: rgba(255,255,255,0.7); margin-bottom: 15px;">Target Services</h5>
+                    {% if holiday.special_services %}
+                        {% for svc in holiday.special_services|split_comma %}
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.9rem;">
+                            <i data-lucide="check-circle" style="width: 16px; color: #10b981;"></i> {{ svc }}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="font-size: 0.9rem; opacity: 0.8;">Full service coverage enabled.</div>
+                    {% endif %}
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 25px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
+                    <h5 style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; color: rgba(255,255,255,0.7); margin-bottom: 15px;">Active Zones</h5>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        {% if holiday.zones_covered %}
+                            {% for zone in holiday.zones_covered|split_comma %}
+                            <span style="background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">{{ zone }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span style="background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 600;">City-Wide</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Schedule Grid -->
+        <div class="schedule-grid">
+            {% for item in schedules %}
+            <div class="glass-card">
+                <div class="card-head">
+                    <div class="service-badge">
+                        <i data-lucide="{% if item.data.service.name == 'Garbage Pickup' %}trash-2{% elif item.data.service.name == 'Street Cleaning' %}broom{% elif item.data.service.name == 'Drainage' %}droplets{% else %}pipette{% endif %}"></i>
+                        <span class="service-name">{{ item.data.service.name }}</span>
+                    </div>
+                    <span class="status-pill {% if item.status == 'Active' %}active{% elif item.status == 'Delayed' %}delayed{% elif item.status == 'Upcoming' %}upcoming{% elif item.status == 'CLOSED / HOLIDAY' %}holiday{% else %}completed{% endif %}">
+                        {{ item.status }}
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <div class="detail-row">
+                        <i data-lucide="map-pin"></i>
+                        <span><strong>Area:</strong> {{ item.data.area_name }} <span style="opacity: 0.6;">({{ item.data.union_council }})</span></span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <i data-lucide="clock"></i>
+                        <span><strong>Active Hours:</strong> {{ item.data.start_time|time:"H:i" }} - {{ item.data.end_time|time:"H:i" }}</span>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <i data-lucide="repeat"></i>
+                        <span><strong>Frequency:</strong> {{ item.data.frequency }} {% if item.data.day_of_week %}({{ item.data.day_of_week }}){% endif %}</span>
+                    </div>
+
+                    {% if item.data.admin_notes %}
+                    <div class="card-footer-notes">
+                        <strong>Public Advisory</strong>
+                        {{ item.data.admin_notes }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 120px 40px; background: var(--glass-bg); border-radius: 40px; border: 1px dashed #cbd5e1;">
+                <div style="background: #f1f5f9; width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
+                    <i data-lucide="calendar-x" style="width: 48px; height: 48px; color: #94a3b8;"></i>
+                </div>
+                <h3 style="font-size: 1.8rem; font-weight: 800; color: #334155; margin-bottom: 10px;">No Schedules Found</h3>
+                <p style="color: #64748b; font-size: 1.1rem;">We couldn't find any service schedules matching "{{ query }}".</p>
+                <a href="{% url 'schedule' %}" style="display: inline-block; margin-top: 25px; color: var(--accent-indigo); font-weight: 700; text-decoration: none;">View All Schedules <i data-lucide="arrow-right" style="width: 18px; vertical-align: middle; margin-left: 5px;"></i></a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+    });
+</script>
+{% endblock %}

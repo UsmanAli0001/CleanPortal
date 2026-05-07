@@ -1,0 +1,204 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}My Complaint History | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .history-header {
+        background: linear-gradient(135deg, var(--primary-blue), #1e3a8a);
+        padding: 60px 40px;
+        color: white;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .history-header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; }
+    .history-header p { margin: 10px 0 0; opacity: 0.9; }
+
+    .stats-tray {
+        display: flex;
+        gap: 20px;
+        background: rgba(255,255,255,0.1);
+        padding: 15px 25px;
+        border-radius: 15px;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .stat-item { text-align: center; }
+    .stat-val { font-size: 1.5rem; font-weight: 800; display: block; }
+    .stat-lbl { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+
+    .history-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px 80px;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+        overflow-x: auto;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .history-table th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        padding: 15px 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .history-table td {
+        padding: 20px;
+        border-bottom: 1px solid #f1f5f9;
+        color: var(--text-dark);
+        vertical-align: middle;
+    }
+
+    .history-table tr:hover { background: #f8fafc; }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+
+    .status-Pending, .status-Waiting { background: #fff3e0; color: #f59e0b; }
+    .status-InProgress { background: #eff6ff; color: #3b82f6; }
+    .status-Completed, .status-Resolved { background: #dcfce7; color: #10b981; }
+    
+    .btn-action {
+        padding: 8px 15px;
+        background: #f1f5f9;
+        color: var(--primary-blue);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: 0.2s;
+    }
+    
+    .btn-action:hover {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #64748b; }
+    .empty-state i { width: 64px; height: 64px; opacity: 0.5; margin-bottom: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-header">
+    <div>
+        <h1>My Complaint History</h1>
+        <p>A complete record of all your submitted issues and their current statuses.</p>
+    </div>
+    <div class="stats-tray">
+        <div class="stat-item">
+            <span class="stat-val">{{ total }}</span>
+            <span class="stat-lbl">Total</span>
+        </div>
+        <div class="stat-item" style="color: #6ee7b7;">
+            <span class="stat-val">{{ completed }}</span>
+            <span class="stat-lbl">Resolved</span>
+        </div>
+        <div class="stat-item" style="color: #fcd34d;">
+            <span class="stat-val">{{ pending }}</span>
+            <span class="stat-lbl">Pending</span>
+        </div>
+    </div>
+</div>
+
+<div class="history-container">
+    <div class="table-card">
+        {% if complaints %}
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Complaint ID</th>
+                    <th>Date Submitted</th>
+                    <th>Category</th>
+                    <th>Area</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in complaints %}
+                <tr>
+                    <td style="font-weight: 700; color: var(--primary-blue);">{{ c.complaint_id }}</td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="display: flex; align-items: center; gap: 6px; font-weight: 600; color: #1e293b;">
+                                <i data-lucide="calendar" style="width: 14px; height: 14px; color: #64748b;"></i>
+                                {{ c.created_at|date:"M d, Y" }}
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #64748b;">
+                                <i data-lucide="clock" style="width: 14px; height: 14px; color: #94a3b8;"></i>
+                                {{ c.created_at|date:"h:i A" }}
+                            </span>
+                        </div>
+                    </td>
+                    <td>{{ c.complaint_type }}</td>
+                    <td>{{ c.area }}</td>
+                    <td>
+                        <span class="status-badge status-{{ c.status|cut:' ' }}">{{ c.status }}</span>
+                    </td>
+                    <td>
+                        <!-- Utilizing the existing track page capability via a tailored form -->
+                        <form method="POST" action="{% url 'track' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="complaint_id" value="{{ c.complaint_id }}">
+                            <button type="submit" style="border:none; cursor:pointer;" class="btn-action">
+                                <i data-lucide="eye" style="width: 14px; height: 14px;"></i> View Details
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="inbox"></i>
+            <h3>No Complaints Found</h3>
+            <p>You haven't submitted any complaints yet.</p>
+            <a href="{% url 'register_complaint' %}" class="btn-action" style="margin-top: 15px; padding: 12px 25px; font-size: 1rem;">Submit a Complaint</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <a href="{% url 'dashboard' %}" class="btn-action"><i data-lucide="arrow-left"></i> Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,490 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Zone Coverage Map | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    :root {
+        --clean-green: #10b981;
+        --moderate-yellow: #f59e0b;
+        --critical-red: #ef4444;
+        --glass-bg: rgba(255, 255, 255, 0.8);
+        --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    body { overflow: hidden; font-family: 'Outfit', sans-serif; }
+    
+    .map-wrapper {
+        position: relative;
+        height: calc(100vh - 70px);
+        display: flex;
+        background: #f8fafc;
+    }
+
+    #map {
+        flex: 1;
+        height: 100%;
+        z-index: 1;
+    }
+
+    /* Side Panel */
+    .zone-panel {
+        width: 380px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-left: 1px solid var(--glass-border);
+    }
+
+    .panel-header {
+        padding: 40px 30px;
+        background: var(--primary-blue);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .panel-header::after {
+        content: '';
+        position: absolute;
+        top: 0; right: 0;
+        width: 100px; height: 100px;
+        background: rgba(255,255,255,0.1);
+        border-bottom-left-radius: 100%;
+    }
+
+    .panel-content {
+        padding: 30px;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .zone-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        letter-spacing: 0.5px;
+    }
+
+    .status-clean { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-moderate { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .status-critical { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .stat-label { color: #64748b; font-size: 0.85rem; font-weight: 600; }
+    .stat-value { font-weight: 800; color: #1e293b; font-size: 1rem; }
+
+    .action-btn {
+        width: 100%;
+        padding: 16px;
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+        text-align: center;
+        display: block;
+        margin-top: 25px;
+        box-shadow: 0 4px 15px rgba(26, 35, 126, 0.3);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(26, 35, 126, 0.4);
+    }
+
+    /* Legend */
+    .map-legend {
+        position: absolute;
+        bottom: 30px;
+        left: 30px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(12px);
+        padding: 20px;
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        z-index: 5;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #1e293b;
+    }
+
+    .legend-color { width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .zone-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            z-index: 2000;
+            transform: translateY(100%);
+        }
+        .zone-panel.open { transform: translateY(0); }
+    }
+    
+    .empty-selection {
+        text-align: center;
+        color: #94a3b8;
+        padding-top: 50px;
+    }
+
+    .chart-container {
+        margin-top: 30px;
+        position: relative;
+        height: 200px;
+        width: 100%;
+    }
+
+    /* Popup Styling */
+    .leaflet-popup-content-wrapper {
+        border-radius: 12px;
+        padding: 5px;
+    }
+    .popup-chart {
+        width: 150px;
+        height: 80px;
+    }
+</style>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="map-wrapper">
+    <!-- Legends -->
+    <div class="map-legend">
+        <h4 style="margin: 0 0 10px; font-size: 0.9rem;">Cleanliness Status</h4>
+        <div class="legend-item"><div class="legend-color" style="background: var(--clean-green);"></div> Clean Zone</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--moderate-yellow);"></div> Moderate Area</div>
+        <div class="legend-item"><div class="legend-color" style="background: var(--critical-red);"></div> Critical (Action Required)</div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Side Detail Panel -->
+    <div class="zone-panel" id="zonePanel">
+        <div id="panelContentInner">
+            <div class="empty-selection">
+                <i data-lucide="map-pin" style="width: 48px; height: 48px; margin-bottom: 15px;"></i>
+                <p>Select a zone on the map to view detailed coverage data.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Initialize Map centered on Gujrat, Pakistan
+    const map = L.map('map', {
+        zoomControl: true,
+        fadeAnimation: true
+    }).setView([32.5735, 74.0789], 15);
+
+    // Dark Map theme for consistency and clarity (CARTO Dark Matter)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20
+    }).addTo(map);
+
+    // Fix map rendering
+    setTimeout(() => { map.invalidateSize(); }, 300);
+    window.addEventListener('resize', () => map.invalidateSize());
+
+    let zoneLayer;
+    let allZonesData = [];
+
+    // Load Zones from API
+    fetch("{% url 'get_zones' %}")
+        .then(res => res.json())
+        .then(data => {
+            allZonesData = data.features;
+            zoneLayer = L.geoJSON(data, {
+                style: function(feature) {
+                    return {
+                        fillColor: feature.properties.color,
+                        weight: 2,
+                        opacity: 1,
+                        color: 'white',
+                        fillOpacity: 0.5
+                    };
+                },
+                onEachFeature: onEachFeature
+            }).addTo(map);
+
+            let hasValidBounds = false;
+            zoneLayer.eachLayer(function(layer) {
+                if (layer.getBounds) {
+                    hasValidBounds = true;
+                }
+            });
+
+            if (hasValidBounds) {
+                map.fitBounds(zoneLayer.getBounds());
+            }
+
+            // Render City Overview by default
+            renderCityOverview();
+        });
+
+    function renderCityOverview() {
+        const panel = document.getElementById('zonePanel');
+        const inner = document.getElementById('panelContentInner');
+        
+        let totalActive = 0;
+        let totalResolved = 0;
+        let statusCounts = { 'Clean': 0, 'Moderate': 0, 'Critical': 0 };
+
+        allZonesData.forEach(f => {
+            totalActive += f.properties.active_complaints || 0;
+            totalResolved += f.properties.resolved_complaints || 0;
+            if (statusCounts[f.properties.status] !== undefined) {
+                statusCounts[f.properties.status]++;
+            }
+        });
+
+        inner.innerHTML = `
+            <div class="panel-header" style="background: linear-gradient(135deg, #1e293b, #334155);">
+                <h2 style="margin:0; font-size: 1.5rem;">City Insights</h2>
+                <p style="margin: 5px 0 0; font-size: 0.85rem; opacity: 0.8;">Gujrat Municipality Overview</p>
+            </div>
+            <div class="panel-content">
+                <div class="zone-status-pill" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2);">
+                    <i data-lucide="info" style="width:14px;"></i> LIVE SUMMARY
+                </div>
+                
+                <div class="stat-row">
+                    <span class="stat-label">Total Coverage</span>
+                    <span class="stat-value">${allZonesData.length} Zones</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Critical Areas</span>
+                    <span class="stat-value" style="color: var(--critical-red);">${statusCounts['Critical']}</span>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="overviewChart"></canvas>
+                </div>
+
+                <div style="margin-top: 25px; padding: 20px; background: rgba(0,0,0,0.02); border-radius: 20px; border: 1px solid rgba(0,0,0,0.05);">
+                    <h4 style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; margin-top: 0;">Status Distribution</h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        ${Object.entries(statusCounts).map(([status, count]) => `
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${status === 'Clean' ? 'var(--clean-green)' : status === 'Moderate' ? 'var(--moderate-yellow)' : 'var(--critical-red)'}"></div>
+                                    <span style="font-size: 0.85rem; font-weight: 600;">${status}</span>
+                                </div>
+                                <span style="font-size: 0.85rem; font-weight: 800;">${count}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <p style="font-size: 0.8rem; color: #94a3b8; text-align: center; margin-top: 30px;">
+                    Click any zone on the map to see detailed performance metrics and report local issues.
+                </p>
+            </div>
+        `;
+
+        const ctx = document.getElementById('overviewChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Clean Zone', 'Moderate Area', 'Critical'],
+                datasets: [{
+                    data: [statusCounts['Clean'] || 0, statusCounts['Moderate'] || 0, statusCounts['Critical'] || 0],
+                    backgroundColor: ['var(--clean-green)', 'var(--moderate-yellow)', 'var(--critical-red)'],
+                    hoverOffset: 4,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11, weight: 'bold' } } }
+                },
+                cutout: '70%'
+            }
+        });
+
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function onEachFeature(feature, layer) {
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+            click: selectZone
+        });
+
+        // Add Popup with mini graph
+        const popupContent = `
+            <div style="text-align: center;">
+                <b style="font-size: 0.9rem;">${feature.properties.name}</b><br>
+                <span style="font-size: 0.75rem; color: #64748b;">${feature.properties.status}</span>
+                <div style="width: 150px; height: 80px; margin-top: 8px;">
+                    <canvas id="popupChart-${feature.id}"></canvas>
+                </div>
+            </div>
+        `;
+        layer.bindPopup(popupContent, { minWidth: 160 });
+        
+        layer.on('popupopen', function() {
+            const ctx = document.getElementById(`popupChart-${feature.id}`).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Active', 'Resolved'],
+                    datasets: [{
+                        data: [feature.properties.active_complaints, feature.properties.resolved_complaints],
+                        backgroundColor: ['#ef4444', '#10b981'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { display: false } }
+                }
+            });
+        });
+    }
+
+    function highlightFeature(e) {
+        const layer = e.target;
+        layer.setStyle({
+            fillOpacity: 0.8,
+            weight: 3,
+            color: '#fff'
+        });
+        layer.bringToFront();
+    }
+
+    function resetHighlight(e) {
+        zoneLayer.resetStyle(e.target);
+    }
+
+    function selectZone(e) {
+        const props = e.target.feature.properties;
+        const panel = document.getElementById('zonePanel');
+        const inner = document.getElementById('panelContentInner');
+        
+        const statusClass = props.status.toLowerCase();
+        
+        panel.classList.add('open');
+        inner.innerHTML = `
+            <div class="panel-header">
+                <button onclick="renderCityOverview()" style="background:none; border:none; color:white; padding:0; margin-bottom: 15px; cursor:pointer; display:flex; align-items:center; gap:5px; font-size: 0.8rem; font-weight:600; opacity:0.8; transition:0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">
+                    <i data-lucide="arrow-left" style="width:14px;"></i> Back to Overview
+                </button>
+                <h2 style="margin:0; font-size: 1.5rem;">${props.name}</h2>
+            </div>
+            <div class="panel-content">
+                <div class="zone-status-pill status-${statusClass}">${props.status}</div>
+                
+                <div class="stat-row">
+                    <span class="stat-label">Total Volume</span>
+                    <span class="stat-value">${props.total_complaints} Cases</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Lead Supervisor</span>
+                    <span class="stat-value">${props.staff}</span>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="zoneChart"></canvas>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h4 style="color: #64748b; font-size: 0.8rem; text-transform: uppercase;">Efficiency Breakdown</h4>
+                    <p style="font-size: 0.85rem; line-height: 1.5; color: #64748b;">
+                        The graph above represents the resolution pipeline in <b>${props.name}</b>. Currently, ${props.resolved_complaints} issues have been successfully closed.
+                    </p>
+                </div>
+
+                <a href="{% url 'register_complaint' %}?zone=${props.name}" class="action-btn">
+                    Report Issue in ${props.name}
+                </a>
+            </div>
+        `;
+
+        // Render Side Panel Chart
+        const ctx = document.getElementById('zoneChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active', 'Resolved'],
+                datasets: [{
+                    data: [props.active_complaints, props.resolved_complaints],
+                    backgroundColor: ['#fee2e2', '#d1fae5'],
+                    borderColor: ['#ef4444', '#10b981'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                plugins: { 
+                    legend: { 
+                        position: 'bottom', 
+                        labels: { boxWidth: 10, font: { size: 10, weight: 'bold' }, color: '#1e293b' } 
+                    } 
+                },
+                cutout: '70%',
+                animation: { animateRotate: true, duration: 1000 }
+            }
+        });
+        
+        if (window.lucide) lucide.createIcons();
+    }
+
+    // Reset to overview when clicking the map background
+    map.on('click', function(e) {
+        if (e.originalEvent.target.id === 'map') {
+            renderCityOverview();
+        }
+    });
+
+    // Initialize Icons
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) lucide.createIcons();
+    });
+</script>
+{% endblock %}

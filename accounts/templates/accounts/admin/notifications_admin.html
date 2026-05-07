@@ -1,0 +1,166 @@
+{% extends 'accounts/admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Manage Notifications | Clean Pak Portal Admin{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+    .notif-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .notif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
+    
+    .form-card {
+        background: white; border-radius: 20px; padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+    }
+    .form-card h3 { margin-top: 0; color: var(--primary-blue); display: flex; align-items: center; gap: 10px; margin-bottom: 25px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 700; font-size: 0.85rem; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+    .form-control {
+        width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #e2e8f0;
+        font-family: inherit; font-size: 1rem; box-sizing: border-box;
+    }
+    .form-control:focus { outline: none; border-color: var(--primary-blue); }
+    
+    .btn-send {
+        background: var(--primary-blue); color: white; border: none; padding: 15px; width: 100%;
+        border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-send:hover { box-shadow: 0 10px 20px rgba(30, 60, 114, 0.2); }
+
+    .notif-list-card { background: white; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .notif-list-card h3 { color: var(--text-dark); margin-top: 0; margin-bottom: 25px; }
+    
+    .list-item {
+        padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;
+    }
+    .list-item:hover { background: #f8fafc; }
+    .list-item:last-child { border-bottom: none; }
+    
+    .item-info h4 { margin: 0 0 5px; font-size: 1.1rem; color: #0f172a; }
+    .item-info p { margin: 0; font-size: 0.9rem; color: #64748b; }
+    .badge-type { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; margin-left: 10px; }
+    
+    .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-delete:hover { background: #ef4444; color: white; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="notif-container">
+    <div class="page-header" style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>Inbox Management</h1>
+            <p>Communicate directly with citizens or broadcast global alerts.</p>
+        </div>
+
+    </div>
+
+    <div class="notif-grid">
+        <!-- New System Broadcast -->
+        <div class="form-card">
+            <h3><i data-lucide="megaphone" style="color: #6366f1;"></i> System Broadcast</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="send_broadcast">
+                
+                <div class="form-group">
+                    <label>Alert Type</label>
+                    <select name="alert_type" class="form-control">
+                        <option value="info">Information (Blue)</option>
+                        <option value="success">Success (Green)</option>
+                        <option value="warning">Warning (Yellow)</option>
+                        <option value="urgent">Urgent (Red)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Headline</label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. Scheduled Maintenance" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Detailed Message</label>
+                    <textarea name="message" class="form-control" rows="4" placeholder="Briefly describe the alert..." required></textarea>
+                </div>
+                
+                <button type="submit" class="btn-send" style="background: #6366f1;">
+                    <i data-lucide="send"></i> Broadcast to All
+                </button>
+            </form>
+        </div>
+
+        <!-- Personal Notification -->
+        <div class="form-card">
+            <h3><i data-lucide="user-plus" style="color: #0ea5e9;"></i> Personal Notification</h3>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="send_personal">
+                
+                <div class="form-group">
+                    <label>Target Citizen</label>
+                    <select name="user_id" class="form-control" required>
+                        <option value="">Select a user...</option>
+                        {% for u in users %}
+                            <option value="{{ u.id }}">{{ u.username }} ({{ u.email }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Alert Type</label>
+                    <select name="alert_type" class="form-control">
+                        <option value="info">Information</option>
+                        <option value="success">Status Successful</option>
+                        <option value="warning">Action Required</option>
+                        <option value="urgent">Urgent Update</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Message Title</label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. Feedback on Complaint #1234" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Personal Message</label>
+                    <textarea name="message" class="form-control" rows="4" placeholder="Your direct message to the user..." required></textarea>
+                </div>
+                
+                <button type="submit" class="btn-send" style="background: #0ea5e9;">
+                    <i data-lucide="mail"></i> Send Private Message
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Active Global Announcements -->
+    <div class="notif-list-card">
+        <h3><i data-lucide="list"></i> Active Announcements</h3>
+        <div class="notif-list">
+            {% for ann in announcements %}
+                <div class="list-item">
+                    <div class="item-info">
+                        <h4>{{ ann.title }} <span class="badge-type tag-{{ ann.alert_type }}">{{ ann.alert_type }}</span></h4>
+                        <p>{{ ann.message|truncatewords:20 }}</p>
+                        <small style="color: #94a3b8; font-weight: 600;">Broadcasted on {{ ann.created_at|date:"M d, Y H:i" }}</small>
+                    </div>
+                    <form method="POST" style="margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_announcement">
+                        <input type="hidden" name="id" value="{{ ann.id }}">
+                        <button type="submit" class="btn-delete">
+                            <i data-lucide="trash-2" style="width: 18px;"></i>
+                        </button>
+                    </form>
+                </div>
+            {% empty %}
+                <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                    <i data-lucide="info" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
+                    <p>No active system-wide announcements found.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,16 +1,157 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Complaint Submitted</title>
-    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
-</head>
-<body>
-    <div class="form-container">
-        <h1>Complaint Submitted</h1>
-        <h3>Your Complaint ID: {{ complaint_id }}</h3>
-        <p>Please save this ID for tracking your complaint.</p>
-        <a href="{% url 'dashboard' %}">Back to Dashboard</a>
+
+{% block title %}Submission Successful | Clean Pak Portal{% endblock %}
+
+{% block content %}
+<style>
+    .success-container {
+        min-height: 80vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+        background: radial-gradient(circle at center, #ffffff 0%, #f1f5f9 100%);
+    }
+
+    .success-card {
+        background: white;
+        width: 100%;
+        max-width: 600px;
+        padding: 50px;
+        border-radius: 30px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+        text-align: center;
+        border: 1px solid #e2e8f0;
+        animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes scaleIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background: #f0fdf4;
+        color: var(--accent-green);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        font-size: 3rem;
+        box-shadow: 0 10px 20px rgba(46, 204, 113, 0.1);
+    }
+
+    .success-card h1 {
+        font-size: 2.2rem;
+        color: var(--text-dark);
+        margin: 0 0 15px;
+    }
+
+    .success-card p {
+        color: #64748b;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+    }
+
+    .tracking-badge {
+        background: #f8fafc;
+        border: 2px dashed var(--accent-green);
+        padding: 25px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        position: relative;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .tracking-badge:hover {
+        background: #f0fdf4;
+        transform: scale(1.02);
+    }
+
+    .id-label {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #94a3b8;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .id-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--primary-blue);
+        letter-spacing: -1px;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .copy-toast {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: var(--text-dark);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        display: none;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .btn-success {
+        flex: 1;
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .btn-success.track { background: var(--primary-blue); color: white; }
+    .btn-success.home { background: #f1f5f9; color: var(--text-dark); }
+
+    .btn-success:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+</style>
+
+<div class="success-container">
+    <div class="success-card">
+        <div class="success-icon">✓</div>
+        <h1>Complaint Secured!</h1>
+        <p>Your payment has been verified successfully. Your complaint is now in our priority queue.</p>
+        
+        <div class="tracking-badge" onclick="copyId()">
+            <span class="id-label">Official Tracking Reference</span>
+            <div class="id-value" id="compID">{{ complaint_id }}</div>
+            <div class="copy-toast" id="copyMsg">COPIED</div>
+            <p style="margin: 10px 0 0; font-size: 0.8rem; color: #94a3b8;">Click to copy unique ID</p>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{% url 'track' %}" class="btn-success track">Start Tracking</a>
+            <a href="{% url 'dashboard' %}" class="btn-success home">Back to Portal</a>
+        </div>
     </div>
-</body>
-</html>
+</div>
+
+<script>
+    function copyId() {
+        const id = document.getElementById('compID').innerText;
+        navigator.clipboard.writeText(id).then(() => {
+            const msg = document.getElementById('copyMsg');
+            msg.style.display = 'block';
+            setTimeout(() => { msg.style.display = 'none'; }, 2000);
+        });
+    }
+</script>
+{% endblock %}

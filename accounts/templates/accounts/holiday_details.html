@@ -1,0 +1,254 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}{{ holiday.name }} | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --holiday-primary: {% if holiday.holiday_type == 'Eid' %}#065f46{% elif holiday.holiday_type == 'Festive' %}#1e3a8a{% elif holiday.holiday_type == 'Emergency' %}#991b1b{% else %}#166534{% endif %};
+        --holiday-secondary: {% if holiday.holiday_type == 'Eid' %}#064e3b{% elif holiday.holiday_type == 'Festive' %}#172554{% elif holiday.holiday_type == 'Emergency' %}#7f1d1d{% else %}#14532d{% endif %};
+    }
+
+    .holiday-hero {
+        background: linear-gradient(135deg, var(--holiday-primary), var(--holiday-secondary));
+        padding: 100px 50px;
+        color: white;
+        text-align: center;
+        border-radius: 0 0 60px 60px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    .hero-bg-icon {
+        position: absolute;
+        font-size: 25rem;
+        opacity: 0.05;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+
+    .holiday-badge {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .holiday-hero h1 {
+        font-size: 4rem;
+        font-weight: 900;
+        letter-spacing: -2px;
+        margin: 0 0 20px;
+        text-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .details-grid {
+        max-width: 1200px;
+        margin: -60px auto 100px;
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .detail-card {
+        background: white;
+        padding: 40px;
+        border-radius: 30px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .detail-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+    }
+
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 20px;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 25px;
+        color: var(--holiday-primary);
+    }
+
+    .card-header-tag {
+        font-size: 0.7rem;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .card-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 15px;
+    }
+
+    .service-tag {
+        background: #f1f5f9;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pricing-banner {
+        grid-column: span 3;
+        background: linear-gradient(to right, #fbbf24, #f59e0b);
+        color: #92400e;
+        padding: 30px 50px;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 15px 35px rgba(245, 158, 11, 0.2);
+    }
+
+    .pricing-info h3 { margin: 0; font-weight: 900; font-size: 1.5rem; }
+    .pricing-info p { margin: 5px 0 0; font-weight: 600; opacity: 0.9; }
+
+    @media (max-width: 1024px) {
+        .details-grid { grid-template-columns: 1fr; }
+        .pricing-banner { grid-column: span 1; flex-direction: column; text-align: center; gap: 20px; }
+        .holiday-hero h1 { font-size: 2.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="holiday-hero">
+    <div class="hero-bg-icon">
+        {% if holiday.holiday_type == 'Eid' %}🌙{% elif holiday.holiday_type == 'Festive' %}🎁{% elif holiday.holiday_type == 'Emergency' %}🚨{% else %}📅{% endif %}
+    </div>
+    
+    <div class="holiday-badge">
+        <i data-lucide="shield-check"></i> OFFICIAL HOLIDAY PROTOCOL &mdash; {{ holiday.service_status }}
+    </div>
+    
+    <h1>{{ holiday.name }} Plan</h1>
+    <p style="font-size: 1.25rem; opacity: 0.9; max-width: 700px; margin: 0 auto;">
+        Our municipal teams are operating under specialized festive protocols to ensure Gujrat remains clean and safe during {{ holiday.name }}.
+    </p>
+
+    <div style="margin-top: 40px; display: flex; justify-content: center; gap: 20px;">
+        <div style="background: rgba(255,255,255,0.1); padding: 15px 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">
+            <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.7; letter-spacing: 1px; margin-bottom: 5px;">SCHEDULE DATE</div>
+            <div style="font-size: 1.1rem; font-weight: 800;">{{ holiday.date|date:"l, F d, Y" }}</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.1); padding: 15px 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">
+            <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.7; letter-spacing: 1px; margin-bottom: 5px;">PROTOCOL MODE</div>
+            <div style="font-size: 1.1rem; font-weight: 800;">{{ holiday.holiday_type }} Response</div>
+        </div>
+    </div>
+</div>
+
+<div class="details-grid">
+    <!-- Card 1: Operational Mission -->
+    <div class="detail-card">
+        <div class="card-icon"><i data-lucide="activity"></i></div>
+        <span class="card-header-tag">Strategic Plan</span>
+        <h3 class="card-title">Operational Mission</h3>
+        <p style="color: #64748b; line-height: 1.7;">
+            {{ holiday.special_plan|default:"Municipal teams are active on special standby to handle city-wide sanitation and emergency requests with dedicated personnel assigned to critical areas." }}
+        </p>
+    </div>
+
+    <!-- Card 2: Special Services -->
+    <div class="detail-card">
+        <div class="card-icon"><i data-lucide="sparkles"></i></div>
+        <span class="card-header-tag">Special Features</span>
+        <h3 class="card-title">Included Services</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% if holiday.special_services %}
+                {% for svc in holiday.special_services|split_comma %}
+                <div class="service-tag">
+                    <i data-lucide="check-circle-2" style="width: 18px; color: #10b981;"></i> {{ svc }}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="service-tag"><i data-lucide="check-circle-2" style="width: 18px; color: #10b981;"></i> Standard Holiday Cleanup</div>
+                <div class="service-tag"><i data-lucide="check-circle-2" style="width: 18px; color: #10b981;"></i> Emergency Response Unit</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Card 3: Zone Coverage -->
+    <div class="detail-card">
+        <div class="card-icon"><i data-lucide="map"></i></div>
+        <span class="card-header-tag">Geographic Reach</span>
+        <h3 class="card-title">Coverage Areas</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            {% if holiday.zones_covered %}
+                {% for zone in holiday.zones_covered|split_comma %}
+                <span style="background: #eff6ff; color: #1d4ed8; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; border: 1px solid #dbeafe;">{{ zone }}</span>
+                {% endfor %}
+            {% else %}
+                <span style="background: #eff6ff; color: #1d4ed8; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; border: 1px solid #dbeafe;">All Active Zones</span>
+            {% endif %}
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            {% for tag in holiday.coverage_tags|split_comma %}
+            <span style="background: #fdf2f8; color: #be185d; padding: 5px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">#{{ tag }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Pricing Adjustment Section (If Applicable) -->
+    {% if pricing_info %}
+    <div class="pricing-banner">
+        <div class="pricing-info">
+            <h3>{% if pricing_info.is_discount %}Special Festive Discount!{% else %}Holiday Service Surcharge{% endif %}</h3>
+            <p>{{ pricing_info.description }}</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="font-size: 3rem; font-weight: 900; letter-spacing: -2px;">
+                {% if pricing_info.is_discount %}-{% else %}+{% endif %}{{ pricing_info.percentage }}%
+            </div>
+            <div style="padding: 10px 20px; background: rgba(0,0,0,0.1); border-radius: 12px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">
+                RATE<br>ADJUSTMENT
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div style="grid-column: 1/-1; text-align: center; margin-top: 40px;">
+        <a href="{% url 'dashboard' %}" style="color: #64748b; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            <i data-lucide="arrow-left"></i> Return to Citizen Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    lucide.createIcons();
+</script>
+{% endblock %}

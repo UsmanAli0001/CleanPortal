@@ -1,57 +1,354 @@
-<h2>Complaints</h2>
+{% extends 'accounts/admin/admin_base.html' %}
+{% load static %}
 
-<table>
+{% block title %}Complaint Management | Clean Pak Portal{% endblock %}
 
-<tr>
+{% block admin_extra_css %}
+<style>
+    :root {
+        --badge-pending-bg: #fff7ed;
+        --badge-pending-text: #c2410c;
+        --badge-verified-bg: #ecfeff;
+        --badge-verified-text: #0891b2;
+        --badge-progress-bg: #fefce8;
+        --badge-progress-text: #854d0e;
+        --badge-completed-bg: #f0fdf4;
+        --badge-completed-text: #15803d;
+        --badge-urgent-bg: #fef2f2;
+        --badge-urgent-text: #b91c1c;
+    }
 
-<th>ID</th>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
 
-<th>Area</th>
+    .search-container {
+        display: flex;
+        gap: 15px;
+        background: var(--admin-glass);
+        padding: 10px 20px;
+        border-radius: 12px;
+        border: 1px solid var(--admin-glass-border);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
 
-<th>Status</th>
+    .search-input {
+        border: none;
+        background: transparent;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.8rem;
+        outline: none;
+        width: 200px;
+        color: var(--text-dark);
+    }
 
-<th>Assign</th>
+    /* Badge Styles */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-</tr>
+    .badge-pending { background: var(--badge-pending-bg); color: var(--badge-pending-text); }
+    .badge-verified { background: var(--badge-verified-bg); color: var(--badge-verified-text); }
+    .badge-progress { background: var(--badge-progress-bg); color: var(--badge-progress-text); }
+    .badge-completed { background: var(--badge-completed-bg); color: var(--badge-completed-text); }
+    .badge-urgent { background: var(--badge-urgent-bg); color: var(--badge-urgent-text); border: 1px solid rgba(185, 28, 28, 0.1); }
+    .badge-paid { background: #f0fdf4; color: #16a34a; border: 1px solid rgba(22, 163, 74, 0.2); }
 
-{% for c in complaints %}
+    /* Complaint Rows */
+    .complaint-id {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        color: var(--primary-blue);
+        background: rgba(26, 35, 126, 0.05);
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+    }
 
-<tr>
+    .complaint-details {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
 
-<td>{{c.complaint_id}}</td>
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: #64748b;
+    }
 
-<td>{{c.area}}</td>
+    .detail-item i {
+        color: var(--primary-blue);
+        opacity: 0.6;
+    }
 
-<td>{{c.status}}</td>
+    .detail-item strong {
+        color: #1e293b;
+    }
 
-<td>
+    /* Before/After Images */
+    .thumbnail-container {
+        position: relative;
+        width: 80px;
+        height: 50px;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 2px solid white;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
 
-<form method="POST" action="{% url 'assign' c.id %}">
+    .thumbnail-container:hover {
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
 
-{% csrf_token %}
+    .thumbnail-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #f8fafc;
+    }
 
-<select name="staff">
+    /* Manage Form */
+    .manage-form {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        min-width: 240px;
+        max-width: 300px;
+    }
 
-{% for s in staff %}
+    .form-group-full {
+        grid-column: span 2;
+    }
 
-<option value="{{s.id}}">
+    .manage-input {
+        width: 100%;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 1.5px solid #e2e8f0;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.8rem;
+        background: #f8fafc;
+    }
 
-{{s.name}}
+    .manage-input:focus {
+        border-color: var(--primary-blue);
+        background: white;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.05);
+    }
 
-</option>
+    .file-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 4px;
+        display: block;
+    }
 
-{% endfor %}
+    .btn-update {
+        width: 100%;
+        margin-top: 5px;
+    }
 
-</select>
+    .empty-state {
+        text-align: center;
+        padding: 60px 40px;
+        background: white;
+        border-radius: 24px;
+        border: 1px dashed #e2e8f0;
+    }
 
-<button>Assign</button>
+    .empty-state i {
+        color: #cbd5e1;
+        margin-bottom: 20px;
+    }
 
-</form>
+    .empty-state h3 {
+        color: #475569;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
 
-</td>
+{% block admin_content %}
+<div class="page-header">
+    <div>
+        <h1>Complaint Management</h1>
+        <p>Review, assign, and track citizen reported issues.</p>
+    </div>
+    
+    <div style="display: flex; gap: 15px; align-items: center;">
 
-</tr>
+        <div class="search-container">
+            <i data-lucide="search" style="color: #94a3b8; width: 18px;"></i>
+            <input type="text" id="complaintSearch" class="search-input" placeholder="Search by ID, Area or User..." onkeyup="filterComplaints()">
+        </div>
+    </div>
+</div>
 
-{% endfor %}
+<div class="admin-card" style="padding: 0; overflow-x: auto;">
+    <table class="admin-table" id="complaintsTable" style="min-width: 1000px;">
+        <thead>
+            <tr>
+                <th style="width: 100px;"><i data-lucide="hash" style="width: 14px; vertical-align: middle; margin-right: 4px;"></i>ID</th>
+                <th><i data-lucide="info" style="width: 14px; vertical-align: middle; margin-right: 4px;"></i>Details</th>
+                <th><i data-lucide="activity" style="width: 14px; vertical-align: middle; margin-right: 4px;"></i>Status / Priority</th>
+                <th><i data-lucide="image" style="width: 14px; vertical-align: middle; margin-right: 4px;"></i>Evidence</th>
+                <th style="min-width: 300px;"><i data-lucide="settings" style="width: 14px; vertical-align: middle; margin-right: 4px;"></i>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in complaints %}
+            <tr class="complaint-row">
+                <td>
+                    <span class="complaint-id">{{c.complaint_id}}</span>
+                    <div style="font-size: 0.65rem; color: #64748b; margin-top: 5px; font-weight: 600; display: flex; flex-direction: column; gap: 3px;">
+                        <div style="display: flex; align-items: center; gap: 3px;">
+                            <i data-lucide="calendar" style="width: 10px;"></i>
+                            {{c.created_at|date:"M d, Y"}}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 3px;">
+                            <i data-lucide="clock" style="width: 10px;"></i>
+                            {{c.created_at|date:"h:i A"}}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="complaint-details">
+                        <div class="detail-item">
+                            <i data-lucide="tag" style="width: 14px;"></i>
+                            <strong>Type:</strong> {{c.complaint_type}}
+                        </div>
+                        <div class="detail-item">
+                            <i data-lucide="map-pin" style="width: 14px;"></i>
+                            <strong>Area:</strong> {{c.area}}
+                        </div>
+                        <div class="detail-item">
+                            <i data-lucide="user" style="width: 14px;"></i>
+                            <strong>User:</strong> {{c.name}}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <span class="status-badge badge-{{ c.status|lower|cut:' ' }}">
+                            <i data-lucide="{% if c.status == 'Completed' %}check-circle{% elif c.status == 'In Progress' %}loader{% else %}clock{% endif %}" style="width: 12px;"></i>
+                            {{c.status}}
+                        </span>
+                        <div style="display: flex; gap: 5px;">
+                            <span class="status-badge badge-{% if c.priority == 'Urgent' %}urgent{% else %}pending{% endif %}">
+                                {{ c.priority }}
+                            </span>
+                            {% if c.payment_status %}
+                            <span class="status-badge badge-paid">
+                                <i data-lucide="credit-card" style="width: 12px;"></i> Paid
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 10px;">
+                        {% if c.image %}
+                        <a href="{{ c.image.url }}" target="_blank" title="View Before Image">
+                            <div class="thumbnail-container">
+                                <img src="{{ c.image.url }}" alt="Before">
+                            </div>
+                        </a>
+                        {% else %}
+                        <span style="color: #94a3b8; font-size: 0.8rem;">No Before Img</span>
+                        {% endif %}
 
-</table>
+                        {% if c.after_image %}
+                        <a href="{{ c.after_image.url }}" target="_blank" title="View After Image">
+                            <div class="thumbnail-container" style="border-color: #f0fdf4;">
+                                <img src="{{ c.after_image.url }}" alt="After">
+                                <div style="position: absolute; bottom: 0; right: 0; background: #16a34a; color: white; padding: 2px 4px; font-size: 0.6rem; border-top-left-radius: 6px;">DONE</div>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <form class="manage-form" method="POST" action="{% url 'update_complaint' c.id %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <select name="status" class="manage-input">
+                            <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Verified" {% if c.status == 'Verified' %}selected{% endif %}>Verified</option>
+                            <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Completed" {% if c.status == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+
+                        <select name="staff" class="manage-input">
+                            <option value="">Assign Staff...</option>
+                            {% for s in staff %}
+                            <option value="{{s.id}}" {% if c.assigned_to and c.assigned_to.id == s.id %}selected{% endif %}>
+                                {{s.name}} ({{s.role}})
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="form-group-full">
+                            {% if not c.after_image and c.status != 'Completed' %}
+                            <label class="file-label">Upload Completion Proof:</label>
+                            <input type="file" name="after_image" accept="image/*" class="manage-input" style="padding: 6px;">
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group-full">
+                            <button type="submit" class="btn-manage btn-update">
+                                <i data-lucide="refresh-cw" style="width: 14px;"></i> Update Record
+                            </button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    <div class="empty-state">
+                        <i data-lucide="clipboard-x" style="width: 64px; height: 64px;"></i>
+                        <h3>No complaints found</h3>
+                        <p>Citizens haven't reported any issues yet, or your filters are too strict.</p>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+    function filterComplaints() {
+        let input = document.getElementById("complaintSearch");
+        let filter = input.value.toLowerCase();
+        let table = document.getElementById("complaintsTable");
+        let tr = table.getElementsByClassName("complaint-row");
+
+        for (let i = 0; i < tr.length; i++) {
+            let text = tr[i].textContent.toLowerCase();
+            if (text.includes(filter)) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+</script>
+{% endblock %}

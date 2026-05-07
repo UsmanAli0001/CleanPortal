@@ -1,0 +1,568 @@
+{% extends 'accounts/admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Fleet Management | Clean Pak Portal{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+    :root {
+        --primary-blue: #3b82f6;
+        --primary-dark: #1e3a8a;
+        --accent-emerald: #10b981;
+        --accent-amber: #f59e0b;
+        --accent-rose: #f43f5e;
+        --bg-soft: #f8fafc;
+    }
+
+    .admin-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: linear-gradient(145deg, #ffffff, #f0f4f8);
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.1);
+        transition: all 0.3s ease;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--primary-blue);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 28px rgba(59, 130, 246, 0.3);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #3b82f6;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary-dark);
+        margin-top: 8px;
+        margin-bottom: 0;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: .65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.Active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-badge.Idle {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-badge.In.Transit {
+        background: #e0e7ff;
+        color: #3730a3;
+    }
+
+    .status-badge.Arrived {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-badge.Work.in.Progress {
+        background: #ffedd5;
+        color: #9a3412;
+    }
+
+    .status-badge.Completed {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+
+    .status-badge.Offline {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .assignment-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .registry-card {
+        background: white;
+        border-radius: 20px;
+        padding: 0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid #f1f5f9;
+        overflow: hidden;
+    }
+
+    .card-header {
+        padding: 20px 25px;
+        background: #f8fafc;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--primary-dark);
+        margin: 0;
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 12px;
+    }
+
+    .vehicle-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+        /* Ensures table doesn't get squashed */
+    }
+
+    .vehicle-table th {
+        background: #f8fafc;
+        padding: 18px 25px;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .vehicle-table td {
+        padding: 18px 25px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.9rem;
+        color: #334155;
+    }
+
+    .driver-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .driver-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #64748b;
+    }
+
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 15px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        outline: none;
+        transition: 0.3s;
+    }
+
+    .form-input:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    .modal {
+        background: white;
+        padding: 25px 30px;
+        border-radius: 24px;
+        width: 100%;
+        max-width: 520px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        max-height: 85vh;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .modal-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(8px);
+        padding: 20px;
+    }
+
+    .modal-bg.open {
+        display: flex;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <div>
+        <h1 style="font-weight: 800; color: var(--primary-dark); margin: 0;">Fleet Management</h1>
+        <p style="color: #64748b; margin-top: 5px;">Assign vehicles to staff and manage deployment status.</p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+
+        <button class="btn-manage" onclick="openAddModal()" style="margin-top:0"><i data-lucide="plus"></i> Register
+            Vehicle</button>
+        <a href="{% url 'fleet_admin' %}" class="btn-manage"
+            style="background: white !important; color: var(--primary-blue) !important; border: 1px solid var(--primary-blue);">Refresh</a>
+    </div>
+</div>
+
+{% if messages %}
+<div style="margin-bottom: 20px;">
+    {% for message in messages %}
+    <div
+        style="padding: 15px; border-radius: 12px; margin-bottom: 10px; background: {% if message.tags == 'success' %}#d1fae5; color: #065f46{% else %}#fee2e2; color: #991b1b{% endif %}; border: 1px solid rgba(0,0,0,0.05);">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="admin-stats-grid">
+    <div class="stat-card">
+        <span class="stat-label">Total Fleet</span>
+        <p class="stat-value">{{ total_count }}</p>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label"> On Duty</span>
+        <p class="stat-value">{{ active_count }}</p>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">In Transit</span>
+        <p class="stat-value">{{ transit_count }}</p>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Offline</span>
+        <p class="stat-value">{{ offline_count }}</p>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Arrived</span>
+        <p class="stat-value">{{ arrived_count }}</p>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Working</span>
+        <p class="stat-value">{{ working_count }}</p>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Finished</span>
+        <p class="stat-value">{{ finished_count }}</p>
+    </div>
+</div>
+
+<div class="assignment-container">
+    <div class="registry-card">
+        <div class="card-header">
+            <h3 class="card-title">Vehicle Registry</h3>
+            <div style="font-size: 0.8rem; color: #64748b;">Showing all {{ vehicles.count }} vehicles</div>
+        </div>
+        <div class="table-container">
+            <table class="vehicle-table">
+                <thead>
+                    <tr>
+                        <th>Vehicle ID</th>
+                        <th>Driver</th>
+                        <th>Assigned Complaint</th>
+                        <th>Vehicle Zone</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in vehicles %}
+                    <tr>
+                        <td style="font-weight: 700; color: var(--primary-blue);">{{ v.vehicle_id }}</td>
+                        <td>
+                            <div class="driver-info">
+                                <div class="driver-avatar">{{ v.driver_name|slice:":1" }}</div>
+                                <div>
+                                    <div style="font-weight: 700;">{{ v.driver_name }}</div>
+                                    <div style="font-size: 0.75rem; color: #64748b;">{{ v.driver_phone }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if v.current_complaint %}
+                            <span style="color: var(--primary-blue); font-weight: 700;">{{
+                                v.current_complaint.complaint_id }}</span>
+                            <div style="font-size: 0.75rem; color: #64748b;">{{ v.current_complaint.area }}</div>
+                            {% else %}
+                            <span style="color: #94a3b8;">Not Assigned</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight: 600; color: #1e3a8a;">
+                            {% if v.assigned_zone %}
+                            <i data-lucide="map-pin"
+                                style="width:12px; height:12px; vertical-align:middle; margin-right:4px"></i>{{
+                            v.assigned_zone }}
+                            {% else %}
+                            <span style="color:#94a3b8">No Zone</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="status-badge {{ v.status|cut:" " }}">{{ v.get_status_display }}</span></td>
+                        <td>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="abtn edit"
+                                    onclick="openEditModal({{ v.id }},'{{ v.status }}','{{ v.current_complaint.id|default:'' }}', '{{ v.assigned_zone }}')"
+                                    title="Update Status"><i data-lucide="edit-3"></i></button>
+                                <form action="{% url 'fleet_delete_vehicle' v.id %}" method="post"
+                                    style="display:inline" onsubmit="return confirm('Delete this vehicle?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="abtn del" title="Remove"><i
+                                            data-lucide="trash-2"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-bg" id="add-modal">
+    <div class="modal" style="max-width: 550px; padding: 25px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+            <h3 style="font-weight:800; color:var(--primary-dark); margin:0; font-size: 1.1rem;">Register New Vehicle
+            </h3>
+            <button onclick="closeAddModal()" style="background:none; border:none; cursor:pointer"><i
+                    data-lucide="x"></i></button>
+        </div>
+        <form action="{% url 'fleet_add_vehicle' %}" method="post">
+            {% csrf_token %}
+            <div
+                style="background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 15px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label class="form-label" style="font-size: 0.75rem;">Vehicle ID</label>
+                        <input type="text" name="vehicle_id" class="form-input"
+                            style="padding: 10px 12px; font-size: 0.85rem;" placeholder="GT-2001" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label class="form-label" style="font-size: 0.75rem;">Plate Number</label>
+                        <input type="text" name="plate_number" class="form-input"
+                            style="padding: 10px 12px; font-size: 0.85rem;" placeholder="ABC-123">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label class="form-label" style="font-size: 0.75rem;">Driver Name</label>
+                        <input type="text" name="driver_name" class="form-input"
+                            style="padding: 10px 12px; font-size: 0.85rem;" placeholder="Ali Hassan" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label class="form-label" style="font-size: 0.75rem;">Contact Number</label>
+                        <input type="text" name="driver_phone" class="form-input"
+                            style="padding: 10px 12px; font-size: 0.85rem;" placeholder="03XX-XXXXXXX" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label class="form-label" style="font-size: 0.75rem;">Vehicle Type</label>
+                        <select class="form-input" name="vehicle_type" style="padding: 10px 12px; font-size: 0.85rem;">
+                            <option value="garbage_truck">Garbage Truck</option>
+                            <option value="water_tanker">Water Tanker</option>
+                            <option value="service_vehicle">Service Vehicle</option>
+                            <option value="sweeper">Road Sweeper</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label class="form-label" style="font-size: 0.75rem;">Initial Zone</label>
+                        <select class="form-input" name="assigned_zone" style="padding: 10px 12px; font-size: 0.85rem;">
+                            <option value="">No Specific Zone</option>
+                            {% for area in gujrat_areas %}
+                            <option value="{{ area }}">{{ area }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label class="form-label" style="font-size: 0.75rem;">Immediate Assignment (Optional)</label>
+                <select class="form-input" name="current_complaint" style="padding: 10px 12px; font-size: 0.85rem;">
+                    <option value="">Routine Patrol / None</option>
+                    {% for c in all_complaints %}
+                    <option value="{{ c.id }}">{{ c.complaint_id }} - {{ c.area }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary" style="padding: 12px; font-size: 0.9rem;">
+                <i data-lucide="send" style="width: 16px; height: 16px;"></i> Register & Deploy Vehicle
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="edit-modal">
+    <div class="modal">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px">
+            <h3 style="font-weight:800; color:var(--primary-dark)">Update Vehicle Status</h3>
+            <button onclick="closeEditModal()" style="background:none; border:none; cursor:pointer"><i
+                    data-lucide="x"></i></button>
+        </div>
+        <form method="post" id="edit-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Vehicle Status</label>
+                <select class="form-input" name="status" id="e-status" required>
+                    <option value="Active">Active / On Duty</option>
+                    <option value="Idle">Idle / Waiting</option>
+                    <option value="In Transit">In Transit</option>
+                    <option value="Arrived">Arrived</option>
+                    <option value="Work in Progress">Work in Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Offline">Offline</option>
+                    <option value="Out of Service">Out of Service</option>
+                    <option value="Delayed">Delayed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Vehicle Zone</label>
+                <select class="form-input" name="assigned_zone" id="e-zone">
+                    <option value="">No Specific Zone</option>
+                    {% for area in gujrat_areas %}
+                    <option value="{{ area }}">{{ area }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Linked Complaint</label>
+                <select class="form-input" name="current_complaint" id="e-complaint">
+                    <option value="">None / Routine</option>
+                    {% for c in all_complaints %}
+                    <option value="{{ c.id }}">{{ c.complaint_id }} - {{ c.area }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">Update Deployment</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script>
+    function openAddModal() { document.getElementById('add-modal').classList.add('open'); }
+    function closeAddModal() { document.getElementById('add-modal').classList.remove('open'); }
+
+    function openEditModal(id, status, complaintId, zone) {
+        const form = document.getElementById('edit-form');
+        form.action = "/fleet/admin/edit/" + id + "/";
+
+        const statusEl = document.getElementById('e-status');
+        const complaintEl = document.getElementById('e-complaint');
+        const zoneEl = document.getElementById('e-zone');
+
+        if (statusEl) statusEl.value = status;
+        if (complaintEl) complaintEl.value = complaintId || "";
+        if (zoneEl) zoneEl.value = zone || "";
+
+        document.getElementById('edit-modal').classList.add('open');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeEditModal() { document.getElementById('edit-modal').classList.remove('open'); }
+
+    window.onclick = function (event) {
+        const editModal = document.getElementById('edit-modal');
+        const addModal = document.getElementById('add-modal');
+        if (event.target == editModal) closeEditModal();
+        if (event.target == addModal) closeAddModal();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+{% endblock %}

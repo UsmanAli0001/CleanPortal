@@ -1,0 +1,301 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Share Your Experience | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+<style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.4);
+        --primary-blue: #1e40af;
+        --accent-green: #10b981;
+        --soft-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Remove Global Nav/Footer for this page */
+    .navbar, footer { display: none !important; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(-45deg, #f8fafc, #f1f5f9, #eff6ff, #f0fdf4);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .background-shapes {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
+
+    .shape {
+        position: absolute;
+        filter: blur(80px);
+        opacity: 0.15;
+        border-radius: 50%;
+        animation: float 25s infinite alternate ease-in-out;
+    }
+
+    .shape-1 { width: 400px; height: 400px; background: #10b981; top: -50px; right: -50px; }
+    .shape-2 { width: 350px; height: 350px; background: #3b82f6; bottom: -50px; left: -50px; animation-delay: -5s; }
+    .shape-3 { width: 300px; height: 300px; background: #8b5cf6; top: 30%; left: 5%; animation-delay: -10s; }
+
+    @keyframes float {
+        0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+        100% { transform: translate(50px, 80px) scale(1.1) rotate(15deg); }
+    }
+
+    .submission-wrapper {
+        width: 100%;
+        max-width: 520px;
+        padding: 20px;
+        z-index: 10;
+        position: relative;
+    }
+
+    .submission-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        border-radius: 30px;
+        padding: 40px;
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--soft-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .submission-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 6px;
+        background: linear-gradient(to right, var(--primary-blue), var(--accent-green));
+    }
+
+    .close-page {
+        position: absolute;
+        top: 25px; right: 25px;
+        background: rgba(0,0,0,0.05);
+        border: none;
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s;
+        text-decoration: none;
+        color: #64748b;
+    }
+    .close-page:hover { background: rgba(0,0,0,0.1); transform: rotate(90deg); color: #ef4444; }
+
+    .form-header { text-align: center; margin-bottom: 30px; }
+    .form-header h1 { 
+        font-size: 2.2rem; 
+        font-weight: 900; 
+        letter-spacing: -1.5px; 
+        color: #1e293b; 
+        margin: 0; 
+        line-height: 1.1;
+    }
+    .form-header h1 span { color: var(--accent-green); }
+    .form-header p { color: #64748b; font-weight: 600; font-size: 0.95rem; margin-top: 10px; }
+
+    .rating-section { text-align: center; margin-bottom: 30px; }
+    .rating-label { display: block; font-size: 0.8rem; font-weight: 800; color: #475569; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+
+    .star-rating {
+        display: flex; gap: 12px; justify-content: center;
+        flex-direction: row-reverse;
+    }
+    .star-rating input { display: none; }
+    .star-rating label { cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: #e2e8f0; }
+    .star-rating label svg { width: 42px; height: 42px; }
+    .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: #fbbf24; transform: scale(1.1); }
+
+    .input-group { margin-bottom: 20px; }
+    .input-group label { display: block; font-size: 0.75rem; font-weight: 800; color: #64748b; margin-bottom: 8px; margin-left: 5px; text-transform: uppercase; }
+    
+    .classic-input {
+        width: 100%;
+        padding: 15px 20px;
+        border-radius: 15px;
+        border: 2px solid transparent;
+        background: #f8fafc;
+        outline: none;
+        transition: 0.3s;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #1e293b;
+        box-sizing: border-box;
+    }
+    .classic-input:focus { background: white; border-color: var(--accent-green); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.1); }
+    
+    textarea.classic-input { height: 120px; resize: none; }
+
+    .btn-submit {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 15px;
+        font-weight: 800;
+        font-size: 1.1rem;
+        cursor: pointer;
+        margin-top: 15px;
+        box-shadow: 0 15px 30px rgba(16, 185, 129, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: 0.3s;
+    }
+    .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3); }
+    .btn-submit:active { transform: scale(0.98); }
+
+    .spinner { display: none; width: 22px; height: 22px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-loading .btn-text { display: none; }
+    .btn-loading .spinner { display: block; }
+
+    @media (max-width: 600px) {
+        .submission-card { padding: 30px 20px; }
+        .form-header h1 { font-size: 1.8rem; }
+        .star-rating label svg { width: 36px; height: 36px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="background-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+</div>
+
+
+<div class="submission-wrapper" data-aos="zoom-in">
+    <div class="submission-card">
+        <a href="{% url 'citizen_reviews' %}" class="close-page" title="Go Back">
+            <i data-lucide="x"></i>
+        </a>
+
+        <div class="form-header">
+            <h1>Tell Us Your <span>Story</span></h1>
+            <p>Your feedback shapes the future of our city.</p>
+        </div>
+
+        <div class="rating-section">
+            <span class="rating-label">How was your experience?</span>
+            <div class="star-rating">
+                <input type="radio" name="rating" id="star5" value="5">
+                <label for="star5" title="Excellent"><i data-lucide="star"></i></label>
+                <input type="radio" name="rating" id="star4" value="4">
+                <label for="star4" title="Very Good"><i data-lucide="star"></i></label>
+                <input type="radio" name="rating" id="star3" value="3">
+                <label for="star3" title="Good"><i data-lucide="star"></i></label>
+                <input type="radio" name="rating" id="star2" value="2">
+                <label for="star2" title="Fair"><i data-lucide="star"></i></label>
+                <input type="radio" name="rating" id="star1" value="1">
+                <label for="star1" title="Poor"><i data-lucide="star"></i></label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Subject</label>
+            <input type="text" id="feedbackComment" class="classic-input" placeholder="Sum it up in a few words...">
+        </div>
+
+        <div class="input-group">
+            <label>Detailed Review</label>
+            <textarea id="feedbackReview" class="classic-input" placeholder="Share the details of your service experience..."></textarea>
+        </div>
+
+        <button id="submitFeedbackBtn" class="btn-submit" onclick="submitFeedback()">
+            <span class="btn-text">Publish Review</span>
+            <div class="spinner"></div>
+            <i data-lucide="send" class="btn-text"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script>
+    AOS.init({ duration: 1000, once: true });
+    lucide.createIcons();
+
+    function showToast(message, type = 'success') {
+        const title = type === 'success' ? 'Great!' : 'Oops!';
+        Toast.show(title, message, type);
+    }
+
+    function submitFeedback() {
+        const ratingInput = document.querySelector('input[name="rating"]:checked');
+        const commentInput = document.getElementById('feedbackComment');
+        const reviewInput = document.getElementById('feedbackReview');
+        const submitBtn = document.getElementById('submitFeedbackBtn');
+        
+        if (!ratingInput) { 
+            showToast('Select a rating to continue.', 'error'); 
+            return; 
+        }
+        
+        const comment = commentInput.value.trim();
+        const review = reviewInput.value.trim();
+        if (!comment && !review) { 
+            showToast('Write something before publishing.', 'error'); 
+            return; 
+        }
+
+        submitBtn.classList.add('btn-loading');
+        submitBtn.disabled = true;
+
+        fetch("{% url 'submit_feedback' %}", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json", 
+                "X-CSRFToken": getCookie('csrftoken') 
+            },
+            body: JSON.stringify({ 
+                rating: ratingInput.value, 
+                comment: comment, 
+                review: review 
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast('Review published successfully!');
+                setTimeout(() => {
+                    window.location.href = "{% url 'citizen_reviews' %}";
+                }, 1500);
+            } else {
+                showToast(data.message, 'error');
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(() => {
+            showToast('Connection error. Try again.', 'error');
+            submitBtn.classList.remove('btn-loading');
+            submitBtn.disabled = false;
+        });
+    }
+</script>
+{% endblock %}

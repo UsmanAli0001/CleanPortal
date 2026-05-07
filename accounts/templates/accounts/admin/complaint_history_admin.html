@@ -1,0 +1,202 @@
+{% extends 'accounts/admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Complaint History (Admin) | Clean Pak Portal{% endblock %}
+
+{% block admin_extra_css %}
+<style>
+    .admin-history-header {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-left: 6px solid #4f46e5;
+    }
+
+    .admin-history-header h1 {
+        margin: 0 0 5px 0;
+        font-size: 1.8rem;
+        color: var(--primary-blue);
+    }
+
+    .stats-card-group {
+        display: flex;
+        gap: 15px;
+    }
+
+    .stat-pill {
+        background: #f8fafc;
+        padding: 10px 20px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+    }
+
+    .stat-pill .num { font-size: 1.4rem; font-weight: 800; color: var(--primary-blue); display: block; }
+    .stat-pill .lbl { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
+
+    .data-table-wrapper {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        overflow-x: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 15px;
+        text-align: left;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    td {
+        padding: 15px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+        font-size: 0.95rem;
+    }
+
+    tr:hover { background: #f8fafc; }
+
+    .user-info { display: flex; flex-direction: column; }
+    .user-name { font-weight: 700; color: var(--primary-blue); }
+    .user-email { font-size: 0.8rem; color: #64748b; }
+
+    .badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        display: inline-block;
+    }
+
+    .badge-urgent { background: #fee2e2; color: #b91c1c; }
+    .badge-normal { background: #f1f5f9; color: #64748b; }
+    
+    .status-Pending, .status-Waiting { color: #d97706; }
+    .status-InProgress { color: #2563eb; }
+    .status-Completed, .status-Resolved { color: #16a34a; }
+
+    .btn-admin {
+        padding: 8px 12px;
+        background: var(--primary-blue);
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    .btn-admin:hover { background: #1e3a8a; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div style="position: relative;">
+    <!-- Floating Stats Dashboard -->
+    <div class="stats-card-group" style="position: absolute; top: -15px; right: 0; display: flex; gap: 12px; z-index: 100;">
+        <div class="stat-pill" style="border-bottom: 3px solid #6366f1; min-width: 150px; background: #f5f3ff; border-color: #ddd6fe; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.1);">
+            <span class="num" id="liveTime" style="color: #4f46e5; font-size: 1.2rem;">--:--:--</span>
+            <span class="lbl" id="liveDate" style="color: #7c3aed;">Loading...</span>
+        </div>
+        <div class="stat-pill" style="box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);">
+            <span class="num">{{ total }}</span>
+            <span class="lbl">Total Logs</span>
+        </div>
+        <div class="stat-pill" style="border-bottom: 3px solid #16a34a; box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.1);">
+            <span class="num" style="color: #16a34a;">{{ completed }}</span>
+            <span class="lbl">Completed</span>
+        </div>
+        <div class="stat-pill" style="border-bottom: 3px solid #d97706; box-shadow: 0 10px 15px -3px rgba(217, 119, 6, 0.1);">
+            <span class="num" style="color: #d97706;">{{ pending }}</span>
+            <span class="lbl">In Queue</span>
+        </div>
+    </div>
+
+    <div class="admin-history-header">
+        <div>
+            <h1>Complaint History Master Log</h1>
+            <p style="margin: 0; color: #64748b;">View and trace the complete history of all citizen submissions.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit', year: 'numeric' });
+        
+        const timeEl = document.getElementById('liveTime');
+        const dateEl = document.getElementById('liveDate');
+        if (timeEl) timeEl.innerText = timeStr;
+        if (dateEl) dateEl.innerText = dateStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+
+<div class="data-table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>ID & Date</th>
+                <th>Citizen Details</th>
+                <th>Category / Area</th>
+                <th>Priority</th>
+                <th>Current Status</th>
+                <th>Quick Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in complaints %}
+            <tr>
+                <td>
+                    <strong style="color: var(--primary-blue);">{{ c.complaint_id }}</strong><br>
+                    <div style="font-size: 0.75rem; color: #64748b; display: flex; flex-direction: column; gap: 2px; margin-top: 4px;">
+                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="calendar" style="width: 12px; height: 12px;"></i> {{ c.created_at|date:"M d, Y" }}</span>
+                        <span style="display: flex; align-items: center; gap: 4px;"><i data-lucide="clock" style="width: 12px; height: 12px;"></i> {{ c.created_at|date:"h:i A" }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="user-info">
+                        <span class="user-name">{{ c.name }}</span>
+                        <span class="user-email">{{ c.email }}</span>
+                    </div>
+                </td>
+                <td>
+                    <strong>{{ c.complaint_type }}</strong><br>
+                    <span style="font-size: 0.8rem; color: #64748b;"><i data-lucide="map-pin" style="width:10px;height:10px;"></i> {{ c.area }}</span>
+                </td>
+                <td>
+                    <span class="badge {% if c.priority == 'Urgent' %}badge-urgent{% else %}badge-normal{% endif %}">
+                        {{ c.priority }}
+                    </span>
+                    {% if c.payment_status %}
+                        <span class="badge" style="background:#dcfce7; color:#16a34a; margin-top:5px;">PAID</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <strong class="status-{{ c.status|cut:' ' }}"><i data-lucide="activity" style="width: 14px; height: 14px;"></i> {{ c.status }}</strong>
+                </td>
+                <td>
+                    <a href="{% url 'complaints' %}?search={{ c.complaint_id }}" class="btn-admin">Manage</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">No complaints exist in the system yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

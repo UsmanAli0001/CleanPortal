@@ -1,0 +1,342 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}My Wallet | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .wallet-hero {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        padding: 50px;
+        border-radius: 30px;
+        color: white;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .wallet-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 400px;
+        height: 400px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+
+    .balance-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .balance-stack label {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        opacity: 0.8;
+        font-weight: 700;
+    }
+
+    .balance-stack .amount {
+        font-size: 3.5rem;
+        font-weight: 800;
+    }
+
+    .wallet-actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 20px;
+    }
+
+    .btn-wallet {
+        padding: 15px 35px;
+        border-radius: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: 0.3s;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-deposit { background: #10b981; color: white; }
+    .btn-deposit:hover { background: #059669; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
+
+    .transaction-card {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        border: 1px solid #f1f5f9;
+    }
+
+    .transaction-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .transaction-header h2 { margin: 0; color: #1e293b; font-size: 1.5rem; }
+
+    .transaction-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 15px;
+    }
+
+    .transaction-table th {
+        text-align: left;
+        padding: 0 20px;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .tr-item {
+        background: #f8fafc;
+        transition: 0.3s;
+        border-radius: 12px;
+    }
+
+    .tr-item:hover {
+        background: #f1f5f9;
+        transform: scale(1.01);
+    }
+
+    .tr-item td {
+        padding: 20px;
+    }
+
+    .tr-item td:first-child { border-radius: 16px 0 0 16px; }
+    .tr-item td:last-child { border-radius: 0 16px 16px 0; }
+
+    .type-badge {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .type-deposit { background: #dcfce7; color: #166534; }
+    .type-payment { background: #fee2e2; color: #991b1b; }
+
+    .amount-text { font-weight: 700; font-size: 1.1rem; }
+    .amount-deposit { color: #16a34a; }
+    .amount-payment { color: #dc2626; }
+
+    /* Modal Styles */
+    .modal {
+        display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+        align-items: center; justify-content: center;
+    }
+
+    .modal-content {
+        background: white; border-radius: 24px; padding: 40px; width: 95%; max-width: 450px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+    }
+
+    .form-group { margin-bottom: 25px; }
+    .form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: #1e293b; }
+    .form-group input {
+        width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0;
+        font-size: 1.1rem; font-weight: 600; text-align: center;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px;
+        color: #64748b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    
+    <!-- Hero Section -->
+    <div class="wallet-hero">
+        <div class="row align-items-center">
+            <div class="col-md-7">
+                {% if wallet.is_linked %}
+                <div class="balance-stack">
+                    <label>Total Stripe Balance</label>
+                    <div class="amount">Rs. {{ wallet.balance }}</div>
+                </div>
+                
+                <div style="margin-top: 20px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); max-width: 350px;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="shield-check" style="width: 14px; color: #10b981;"></i> Verified Stripe Account
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                        <i data-lucide="user" style="width: 14px; opacity: 0.8;"></i>
+                        <span style="font-size: 0.9rem; font-weight: 600;">ID: {{ wallet.stripe_account_id }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="mail" style="width: 14px; opacity: 0.8;"></i>
+                        <span style="font-size: 0.9rem; font-weight: 600;">{{ wallet.stripe_email }}</span>
+                    </div>
+                </div>
+
+                <div class="wallet-actions">
+                    <button onclick="openModal('depositModal')" class="btn-wallet btn-deposit">
+                        <i data-lucide="plus-circle"></i> Add Funds
+                    </button>
+                </div>
+                {% else %}
+                <div class="balance-stack">
+                    <label>Account Status</label>
+                    <div class="amount" style="font-size: 2rem;">Not Connected</div>
+                    <p style="opacity: 0.8; margin-top: 10px; max-width: 500px;">To start using the wallet system, please link your official Stripe account credentials below.</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-5 d-none d-md-block text-end">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" style="width: 180px; filter: brightness(0) invert(1); opacity: 0.8;" alt="Stripe">
+            </div>
+        </div>
+    </div>
+
+    {% if not wallet.is_linked %}
+    <!-- Link Account Form -->
+    <div class="transaction-card mb-5" style="max-width: 600px; margin: -20px auto 40px; position: relative; z-index: 100;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <i data-lucide="link" style="width: 48px; height: 48px; color: var(--primary-blue); margin-bottom: 15px;"></i>
+            <h2 style="margin: 0;">Link Your Account</h2>
+            <p style="color: #64748b;">Enter your credentials to sync with Stripe</p>
+        </div>
+
+        <form action="{% url 'link_stripe_account' %}" method="POST">
+            {% csrf_token %}
+            <div class="form-group mb-4">
+                <label style="text-align: left;">Stripe Account ID</label>
+                <input type="text" name="stripe_account_id" placeholder="e.g. acct_1032D82e" required style="text-align: left;">
+            </div>
+            <div class="form-group mb-4">
+                <label style="text-align: left;">Registered Email</label>
+                <input type="email" name="stripe_email" placeholder="email@example.com" required style="text-align: left;">
+            </div>
+            
+            <div style="background: #eff6ff; padding: 15px; border-radius: 12px; color: #1e40af; font-size: 0.85rem; margin-bottom: 25px; border: 1px solid #dbeafe;">
+                <i data-lucide="info" style="width: 16px; margin-right: 8px; vertical-align: middle;"></i>
+                Your account will be securely linked for all future debit and credit transactions.
+            </div>
+
+            <button type="submit" class="btn-wallet btn-deposit w-100 justify-content-center" style="background: var(--primary-blue); padding: 18px;">
+                Link Account Now
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- Transaction History -->
+    <div class="transaction-card" {% if not wallet.is_linked %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+        <div class="transaction-header">
+            <h2>Transaction History</h2>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" style="border-radius: 10px;">
+                    All Activity
+                </button>
+            </div>
+        </div>
+
+        {% if transactions %}
+        <div class="table-responsive">
+            <table class="transaction-table">
+                <thead>
+                    <tr>
+                        <th>Details</th>
+                        <th>Type</th>
+                        <th>Date</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tr in transactions %}
+                    <tr class="tr-item">
+                        <td>
+                            <div style="font-weight: 700; color: #1e293b;">{{ tr.description }}</div>
+                            <small style="color: #64748b;">Transaction ID: #WTR-{{ tr.id|add:1000 }}</small>
+                        </td>
+                        <td>
+                            <span class="type-badge type-{{ tr.transaction_type|lower }}">{{ tr.transaction_type }}</span>
+                        </td>
+                        <td style="color: #64748b; font-weight: 500;">
+                            {{ tr.timestamp|date:"M d, Y" }}
+                            <small class="d-block">{{ tr.timestamp|date:"H:i A" }}</small>
+                        </td>
+                        <td class="text-end">
+                            <span class="amount-text amount-{{ tr.transaction_type|lower }}">
+                                {% if tr.transaction_type == 'Deposit' %}+{% else %}-{% endif %} Rs. {{ tr.amount }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="activity" style="width: 48px; height: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+            <h3>No Transactions Yet</h3>
+            <p>Your financial activity will appear here once you start using the wallet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Deposit Modal -->
+<div id="depositModal" class="modal">
+    <div class="modal-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="margin: 0;">Add Funds</h2>
+            <button onclick="closeModal('depositModal')" style="background: none; border: none; cursor: pointer; color: #64748b;">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        
+        <form action="{% url 'wallet_deposit' %}" method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Enter Amount (PKR)</label>
+                <input type="number" name="amount" placeholder="0.00" min="10" step="10" required autofocus>
+                <small style="display: block; margin-top: 10px; color: #64748b;">Minimum deposit: Rs. 10</small>
+            </div>
+
+            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" style="height: 20px;" alt="Stripe">
+                <span style="font-size: 0.85rem; color: #64748b;">Secured via <b>Stripe</b> Gateway.</span>
+            </div>
+
+            <button type="submit" class="btn-wallet btn-deposit w-100 justify-content-center" style="padding: 18px;">
+                Proceed to Payment
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // Close on outside click
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }
+</script>
+{% endblock %}

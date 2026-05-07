@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Official Complaint Report - {{ complaint.complaint_id }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 50px;
+            background: white;
+            line-height: 1.6;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #1e3c72;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        .logo-area h1 {
+            margin: 0;
+            color: #1e3c72;
+            font-size: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logo-area p {
+            margin: 5px 0 0;
+            color: #27ae60;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-info {
+            text-align: right;
+        }
+
+        .meta-info p {
+            margin: 3px 0;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .report-title-strip {
+            background: #f1f5f9;
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .report-title-strip h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #334155;
+        }
+
+        .id-badge {
+            background: #1e3c72;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .data-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 25px;
+            background: #fff;
+        }
+
+        .data-card h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: #1e3c72;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .label { color: #64748b; font-weight: 400; }
+        .value { color: #1e293b; font-weight: 600; }
+
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 12px;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .visual-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .img-container {
+            text-align: center;
+        }
+
+        .img-container h4 {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .watermark {
+            position: fixed;
+            bottom: 50px;
+            right: 50px;
+            opacity: 0.1;
+            font-size: 4rem;
+            font-weight: 900;
+            color: #1e3c72;
+            transform: rotate(-20deg);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .footer-note {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        @media print {
+            .no-print { display: none; }
+            body { padding: 0; }
+            .data-card { border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body onload="{% if not request.GET.noprint %}window.print(){% endif %}">
+
+    <div class="watermark">CLEAN PAK PORTAL</div>
+
+    <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: white; padding: 10px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+        <button onclick="window.print()" style="background: #1e3c72; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: 600;">Print Report</button>
+        <button onclick="window.close()" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; ml: 10px;">Close</button>
+    </div>
+
+    <div class="report-header">
+        <div class="logo-area">
+            <h1>Clean Pak Portal</h1>
+            <p>Municipal Management Services Gujrat</p>
+        </div>
+        <div class="meta-info">
+            <p><strong>Generated On:</strong> {% now "F j, Y, P" %}</p>
+            <p><strong>Ref Number:</strong> CP-GJR-{% now "Ymd" %}-{{ complaint.id }}</p>
+            <p><strong>Authority:</strong> Municipal Admin Gujrat</p>
+        </div>
+    </div>
+
+    <div class="report-title-strip">
+        <h2>COMPLAINT RESOLUTION DOSSIER</h2>
+        <span class="id-badge">{{ complaint.complaint_id }}</span>
+    </div>
+
+    <div class="section-grid">
+        <div class="data-card">
+            <h3>Complaint Overview</h3>
+            <div class="data-row">
+                <span class="label">Category</span>
+                <span class="value">{{ complaint.complaint_type }}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Primary Area</span>
+                <span class="value">{{ complaint.area }}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Submission Date</span>
+                <span class="value">{{ complaint.created_at|date:"M d, Y" }}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Priority Level</span>
+                <span class="value" style="color: {% if complaint.priority == 'Urgent' %}#e11d48{% else %}#1e293b{% endif %};">{{ complaint.priority }}</span>
+            </div>
+            <div class="data-row" style="margin-top: 15px; flex-direction: column;">
+                <span class="label">Citizens Description:</span>
+                <p style="margin: 5px 0 0; font-size: 0.9rem; font-style: italic;">"{{ complaint.description }}"</p>
+            </div>
+        </div>
+
+        <div class="data-card">
+            <h3>Operational Status</h3>
+            <div class="data-row">
+                <span class="label">Current Status</span>
+                <span class="status-pill" style="background: 
+                {% if complaint.status == 'Pending' %}#f59e0b
+                {% elif complaint.status == 'Verified' %}#3b82f6
+                {% elif complaint.status == 'In Progress' %}#06b6d4
+                {% else %}#10b981{% endif %};">{{ complaint.status }}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Assigned Resource</span>
+                <span class="value">{% if complaint.assigned_to %}{{ complaint.assigned_to.name }} ({{ complaint.assigned_to.role }}){% else %}PENDING ASSIGNMENT{% endif %}</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Payment Status</span>
+                <span class="value" style="color: #10b981;">PAID & VERIFIED</span>
+            </div>
+            <div class="data-row">
+                <span class="label">GPS Coordinates</span>
+                <span class="value">{% if complaint.latitude %}{{ complaint.latitude|floatformat:4 }}, {{ complaint.longitude|floatformat:4 }}{% else %}N/A{% endif %}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="data-card" style="margin-bottom: 40px;">
+        <h3>Visual Documentation</h3>
+        <div class="visual-grid">
+            <div class="img-container">
+                <h4>Initial Report Evidence</h4>
+                {% if complaint.image %}
+                    <img src="{{ complaint.image.url }}">
+                {% else %}
+                    <div style="height: 250px; background: #f8fafc; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; color: #94a3b8; border-radius: 10px;">No Evidence Found</div>
+                {% endif %}
+            </div>
+            <div class="img-container">
+                <h4>Resolution/Completion Proof</h4>
+                {% if complaint.after_image %}
+                    <img src="{{ complaint.after_image.url }}">
+                {% else %}
+                    <div style="height: 250px; background: #f8fafc; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; color: #94a3b8; border-radius: 10px;">Work In Progress</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        This is a computer-generated document from the Clean Pak Portal Municipal Management System. 
+        It serves as official proof of service request and its current operational status.
+        Verified by Clean Pak Portal Gujrat Division.
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,195 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Reply to Inquiry | Admin{% endblock %}
+
+{% block extra_head %}
+<style>
+    .admin-page {
+        padding: 40px 20px;
+        background: #f1f5f9;
+        min-height: calc(100vh - var(--nav-height));
+        --admin-btn-gradient: linear-gradient(to right, #1e293b, #334155);
+        --admin-btn-hover: linear-gradient(to right, #334155, #475569);
+    }
+
+    .reply-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .breadcrumb {
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+
+    .breadcrumb a {
+        color: var(--primary-blue);
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .reply-layout {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        border: 1px solid #e2e8f0;
+    }
+
+    .message-display {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 25px;
+        border-left: 5px solid var(--primary-blue);
+        margin-bottom: 30px;
+    }
+
+    .message-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+    }
+
+    .message-meta span { font-weight: 700; color: var(--primary-blue); }
+
+    .message-content h2 {
+        font-size: 1.4rem;
+        margin: 0 0 10px 0;
+        color: var(--primary-blue);
+    }
+
+    .message-content p {
+        line-height: 1.6;
+        color: #334155;
+        margin: 0;
+        white-space: pre-wrap;
+    }
+
+    .reply-form h3 {
+        font-size: 1.2rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        color: var(--primary-blue);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        font-family: inherit;
+        font-size: 1.05rem;
+        background: #ffffff;
+        resize: vertical;
+        min-height: 200px;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+    }
+
+    .btn-send {
+        background: var(--admin-btn-gradient);
+        color: white;
+        border: none;
+        padding: 16px 32px;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(30, 41, 59, 0.15);
+    }
+
+    .btn-send:hover {
+        background: var(--admin-btn-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(30, 41, 59, 0.2);
+    }
+
+    .btn-send:active {
+        transform: translateY(0);
+    }
+
+    .history-badge {
+        background: #dcfce7;
+        color: #166534;
+        padding: 10px 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="reply-container">
+        <div class="breadcrumb">
+            <a href="{% url 'admin_contact_messages' %}">Contact Messages</a> / Reply to {{ msg.name }}
+        </div>
+
+        <div class="reply-layout">
+            <div class="card">
+                <div class="message-display">
+                    <div class="message-meta">
+                        <span>From: {{ msg.name }} ({{ msg.email }})</span>
+                        <span style="color: #64748b; font-weight: 400;">{{ msg.created_at|date:"F d, Y @ H:i" }}</span>
+                    </div>
+                    <div class="message-content">
+                        <div style="margin-bottom: 15px;">
+                            <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">{{ msg.category }}</span>
+                        </div>
+                        <h2>{{ msg.subject }}</h2>
+                        <p>{{ msg.message }}</p>
+                    </div>
+                </div>
+
+                <div class="reply-form">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <h3><i data-lucide="corner-up-left"></i> Write your Response</h3>
+                        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 15px;">Your reply will be saved in the system and emailed to the user.</p>
+                        
+                        <textarea name="reply" class="form-control" placeholder="Type your response here..." required>{{ msg.reply|default:'' }}</textarea>
+                        
+                        <button type="submit" class="btn-send">
+                            <i data-lucide="send"></i>
+                            {% if msg.is_replied %}Update & Re-send Reply{% else %}Send Response{% endif %}
+                        </button>
+                    </form>
+                </div>
+
+                {% if msg.is_replied %}
+                <div class="history-badge">
+                    <i data-lucide="check-check"></i>
+                    This inquiry was replied to by {{ msg.replied_by.username }} on {{ msg.replied_at|date:"M d, Y @ H:i" }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

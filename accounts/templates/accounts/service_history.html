@@ -1,0 +1,204 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}My Service Bookings | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .history-header {
+        background: linear-gradient(135deg, var(--primary-blue), #1e3a8a);
+        padding: 60px 40px;
+        color: white;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .history-header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; }
+    .history-header p { margin: 10px 0 0; opacity: 0.9; }
+
+    .stats-tray {
+        display: flex;
+        gap: 20px;
+        background: rgba(255,255,255,0.1);
+        padding: 15px 25px;
+        border-radius: 15px;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .stat-item { text-align: center; }
+    .stat-val { font-size: 1.5rem; font-weight: 800; display: block; }
+    .stat-lbl { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+
+    .history-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px 80px;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+        overflow-x: auto;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .history-table th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        padding: 15px 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .history-table td {
+        padding: 20px;
+        border-bottom: 1px solid #f1f5f9;
+        color: var(--text-dark);
+        vertical-align: middle;
+    }
+
+    .history-table tr:hover { background: #f8fafc; }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        display: inline-block;
+    }
+
+    .status-Pending { background: #fff3e0; color: #f59e0b; }
+    .status-Scheduled { background: #eff6ff; color: #3b82f6; }
+    .status-InProgress { background: #e0f2fe; color: #0284c7; }
+    .status-Completed { background: #dcfce7; color: #10b981; }
+    .status-Cancelled { background: #fee2e2; color: #ef4444; }
+    
+    .btn-action {
+        padding: 8px 15px;
+        background: #f1f5f9;
+        color: var(--primary-blue);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: 0.2s;
+    }
+    
+    .btn-action:hover {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #64748b; }
+    .empty-state i { width: 64px; height: 64px; opacity: 0.5; margin-bottom: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-header">
+    <div>
+        <h1>My Service Bookings</h1>
+        <p>Manage and track your private sanitation and cleaning service requests.</p>
+    </div>
+    <div class="stats-tray">
+        <div class="stat-item">
+            <span class="stat-val">{{ total }}</span>
+            <span class="stat-lbl">Total</span>
+        </div>
+        <div class="stat-item" style="color: #6ee7b7;">
+            <span class="stat-val">{{ completed }}</span>
+            <span class="stat-lbl">Completed</span>
+        </div>
+        <div class="stat-item" style="color: #fcd34d;">
+            <span class="stat-val">{{ upcoming }}</span>
+            <span class="stat-lbl">Upcoming</span>
+        </div>
+    </div>
+</div>
+
+<div class="history-container">
+    <div class="table-card">
+        {% if bookings %}
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Service Type</th>
+                    <th>Scheduled Date</th>
+                    <th>Urgency</th>
+                    <th>Cost</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px">
+                            <i class="bi {{ b.service.icon }}" style="font-size: 1.2rem; color: var(--primary-blue);"></i>
+                            <strong>{{ b.service.name }}</strong>
+                        </div>
+                    </td>
+                    <td>
+                        {{ b.scheduled_date|date:"M d, Y" }}
+                        {% if b.scheduled_time %}<br><small style="color:#94a3b8">{{ b.scheduled_time|time:"H:i A" }}</small>{% endif %}
+                    </td>
+                    <td>
+                        <span style="font-weight:600; color:{% if b.urgency == 'Urgent' %}#ef4444{% else %}#64748b{% endif %}">
+                            {{ b.urgency }}
+                        </span>
+                    </td>
+                    <td><strong>Rs. {{ b.total_cost }}</strong></td>
+                    <td>
+                        {% if b.payment_status %}
+                        <span style="color:#10b981; font-weight:700;"><i data-lucide="check-circle" style="width:14px; height:14px; display:inline-block; vertical-align:middle;"></i> Paid</span>
+                        {% else %}
+                        <span style="color:#ef4444; font-weight:700;"><i data-lucide="x-circle" style="width:14px; height:14px; display:inline-block; vertical-align:middle;"></i> Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ b.status|cut:' ' }}">{{ b.status }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i data-lucide="calendar-days"></i>
+            <h3>No Bookings Found</h3>
+            <p>You haven't booked any private services yet.</p>
+            <a href="{% url 'book_service' %}" class="btn-action" style="margin-top: 15px; padding: 12px 25px; font-size: 1rem;">Book a Service</a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <a href="{% url 'dashboard' %}" class="btn-action"><i data-lucide="arrow-left"></i> Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<!-- Leaflet & Draw -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+<style>
+    #admin-map {
+        height: 500px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .field-boundary textarea { display: block; width: 100%; height: 100px; font-family: monospace; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="admin-map-container" style="margin-bottom: 20px;">
+    <h2>Draw Zone Boundary</h2>
+    <p class="help">Use the polygon tool on the left to draw the zone boundary. Drawing a new polygon will replace the existing one.</p>
+    <div id="admin-map"></div>
+</div>
+
+{{ block.super }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const boundaryInput = document.querySelector('.field-boundary textarea');
+        let initialData = null;
+        
+        try {
+            initialData = JSON.parse(boundaryInput.value);
+        } catch(e) {}
+
+        const map = L.map('admin-map', { zoomControl: false }).setView([32.5731, 74.0784], 14);
+        
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO'
+        }).addTo(map);
+
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        if (initialData) {
+            const layer = L.geoJSON(initialData);
+            layer.eachLayer(l => drawnItems.addLayer(l));
+            map.fitBounds(layer.getBounds());
+            // Sync input in case it was modified
+            boundaryInput.value = JSON.stringify(initialData.geometry || initialData);
+        }
+
+        // Fix map size
+        setTimeout(() => map.invalidateSize(), 300);
+
+        const drawControl = new L.Control.Draw({
+            edit: { featureGroup: drawnItems },
+            draw: {
+                polygon: true,
+                polyline: false,
+                rectangle: false,
+                circle: false,
+                marker: false,
+                circlemarker: false
+            }
+        });
+        map.addControl(drawControl);
+
+        map.on(L.Draw.Event.CREATED, function (e) {
+            drawnItems.clearLayers();
+            const layer = e.layer;
+            drawnItems.addLayer(layer);
+            updateBoundaryInput(layer);
+        });
+
+        map.on(L.Draw.Event.EDITED, function (e) {
+            const layers = e.layers;
+            layers.eachLayer(function (layer) {
+                updateBoundaryInput(layer);
+            });
+        });
+
+        map.on(L.Draw.Event.DELETED, function (e) {
+            boundaryInput.value = "";
+        });
+
+        function updateBoundaryInput(layer) {
+            const geojson = layer.toGeoJSON();
+            boundaryInput.value = JSON.stringify(geojson.geometry);
+        }
+    });
+</script>
+{% endblock %}

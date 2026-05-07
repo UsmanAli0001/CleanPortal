@@ -1,0 +1,371 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Service Impact Gallery | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+    .gallery-hero {
+        background: linear-gradient(rgba(26, 35, 126, 0.7), rgba(26, 35, 126, 0.7)), 
+                    url("https://images.unsplash.com/photo-1577493340887-b7bfff550145?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80");
+        background-size: cover;
+        background-position: center;
+        padding: 100px 50px;
+        color: white;
+        text-align: center;
+        border-radius: 0 0 50px 50px;
+        margin-bottom: 50px;
+    }
+
+    .gallery-hero h1 { font-size: 3rem; margin: 0; font-weight: 800; }
+    .gallery-hero p { font-size: 1.2rem; opacity: 0.9; margin-top: 15px; max-width: 700px; margin-left: auto; margin-right: auto; }
+
+    .gallery-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px 80px;
+    }
+
+    .impact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+    }
+
+    .impact-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+        transition: 0.3s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .impact-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .card-image-wrapper {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+    }
+
+    .card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #f1f5f9;
+        transition: 0.5s;
+    }
+
+    .impact-card:hover .card-image {
+        transform: scale(1.05);
+    }
+
+    .card-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: var(--accent-green);
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        z-index: 2;
+    }
+
+    .card-content {
+        padding: 25px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-content h3 {
+        margin: 0 0 10px;
+        font-size: 1.25rem;
+        color: var(--text-dark);
+    }
+
+    .card-location {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+
+    .card-description {
+        color: #475569;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 20px;
+        flex-grow: 1;
+    }
+
+    .btn-view-impact {
+        width: 100%;
+        padding: 12px;
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-view-impact:hover {
+        background: #1e3c72;
+        box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
+    }
+
+    /* Viewer Modal Styling */
+    .modal {
+        display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+        align-items: center; justify-content: center;
+    }
+
+    .modal-content {
+        background: white; border-radius: 24px; width: 95%; max-width: 800px;
+        overflow: hidden; position: relative;
+    }
+
+    .modal-close {
+        position: absolute; top: 20px; right: 20px; z-index: 10;
+        background: white; border-radius: 50%; width: 40px; height: 40px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    .comparison-wrapper {
+        position: relative;
+        height: 450px;
+        width: 100%;
+    }
+
+    .comp-img {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        object-fit: contain;
+        background: #0f172a;
+    }
+
+    .comp-before { z-index: 2; transition: opacity 0.5s ease; }
+    .comp-after { z-index: 1; }
+
+    .comp-label {
+        position: absolute; top: 20px; padding: 8px 15px; border-radius: 10px;
+        font-weight: 800; font-size: 0.8rem; color: white; z-index: 3;
+        text-transform: uppercase; letter-spacing: 1px;
+    }
+    .label-before { left: 20px; background: #ef4444; }
+    .label-after { right: 20px; background: #10b981; }
+
+    .comp-controls {
+        padding: 30px;
+        text-align: center;
+    }
+
+    .toggle-switch {
+        display: inline-flex;
+        background: #f1f5f9;
+        padding: 5px;
+        border-radius: 30px;
+        margin-bottom: 20px;
+    }
+
+    .toggle-btn {
+        padding: 10px 25px;
+        border-radius: 25px;
+        border: none;
+        background: transparent;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .toggle-btn.active {
+        background: white;
+        color: var(--primary-blue);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gallery-hero">
+    <h1>Gujrat Service Impact</h1>
+    <p>Visual records of our continuous efforts to make Gujrat cleaner and more vibrant. See the transformation of our streets and public spaces.</p>
+</div>
+
+<div class="gallery-container">
+    <div class="impact-grid">
+        <!-- GT Road Example -->
+        <div class="impact-card">
+            <div class="card-image-wrapper">
+                <span class="card-badge">Completed</span>
+                <img src="https://images.unsplash.com/photo-1590425026955-442435d84d72?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" class="card-image" alt="GT Road Cleaned">
+            </div>
+            <div class="card-content">
+                <h3>Main Highway Cleanup</h3>
+                <div class="card-location">
+                    <i data-lucide="map-pin"></i> GT Road, Gujrat
+                </div>
+                <p class="card-description">Removed major waste accumulation along the main service road near Fawara Chowk. The area is now clear for pedestrian flow.</p>
+                <button class="btn-view-impact" onclick="openImpactViewer('https://images.unsplash.com/photo-1530639834082-05bafb81dbfe?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1590425026955-442435d84d72?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80', 'Main Highway Cleanup', 'GT Road, Gujrat')">View Transformation</button>
+            </div>
+        </div>
+
+        <!-- Bhimber Road Example -->
+        <div class="impact-card">
+            <div class="card-image-wrapper">
+                <span class="card-badge">Completed</span>
+                <img src="https://images.unsplash.com/photo-1517520442769-95e2671e7d83?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" class="card-image" alt="Bhimber Road">
+            </div>
+            <div class="card-content">
+                <h3>Commercial Zone Sanitation</h3>
+                <div class="card-location">
+                    <i data-lucide="map-pin"></i> Bhimber Road, Gujrat
+                </div>
+                <p class="card-description">Targeted waste collection in the bustling commercial hub. Improved hygienic conditions for local shopkeepers and customers.</p>
+                <button class="btn-view-impact" onclick="openImpactViewer('https://images.unsplash.com/photo-1563245372-f21724e3856d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1517520442769-95e2671e7d83?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80', 'Commercial Zone Sanitation', 'Bhimber Road, Gujrat')">View Transformation</button>
+            </div>
+        </div>
+
+        <!-- Model Town Example -->
+        <div class="impact-card">
+            <div class="card-image-wrapper">
+                <span class="card-badge">Completed</span>
+                <img src="https://images.unsplash.com/photo-1473163922539-22a4c1df7a6c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" class="card-image" alt="Model Town">
+            </div>
+            <div class="card-content">
+                <h3>Neighborhood Sweep</h3>
+                <div class="card-location">
+                    <i data-lucide="map-pin"></i> Model Town, Gujrat
+                </div>
+                <p class="card-description">Regular residential area cleaning operation. Ensuring a waste-free environment for the families living in the sector.</p>
+                <button class="btn-view-impact" onclick="openImpactViewer('https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1473163922539-22a4c1df7a6c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80', 'Neighborhood Sweep', 'Model Town, Gujrat')">View Transformation</button>
+            </div>
+        </div>
+
+        <!-- Kutchery Chowk Example -->
+        <div class="impact-card">
+            <div class="card-image-wrapper">
+                <span class="card-badge">Completed</span>
+                <img src="https://images.unsplash.com/photo-1555529731-1cdfa0a4e768?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" class="card-image" alt="Kutchery Chowk">
+            </div>
+            <div class="card-content">
+                <h3>District Court Perimeter</h3>
+                <div class="card-location">
+                    <i data-lucide="map-pin"></i> Kutchery Road, Gujrat
+                </div>
+                <p class="card-description">Comprehensive cleanup around the district court area. Debris and plastic waste were cleared from the main pathways.</p>
+                <button class="btn-view-impact" onclick="openImpactViewer('https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1555529731-1cdfa0a4e768?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80', 'District Court Perimeter', 'Kutchery Road, Gujrat')">View Transformation</button>
+            </div>
+        </div>
+
+        {% for complaint in gallery_complaints %}
+        <div class="impact-card">
+            <div class="card-image-wrapper">
+                <span class="card-badge">{{ complaint.status }}</span>
+                <img src="{{ complaint.after_image.url }}" class="card-image" alt="{{ complaint.complaint_type }}">
+            </div>
+            <div class="card-content">
+                <h3>{{ complaint.complaint_type }}</h3>
+                <div class="card-location">
+                    <i data-lucide="map-pin"></i> {{ complaint.area }}
+                </div>
+                <p class="card-description">{{ complaint.description|truncatewords:20 }}</p>
+                <button class="btn-view-impact" onclick="openImpactViewer('{{ complaint.image.url }}', '{{ complaint.after_image.url }}', '{{ complaint.complaint_type }}', '{{ complaint.area }}')">View Transformation</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Viewer Modal -->
+<div id="impactViewerModal" class="modal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeImpactViewer()">
+            <i data-lucide="x"></i>
+        </button>
+        
+        <div class="comparison-wrapper">
+            <span class="comp-label label-before" id="badgeBefore">Before</span>
+            <span class="comp-label label-after" id="badgeAfter">After</span>
+            
+            <img id="viewerBeforeImg" src="" class="comp-img comp-before">
+            <img id="viewerAfterImg" src="" class="comp-img comp-after">
+        </div>
+
+        <div class="comp-controls">
+            <h2 id="viewerTitle" style="margin-top: 0; color: var(--text-dark);">Main Highway Cleanup</h2>
+            <p id="viewerArea" style="color: #64748b; margin-bottom: 25px;">GT Road, Gujrat</p>
+            
+            <div class="toggle-switch">
+                <button id="btnShowBefore" class="toggle-btn" onclick="toggleView('before')">Before</button>
+                <button id="btnShowAfter" class="toggle-btn active" onclick="toggleView('after')">After</button>
+            </div>
+            
+            <p style="font-size: 0.85rem; color: #94a3b8;">Click the buttons above to compare the states.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openImpactViewer(before, after, title, area) {
+        document.getElementById('viewerBeforeImg').src = before;
+        document.getElementById('viewerAfterImg').src = after;
+        document.getElementById('viewerTitle').innerText = title;
+        document.getElementById('viewerArea').innerText = area;
+        
+        document.getElementById('impactViewerModal').style.display = 'flex';
+        toggleView('after'); // Default to after
+    }
+
+    function closeImpactViewer() {
+        document.getElementById('impactViewerModal').style.display = 'none';
+    }
+
+    function toggleView(state) {
+        const beforeImg = document.getElementById('viewerBeforeImg');
+        const btnBefore = document.getElementById('btnShowBefore');
+        const btnAfter = document.getElementById('btnShowAfter');
+
+        if (state === 'before') {
+            beforeImg.style.opacity = '1';
+            btnBefore.classList.add('active');
+            btnAfter.classList.remove('active');
+        } else {
+            beforeImg.style.opacity = '0';
+            btnBefore.classList.remove('active');
+            btnAfter.classList.add('active');
+        }
+    }
+
+    // Close modal on click outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('impactViewerModal');
+        if (event.target == modal) {
+            closeImpactViewer();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+    });
+</script>
+{% endblock %}

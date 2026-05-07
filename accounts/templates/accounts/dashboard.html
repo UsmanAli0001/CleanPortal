@@ -1,164 +1,831 @@
+{% extends 'accounts/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Clean Pak Portal - Dashboard</title>
-    <link rel="stylesheet" href="{% static 'accounts/css/style.css' %}">
-</head>
-<body>
+{% load custom_filters %}
 
-<!-- NAVBAR -->
-<div class="navbar">
-    
+{% block title %}Dashboard | Clean Pak Portal{% endblock %}
 
-    <h2>Clean Pak Portal</h2>
-    
+{% block extra_head %}
+<style>
+    /* Modern Dashboard Styling */
+    :root {
+        --card-bg: rgba(255, 255, 255, 0.7);
+        --card-border: rgba(255, 255, 255, 0.4);
+        --primary-gradient: linear-gradient(135deg, #6366f1, #4f46e5);
+        --success-gradient: linear-gradient(135deg, #10b981, #059669);
+        --warning-gradient: linear-gradient(135deg, #f59e0b, #d97706);
+        --danger-gradient: linear-gradient(135deg, #f43f5e, #e11d48);
+        --info-gradient: linear-gradient(135deg, #0ea5e9, #0284c7);
+        --purple-gradient: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
 
-     <div class="nav-links">
-        
-        <a href="{% url 'home' %}">Home</a>
-        <a href="{% url 'about' %}">About</a>
-        <a href="{% url 'services' %}">Services</a>
-        <a href="{% url 'reports' %}">Reports</a>
-        <a href="{% url 'contact' %}">Contact</a>
-        
-        
+    body {
+        background-color: #f8fafc;
+        background-image:
+            radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+    }
+
+    .dashboard-hero {
+        position: relative;
+        height: 80vh;
+        min-height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        overflow: hidden;
+        border-radius: 0 0 80px 80px;
+        margin-bottom: -50px;
+        padding-bottom: 80px;
+        /* Offset to push content up */
+    }
+
+    .hero-bg {
+        position: absolute;
+        inset: 0;
+        background: url('{% static "accounts/images/dashboard.png" %}') center/cover no-repeat;
+        z-index: 1;
+        transition: transform 1.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .dashboard-hero:hover .hero-bg {
+        transform: scale(1.05);
+    }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.05);
+        /* Minimal overlay for maximum clarity */
+        z-index: 2;
+    }
+
+    .hero-content {
+        max-width: 800px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-content h1 {
+        font-size: 3.5rem;
+        margin: 0;
+        font-weight: 900;
+        /* Extra bold as requested */
+        letter-spacing: -1.5px;
+        line-height: 1.1;
+        text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-content h1 span {
+        color: #1e40af;
+        /* Solid Blue base */
+        background: linear-gradient(to right, #1e40af, #10b981);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+        font-weight: 900;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+
+    .hero-content {
+        animation: fadeIn 1.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .hero-content p {
+        font-size: 1.25rem;
+        color: #1e293b;
+        margin: 20px auto 40px;
+        font-weight: 600;
+        max-width: 650px;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    }
+
+    .btn-hero {
+        padding: 18px 40px;
+        border-radius: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-size: 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .btn-hero.primary {
+        background: var(--success-gradient);
+        color: white;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-hero.secondary {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-hero:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Stats Grid */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 30px;
+        padding: 0 50px;
+        margin-top: -60px;
+        z-index: 10;
+        position: relative;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(0, 0, 0, 0.02);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .stat-card.blue .stat-icon {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
+
+    .stat-card.green .stat-icon {
+        background: #f0fdf4;
+        color: #10b981;
+    }
+
+    .stat-card.orange .stat-icon {
+        background: #fff7ed;
+        color: #f59e0b;
+    }
+
+    .stat-card.purple .stat-icon {
+        background: #faf5ff;
+        color: #8b5cf6;
+    }
+
+    .stat-info h3 {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #64748b;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .stat-info .value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-top: 4px;
+    }
+
+    /* Feature Grid */
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        padding: 40px 50px;
+    }
+
+    .feature-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 28px 24px;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        min-height: 250px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Ensuring uniform colors for all cards by overriding specific classes */
+    .feature-card.card-success,
+    .feature-card.card-info,
+    .feature-card.card-purple,
+    .feature-card.card-warning,
+    .feature-card.card-danger {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+    }
+
+    .icon-box {
+        width: 76px;
+        height: 76px;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        object-fit: contain;
+    }
+
+    .feature-card h4 {
+        margin: 0 0 10px;
+        font-size: 1.25rem;
+        color: #0f172a;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .feature-card p {
+        font-size: 0.95rem;
+        color: #475569;
+        line-height: 1.5;
+        margin-bottom: 25px;
+        flex-grow: 1;
+    }
+
+    .btn-dash {
+        padding: 12px 20px;
+        background: white;
+        color: #1e40af;
+        border: 1px solid #cbd5e1;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: fit-content;
+        transition: all 0.3s ease;
+    }
+
+    .btn-dash:hover {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 8px 15px rgba(79, 70, 229, 0.25);
+        transform: translateY(-3px) scale(1.02);
+    }
+
+    /* Badge Overrides */
+    .badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #ef4444;
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 6px 12px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        z-index: 5;
+    }
+
+
+    .star-rating label {
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+        color: #e2e8f0;
+        transition: 0.2s;
+    }
+
+    .star-rating label i {
+        width: 40px;
+        height: 40px;
+    }
+
+    .star-rating input:checked~label,
+    .star-rating label:hover,
+    .star-rating label:hover~label {
+        color: #fbbf24;
+    }
+
+    .star-rating label:active {
+        transform: scale(0.9);
+    }
+
+    /* Toast Notification */
+    #toastContainer {
+        position: fixed;
+        top: 30px;
+        right: 30px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .toast {
+        min-width: 300px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        background: white;
+        border: 1px solid #edf2f7;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transform: translateX(120%);
+        transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .toast.show {
+        transform: translateX(0);
+    }
+
+    .toast.success {
+        border-left: 5px solid var(--accent-green);
+    }
+
+    .toast.error {
+        border-left: 5px solid #ef4444;
+    }
+
+    .toast i {
+        width: 24px;
+        height: 24px;
+    }
+
+    .toast span {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-dark);
+    }
+
+
+    .tag-review {
+        background: #f3e8ff;
+        color: #7e22ce;
+    }
+
+    .review-stars {
+        color: #fbbf24;
+        display: flex;
+        gap: 2px;
+        margin-top: 5px;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .btn-loading .btn-text {
+        display: none;
+    }
+
+    .btn-loading .spinner {
+        display: block;
+    }
+
+    /* Gallery Specific Styles */
+    @keyframes slideUpFade {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Holiday Glow Effect */
+    .holiday-glow {
+        animation: holidayPulse 2s infinite alternate;
+        position: relative;
+    }
+
+    @keyframes holidayPulse {
+        from {
+            box-shadow: 0 0 5px rgba(251, 191, 36, 0.2);
+            transform: scale(1);
+        }
+
+        to {
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+            transform: scale(1.05);
+        }
+    }
+
+    /* Ultra-clean aesthetic animations */
+    .btn-dash {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        position: relative;
+        z-index: 5;
+    }
+
+    .btn-dash:hover {
+        transform: translateY(-5px);
+        filter: brightness(1.1);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-animate::after {
+        display: none;
+        /* Removing busy shimmer for clarity */
+    }
+
+    /* Cinematic Login Intro Overlay */
+    #login-intro-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .intro-content {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        pointer-events: none;
+    }
+
+    .intro-title {
+        font-size: clamp(2rem, 6vw, 4.5rem);
+        font-weight: 950;
+        color: white;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        margin: 0;
+        opacity: 0;
+        transform: translateY(30px);
+        animation: revealTitle 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s forwards,
+                   textGlow 3s ease-in-out infinite alternate 2s;
+        text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .intro-title span {
+        color: #3b82f6;
+        text-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+    }
+
+    .intro-subtitle {
+        color: #94a3b8;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.5em;
+        text-transform: uppercase;
+        margin-top: 15px;
+        opacity: 0;
+        animation: fadeIn 1s ease-out 1.5s forwards;
+    }
+
+    @keyframes textGlow {
+        from {
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0px rgba(59, 130, 246, 0);
+        }
+        to {
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.4);
+        }
+    }
+
+    @keyframes revealTitle {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        to {
+            opacity: 1;
+        }
+    }
+
+    .intro-fade-out {
+        animation: fadeOutOverlay 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes fadeOutOverlay {
+        to {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="login-intro-overlay">
+    <div class="intro-content">
+        <h1 class="intro-title">CLEAN PAK <span>PORTAL</span></h1>
+        <div class="intro-subtitle">Precision Waste Management</div>
+    </div>
+</div>
+
+<div id="toastContainer"></div>
+
+<div class="dashboard-hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>Welcome to <span>Clean Pak Portal</span></h1>
+        <p>Your centralized action hub for a cleaner, smarter, and greener Gujrat. Monitor your city impact in
+            real-time.</p>
+
+        <div style="display: flex; gap: 20px; justify-content: center;">
+            <a href="{% url 'register_complaint' %}" class="btn-dash btn-animate"
+                style="background: white; color: #1e40af; border: none; padding: 15px 35px; font-size: 1.05rem; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                <i data-lucide="plus-circle"></i> Lodge New Issue
+            </a>
+            <a href="{% url 'track' %}" class="btn-dash btn-animate"
+                style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: #1e293b; padding: 15px 35px; font-size: 1.05rem; backdrop-filter: blur(8px); font-weight: 700;">
+                <i data-lucide="activity"></i> Track Progress
+            </a>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="stats-container">
+    <div class="stat-card blue">
+        <div class="stat-icon"><i data-lucide="file-text"></i></div>
+        <div class="stat-info">
+            <h3>Total Reports</h3>
+            <div class="value">{{ total_complaints }}</div>
+        </div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-icon"><i data-lucide="check-circle"></i></div>
+        <div class="stat-info">
+            <h3>Resolved</h3>
+            <div class="value">{{ resolved_issues }}</div>
+        </div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-icon"><i data-lucide="refresh-cw"></i></div>
+        <div class="stat-info">
+            <h3>In Progress</h3>
+            <div class="value">{{ in_progress }}</div>
+        </div>
+    </div>
+    <div class="stat-card orange">
+        <div class="stat-icon"><i data-lucide="clock"></i></div>
+        <div class="stat-info">
+            <h3>Pending Review</h3>
+            <div class="value">{{ pending_reports }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="feature-grid">
+    <div class="feature-card card-success">
+        <div>
+            <div class="icon-box"><img src="{% static 'accounts/images/register.png' %}" class="feature-icon"></div>
+            <h4>Register Complaint</h4>
+            <p>Voice your concerns and help us maintain a cleaner neighborhood by reporting waste issues.</p>
+        </div>
+        <a href="{% url 'register_complaint' %}" class="btn-dash"><i data-lucide="plus-circle"></i> Lodge Request</a>
+    </div>
+    <div class="feature-card card-info">
+        <div>
+            <div class="icon-box"><img src="{% static 'accounts/images/track.png' %}" class="feature-icon"></div>
+            <h4>Track Progress</h4>
+            <p>Stay updated on the real-time status of your active complaints and service requests.</p>
+        </div>
+        <a href="{% url 'track' %}" class="btn-dash"><i data-lucide="activity"></i> Monitor Status</a>
+    </div>
+    <div class="feature-card card-purple">
+        <div>
+            <div class="icon-box"><img src="{% static 'accounts/images/zone.png' %}" class="feature-icon"></div>
+            <h4>Zone Coverage</h4>
+            <p>Explore city-wide coverage maps and sanitation boundaries for your specific location.</p>
+        </div>
+        <a href="{% url 'zone_management' %}" class="btn-dash"><i data-lucide="map"></i> View Boundaries</a>
+    </div>
+    <div class="feature-card card-info">
+        <div>
+            <div class="icon-box"><img src="{% static 'accounts/images/vehicle.png' %}" class="feature-icon"></div>
+            <h4>Fleet Monitor</h4>
+            <p>Monitor the real-time movement of waste collection vehicles across the city zones.</p>
+        </div>
+        <a href="{% url 'vehicle_tracking' %}" class="btn-dash"><i data-lucide="truck"></i> Live Tracking</a>
+    </div>
+    <div class="feature-card card-success">
+        <div>
+            <div class="icon-box">
+                <img src="https://uxwing.com/wp-content/themes/uxwing/download/banking-finance/gold-coin-pakistan-rupee-icon.png"
+                    class="feature-icon" alt="Payments">
+            </div>
+            <h4>Payment Details</h4>
+            <p>Securely view your service fees and keep track of your complete transaction history.</p>
+        </div>
+        <a href="{% url 'payment_details' %}" class="btn-dash"><i data-lucide="credit-card"></i> Manage Fees</a>
     </div>
 
-    <div class="nav-buttons">
-
-<a href="{% url 'logout' %}">
-
-<button class="login-btn">
-
-Log out
-
-</button>
-
-</a>
-
-</div>
-
-</div>
-
-<!-- HERO SECTION -->
-<div class="hero">
-    <div class="hero-text">
-        <h1>Welcome to Clean Pak Portal </h1>
-        <h3>Report & Track Municipal Complaints Easily</h3>
-        <div class="hero-buttons">
-            <a href="{% url 'register_complaint' %}"><button class="btn-orange">Register Complaint</button></a>
-            <a href="{% url 'track' %}"><button class="btn-blue">Track Complaint</button></a>
+    <div class="feature-card card-purple">
+        <div>
+            <div class="icon-box"><img src="{% static 'accounts/images/scheduled.png' %}" class="feature-icon"></div>
+            <h4>Service Schedule</h4>
+            <p>Check the latest municipal cleanup schedules and important city-wide event calendars.</p>
         </div>
+        <a href="{% url 'schedule' %}" class="btn-dash"><i data-lucide="calendar"></i> City Calendar</a>
     </div>
-    <div>
-        <img src="{% static 'accounts/images/dashboard.png' %}" alt="Dashboard Image">
+    <div class="feature-card card-success" id="alertsCard">
+        <div class="badge" id="alertBadge">0</div>
+        <div>
+            <div class="icon-box"><img src="{% static 'accounts/images/notification.png' %}" class="feature-icon"></div>
+            <h4>System Alerts</h4>
+            <p>Receive critical updates, weather advisories, and system notifications instantly.</p>
+        </div>
+        <a href="{% url 'notifications' %}" class="btn-dash"><i data-lucide="bell"></i> Check Inbox</a>
     </div>
-</div>
-
-<!-- FEATURE BAR -->
-
-<div class="feature-bar">
 
 
 
-<div class="feature">
-<img src="{% static 'accounts/images/register.png' %}">
-<h4>Register Complaint</h4>
-<p>Submit Your Issue</p>
-</div>
-
-
-<div class="feature">
-<img src="{% static 'accounts/images/track.png' %}">
-<h4>Track Complaint</h4>
-<a href="{% url 'track' %}"><button class="feedback-btn">Check your Status</button></a>
-</div>
-
-<div class="feature">
-<img src="{% static 'accounts/images/zone.png' %}">
-<h4>Zone Management</h4>
-<p>Area Coverage</p>
-</div>
-
-<div class="feature">
-<img src="{% static 'accounts/images/vehicle.png' %}">
-<h4>Vehicle Tracking</h4>
-<p>Fleet Monitoring</p>
-</div>
-
-</div>
-
-<!-- PORTAL FEATURES -->
-<div class="portal-section">
-    <h1>Portal Features</h1>
-    <h2>Efficient & Transparent Services</h2>
-    <div class="portal-cards">
-        <div class="card">
-            <img src="{% static 'accounts/images/scheduled.png' %}">
-            <h3>View Cleaning Schedules</h3>
+    <div class="feature-card card-success">
+        <div>
+            <div class="icon-box"><img src="{% static 'accounts/images/feedback.png' %}" class="feature-icon"></div>
+            <h4>Citizen Voice</h4>
+            <p>Share your experiences or browse through community reviews to see municipal progress.</p>
         </div>
-        <div class="card">
-            <img src="{% static 'accounts/images/payment.png' %}">
-            <h3>Payment</h3>
+        <a href="{% url 'citizen_reviews' %}" class="btn-dash"><i data-lucide="message-square"></i> Browse Feedback</a>
+    </div>
+    <div class="feature-card card-info">
+        <div>
+            <div class="icon-box"><img src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png"
+                    class="feature-icon" alt="History"></div>
+            <h4>History</h4>
+            <p>Review your past contributions, complaints, and resolved service requests in one place.</p>
         </div>
-        <div class="card">
-            <img src="{% static 'accounts/images/notification.png' %}">
-            <h3>Notifications</h3>
+        <a href="{% url 'complaint_history' %}" class="btn-dash"><i data-lucide="history"></i> My Records</a>
+    </div>
+    <div class="feature-card card-purple" style="border: 1px solid rgba(139, 92, 246, 0.2);">
+        <div>
+            <div class="icon-box"><img src="{% static 'accounts/images/report.png' %}" class="feature-icon"></div>
+            <h4>City Analytics</h4>
+            <p>Access public data records, city performance metrics, and operational reports.</p>
         </div>
-        <div class="card">
-            <img src="{% static 'accounts/images/report.png' %}">
-            <h3>Reports</h3>
-            <a href="{% url 'reports' %}"><button class="feedback-btn">View Reports</button></a>
-
+        <a href="{% url 'reports' %}" class="btn-dash"><i data-lucide="bar-chart-3"></i> Public Records</a>
+    </div>
+    <div class="feature-card card-info">
+        <div>
+            <div class="icon-box"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135706.png"
+                    class="feature-icon" alt="Prices"></div>
+            <h4>Pricing Catalog</h4>
+            <p>View official service rates, category definitions, and transparent pricing structures.</p>
         </div>
-       <div class="card">
-    <img src="{% static 'accounts/images/feedback.png' %}">
-    <h3>Feedback</h3>
-    
-
-    <button class="feedback-btn" onclick="openFeedback()">Give Feedback</button>
-</div>
+        <a href="{% url 'pricing_catalog' %}" class="btn-dash"><i data-lucide="list"></i> View Catalog</a>
     </div>
 </div>
 
-<!-- Feedback Modal -->
-<div id="feedbackModal" class="feedback-modal">
-    <div class="feedback-content">
-        <span class="close-btn" onclick="closeFeedback()">&times;</span>
-        <h2>Give Your Feedback</h2>
-        <div class="stars">
-            <span onclick="rate(1)">★</span>
-            <span onclick="rate(2)">★</span>
-            <span onclick="rate(3)">★</span>
-            <span onclick="rate(4)">★</span>
-            <span onclick="rate(5)">★</span>
-        </div>
-        <textarea placeholder="Write your feedback..."></textarea>
-        <button class="submit-btn" onclick="submitFeedback()">Submit</button>
-    </div>
-</div>
 
-<div id="toast">Thank you for your feedback!</div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-let selectedRating = 0;
-function openFeedback() { document.getElementById("feedbackModal").style.display = "flex"; }
-function closeFeedback() { document.getElementById("feedbackModal").style.display = "none"; }
-function rate(stars){
-    selectedRating = stars;
-    document.querySelectorAll(".stars span").forEach((star,index)=>{
-        star.classList.toggle("active", index < stars);
-    });
-}
-function submitFeedback(){
-    if(selectedRating === 0){ alert("Please select rating"); return; }
-    document.getElementById("toast").style.display = "block";
-    setTimeout(()=>{ document.getElementById("toast").style.display = "none"; }, 3000);
-    closeFeedback();
-}
-</script>
+    // --- TOAST SYSTEM ---
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
 
-</body>
-</html>
+        const icon = type === 'success' ? 'check-circle' : 'alert-circle';
+        toast.innerHTML = `
+            <i data-lucide="${icon}"></i>
+            <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+        lucide.createIcons();
+
+        // Force reflow for animation
+        setTimeout(() => toast.classList.add('show'), 10);
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 3500);
+    }
+
+
+    function fetchAnnouncements() {
+        fetch("{% url 'get_announcements' %}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update Badge
+                    const badge = document.getElementById('alertBadge');
+                    const unreadCount = data.announcements.filter(a => !a.is_read).length;
+
+                    if (badge) {
+                        if (unreadCount > 0) {
+                            badge.innerText = unreadCount;
+                            badge.style.display = 'block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+
+                    // Handle Announcement Banner
+                    const banner = document.getElementById('announcementBanner');
+                    if (data.latest_alert) {
+                        document.getElementById('bannerTitle').innerText = data.latest_alert.title;
+                        document.getElementById('bannerMessage').innerText = data.latest_alert.message.substring(0, 80) + '...';
+                        banner.style.display = 'flex';
+                    } else {
+                        banner.style.display = 'none';
+                    }
+                }
+            });
+    }
+
+    // Polling every 20 seconds
+    setInterval(fetchAnnouncements, 20000);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const overlay = document.getElementById('login-intro-overlay');
+
+        // Trigger if flag is set OR if coming directly from login page
+        const justLoggedIn = sessionStorage.getItem('justLoggedIn') === 'true';
+        const isFromLogin = document.referrer.includes('/login/') || window.location.search.includes('login=success');
+
+        // Only play if just logged in and hasn't played in this session
+        if ((justLoggedIn || isFromLogin) && !sessionStorage.getItem('introPlayed')) {
+            overlay.style.display = 'flex';
+            sessionStorage.setItem('introPlayed', 'true');
+            sessionStorage.removeItem('justLoggedIn'); // Reset the trigger
+
+            // Lock scrolling during intro
+            document.body.style.overflow = 'hidden';
+
+            setTimeout(() => {
+                overlay.classList.add('intro-fade-out');
+                document.body.style.overflow = '';
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 1000);
+            }, 3500); // Reduced duration for text-only intro
+        }
+
+        fetchAnnouncements();
+        lucide.createIcons();
+    });
+</script>
+{% endblock %}

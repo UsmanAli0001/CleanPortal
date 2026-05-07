@@ -1,67 +1,510 @@
+{% extends 'accounts/admin/admin_base.html' %}
 {% load static %}
 
-<link rel="stylesheet" href="{% static 'accounts/css/admin.css' %}">
+{% block title %}Admin Dashboard | Clean Pak Portal{% endblock %}
 
-<div class="sidebar">
+{% block admin_extra_css %}
+/* Clean Professional Background */
+.bg-dashboard {
+position: fixed;
+inset: 0;
+z-index: -1;
+background: #f8fafc;
+overflow: hidden;
+}
 
-<h2>Clean Pak Portal Admin</h2>
+/* Admin Stats Grid - Compact Horizontal */
+.admin-stats-grid {
+display: flex;
+flex-direction: row;
+flex-wrap: nowrap;
+gap: 15px;
+margin-bottom: 30px;
+width: 100%;
+}
 
-<a href="{% url 'admin_dashboard' %}">Dashboard</a>
+.stat-card {
+flex: 1;
+min-width: 0;
+background: white;
+border-radius: 16px;
+padding: 12px 18px;
+border: 1px solid #e2e8f0;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+display: flex;
+flex-direction: row;
+align-items: center;
+gap: 12px;
+position: relative;
+overflow: hidden;
+}
 
-<a href="{% url 'staff' %}">Staff</a>
+.stat-card:hover {
+transform: translateY(-3px);
+box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1);
+border-color: #3b82f6;
+}
 
-<a href="{% url 'complaints' %}">Complaints</a>
+.stat-card .icon-box {
+width: 42px;
+height: 42px;
+border-radius: 10px;
+display: flex;
+align-items: center;
+justify-content: center;
+background: rgba(30, 58, 138, 0.05);
+color: #1e3a8a;
+flex-shrink: 0;
+}
 
-<a href="#">Payments</a>
+.stat-card .info-stack {
+flex: 1;
+display: flex;
+flex-direction: column;
+justify-content: center;
+min-width: 0;
+}
 
-<a href="#">Reports</a>
+.stat-card .stat-label {
+font-size: 0.65rem;
+font-weight: 700;
+color: #64748b;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+margin-bottom: 2px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
 
-<a href="#">Announcements</a>
+.stat-card .stat-value {
+font-size: 1.4rem;
+font-weight: 900;
+color: #1e293b;
+display: flex;
+align-items: center;
+gap: 8px;
+margin: 0;
+line-height: 1;
+}
 
-<a href="#">Route Alerts</a>
+.stat-card .sub-label {
+font-size: 0.65rem;
+font-weight: 800;
+padding: 2px 8px;
+border-radius: 50px;
+display: inline-flex;
+align-items: center;
+white-space: nowrap;
+}
 
-<a href="{% url 'logout' %}">Logout</a>
+/* Compact Admin Module Grid */
+.quick-actions {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+gap: 20px;
+align-items: stretch;
+}
 
+.module-card {
+background: white;
+padding: 22px;
+border-radius: 12px;
+border: 1px solid #e2e8f0;
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+transition: all 0.3s ease;
+display: flex;
+flex-direction: column;
+height: 100%;
+box-sizing: border-box;
+position: relative;
+}
+
+.module-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1);
+border-color: #3b82f6;
+}
+
+.module-icon {
+width: 44px;
+height: 44px;
+border-radius: 12px;
+background: #f8fafc;
+color: #1e3a8a;
+display: flex;
+align-items: center;
+justify-content: center;
+margin-bottom: 15px;
+font-size: 1.25rem;
+box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.module-info h3 {
+margin: 0 0 8px;
+font-size: 1.1rem;
+color: #1e293b;
+font-weight: 800;
+}
+
+/* Enhanced Button Styling */
+.btn-manage {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+padding: 12px 28px;
+background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+color: white !important;
+text-decoration: none !important;
+border-radius: 12px;
+font-size: 0.8rem;
+font-weight: 700;
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+border: none;
+box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+width: 240px;
+margin: auto auto 0 auto;
+text-transform: uppercase;
+letter-spacing: 0.8px;
+}
+
+.btn-manage:hover {
+background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+transform: translateY(-2px);
+box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+.btn-manage:active {
+transform: translateY(0);
+}
+
+/* Module Info Adjustments */
+.module-info {
+display: flex;
+flex-direction: column;
+flex-grow: 1;
+}
+
+.module-info p {
+margin: 0 0 20px;
+font-size: 0.85rem;
+color: #64748b;
+line-height: 1.6;
+flex-grow: 1;
+}
+
+/* Cinematic Admin Intro Overlay */
+#admin-intro-overlay {
+position: fixed;
+inset: 0;
+z-index: 99999;
+background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+display: none;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+}
+
+.intro-content {
+position: relative;
+z-index: 10;
+text-align: center;
+pointer-events: none;
+}
+
+.intro-title {
+font-size: clamp(2rem, 6vw, 4.5rem);
+font-weight: 950;
+color: white;
+letter-spacing: 0.25em;
+text-transform: uppercase;
+margin: 0;
+opacity: 0;
+transform: translateY(30px);
+animation: revealTitle 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s forwards,
+textGlow 3s ease-in-out infinite alternate 2s;
+text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.intro-title span {
+color: #3b82f6;
+text-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+}
+
+.intro-subtitle {
+color: #94a3b8;
+font-size: 1rem;
+font-weight: 600;
+letter-spacing: 0.5em;
+text-transform: uppercase;
+margin-top: 15px;
+opacity: 0;
+animation: fadeIn 1s ease-out 1.5s forwards;
+}
+
+@keyframes textGlow {
+from {
+text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0px rgba(59, 130, 246, 0);
+}
+to {
+text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.4);
+}
+}
+
+@keyframes revealTitle {
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+@keyframes fadeIn {
+to {
+opacity: 1;
+}
+}
+
+.intro-fade-out {
+animation: fadeOutOverlay 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeOutOverlay {
+to {
+opacity: 0;
+visibility: hidden;
+pointer-events: none;
+}
+}
+{% endblock %}
+{% block admin_content %}
+<div id="admin-intro-overlay">
+    <div class="intro-content">
+        <h1 class="intro-title">CLEAN PAK <span>PORTAL</span></h1>
+        <div class="intro-subtitle">Administrative Control Center</div>
+    </div>
+</div>
+<div class="bg-dashboard"></div>
+<div class="page-header">
+    <div>
+        <h1>Operations Overview</h1>
+        <p>Real-time metrics for municipal service management.</p>
+    </div>
 </div>
 
-<div class="main">
-
-<h1> Admin Dashboard</h1>
-
-<div class="cards">
-
-<div class="card">
-
-<h3>Total Complaints</h3>
-
-<h1>{{total}}</h1>
-
+<div class="admin-stats-grid">
+    <div class="stat-card">
+        <div class="icon-box"><i data-lucide="clipboard-list" style="width: 20px; height: 20px;"></i></div>
+        <div class="info-stack">
+            <span class="stat-label">Active Complaints</span>
+            <div class="stat-value">
+                {{ total }}
+                <span class="sub-label"
+                    style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; margin-left: 5px;">{{ pending }}
+                    PENDING</span>
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i data-lucide="users"
+                style="width: 20px; height: 20px;"></i></div>
+        <div class="info-stack">
+            <span class="stat-label">Staff on Field</span>
+            <div class="stat-value">
+                {{ staff }}
+                <span class="sub-label"
+                    style="background: rgba(16, 185, 129, 0.1); color: #10b981; margin-left: 5px;">ACTIVE</span>
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon-box" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i data-lucide="truck"
+                style="width: 20px; height: 20px;"></i></div>
+        <div class="info-stack">
+            <span class="stat-label">Active Vehicles</span>
+            <div class="stat-value">
+                {{ active_vehicles }}
+                <span class="sub-label"
+                    style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; margin-left: 5px;">TRACKING</span>
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon-box" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;"><i data-lucide="check-circle"
+                style="width: 20px; height: 20px;"></i></div>
+        <div class="info-stack">
+            <span class="stat-label">Finished Jobs</span>
+            <div class="stat-value">
+                {{ completed }}
+                <span class="sub-label"
+                    style="background: rgba(99, 102, 241, 0.1); color: #6366f1; margin-left: 5px;">TOTAL</span>
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon-box" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i data-lucide="map"
+                style="width: 20px; height: 20px;"></i></div>
+        <div class="info-stack">
+            <span class="stat-label">Active Zones</span>
+            <div class="stat-value">
+                {{ zones_count }}
+                <span class="sub-label"
+                    style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; margin-left: 5px;">GUJRAT</span>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="card">
+<h2 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 25px; color: var(--primary-blue);">Administrative Modules
+</h2>
 
-<h3>Pending</h3>
+<div class="quick-actions">
 
-<h1>{{pending}}</h1>
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="wallet"></i></div>
+        <div class="module-info">
+            <h3>Revenue Wallet</h3>
+            <p>Monitor system-wide Stripe earnings, analyze revenue growth, and oversee financial transactions.</p>
+        </div>
+        <a href="{% url 'admin_wallet' %}" class="btn-manage">Open Stripe Wallet <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
 
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="truck"></i></div>
+        <div class="module-info">
+            <h3>Fleet Monitoring</h3>
+            <p>Track municipal vehicles in real-time, view route history, and manage the active fleet registry.</p>
+        </div>
+        <a href="{% url 'fleet_admin' %}" class="btn-manage">Execute Fleet Control <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="calendar"></i></div>
+        <div class="module-info">
+            <h3>Service Scheduling</h3>
+            <p>Manage bookings, cleaning timetables, emergency alerts, and holiday protocols for the city.</p>
+        </div>
+        <a href="{% url 'service_admin' %}" class="btn-manage">Manage All Services <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="users"></i></div>
+        <div class="module-info">
+            <h3>Workforce Management</h3>
+            <p>Add new staff members, update roles, and assign teams to specific zones or complaint areas.</p>
+        </div>
+        <a href="{% url 'staff' %}" class="btn-manage">Manage Staff <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="message-square"></i></div>
+        <div class="module-info">
+            <h3>Complaint Resolution</h3>
+            <p>Review citizen grievances, assign staff, and update resolution status with before/after evidence.</p>
+        </div>
+        <a href="{% url 'complaints' %}" class="btn-manage">View Gripes Queue <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="bar-chart-2"></i></div>
+        <div class="module-info">
+            <h3>System Reports</h3>
+            <p>Access city-wide analytical insights, operational records, and SLA monitoring data.</p>
+        </div>
+        <a href="{% url 'admin_city_reports' %}" class="btn-manage">Open Admin Suite <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="history"></i></div>
+        <div class="module-info">
+            <h3>Complaint History</h3>
+            <p>View the complete history of all user complaints, review old resolutions, and analyze submission
+                timelines.</p>
+        </div>
+        <a href="{% url 'admin_complaint_history' %}" class="btn-manage">View Full History <i
+                data-lucide="chevron-right" style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="credit-card"></i></div>
+        <div class="module-info">
+            <h3>Financial Operations</h3>
+            <p>Manage complaint pricing, view transaction logs, and oversee system-wide payments.</p>
+        </div>
+        <a href="{% url 'payment_admin' %}" class="btn-manage">Manage Finances <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="star"></i></div>
+        <div class="module-info">
+            <h3>Citizen Feedback</h3>
+            <p>Review and moderate citizen experiences, portal ratings, and public reviews.</p>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <span style="font-size: 1.2rem; font-weight: 800; color: var(--primary-blue);">{{ feedback_count }}</span>
+            <span
+                style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-left: 5px;">Total
+                Reviews</span>
+        </div>
+        <a href="{% url 'admin_feedback' %}" class="btn-manage">Review Feedback <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="bell"></i></div>
+        <div class="module-info">
+            <h3>Broadcast Alerts</h3>
+            <p>Send personal notifications or system-wide announcements to all Clean Pak Portal citizens.</p>
+        </div>
+        <a href="{% url 'admin_notifications' %}" class="btn-manage">Send Notifications <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
+
+    <div class="module-card">
+        <div class="module-icon"><i data-lucide="mail"></i></div>
+        <div class="module-info">
+            <h3>Contact Inquiries</h3>
+            <p>Read and reply to citizen queries, help requests, and general communications.</p>
+        </div>
+        <a href="{% url 'admin_contact_messages' %}" class="btn-manage">Manage Inquiries <i data-lucide="chevron-right"
+                style="margin-left: 8px; width: 16px; height: 16px;"></i></a>
+    </div>
 </div>
+{% endblock %}
 
-<div class="card">
+{% block admin_extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const overlay = document.getElementById('admin-intro-overlay');
 
-<h3>Completed</h3>
+        // 1. Initial Login Intro
+        const justLoggedIn = sessionStorage.getItem('justLoggedIn') === 'true';
+        const isFromLogin = document.referrer.includes('/login/') || window.location.search.includes('login=success');
 
-<h1>{{completed}}</h1>
+        if ((justLoggedIn || isFromLogin) && !sessionStorage.getItem('adminIntroPlayed')) {
+            overlay.style.display = 'flex';
+            sessionStorage.setItem('adminIntroPlayed', 'true');
+            sessionStorage.removeItem('justLoggedIn');
 
-</div>
+            document.body.style.overflow = 'hidden';
 
-<div class="card">
+            setTimeout(() => {
+                overlay.classList.add('intro-fade-out');
+                document.body.style.overflow = '';
 
-<h3>Total Staff</h3>
-
-<h1>{{staff}}</h1>
-
-</div>
-
-</div>
-
-</div>
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 1000);
+            }, 3500);
+        }
+    });
+</script>
+{% endblock %}
