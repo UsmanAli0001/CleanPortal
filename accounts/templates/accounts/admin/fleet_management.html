@@ -278,6 +278,24 @@
     .modal-bg.open {
         display: flex;
     }
+
+    .msg-alert {
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        font-weight: 500;
+    }
+
+    .msg-success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .msg-error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
 </style>
 {% endblock %}
 
@@ -299,8 +317,7 @@
 {% if messages %}
 <div style="margin-bottom: 20px;">
     {% for message in messages %}
-    <div
-        style="padding: 15px; border-radius: 12px; margin-bottom: 10px; background: {% if message.tags == 'success' %}#d1fae5; color: #065f46{% else %}#fee2e2; color: #991b1b{% endif %}; border: 1px solid rgba(0,0,0,0.05);">
+    <div class="msg-alert {% if message.tags == 'success' %}msg-success{% else %}msg-error{% endif %}">
         {{ message }}
     </div>
     {% endfor %}
@@ -391,7 +408,9 @@
                         <td>
                             <div style="display: flex; gap: 8px;">
                                 <button class="abtn edit"
-                                    onclick="openEditModal({{ v.id }},'{{ v.status }}','{{ v.current_complaint.id|default:'' }}', '{{ v.assigned_zone }}')"
+                                    data-id="{{ v.id }}" data-status="{{ v.status|escapejs }}"
+                                    data-complaint="{{ v.current_complaint.id|default:'' }}"
+                                    data-zone="{{ v.assigned_zone|escapejs }}" onclick="openEditModal(this)"
                                     title="Update Status"><i data-lucide="edit-3"></i></button>
                                 <form action="{% url 'fleet_delete_vehicle' v.id %}" method="post"
                                     style="display:inline" onsubmit="return confirm('Delete this vehicle?')">
@@ -536,7 +555,12 @@
     function openAddModal() { document.getElementById('add-modal').classList.add('open'); }
     function closeAddModal() { document.getElementById('add-modal').classList.remove('open'); }
 
-    function openEditModal(id, status, complaintId, zone) {
+    function openEditModal(btn) {
+        const id = btn.getAttribute('data-id');
+        const status = btn.getAttribute('data-status');
+        const complaintId = btn.getAttribute('data-complaint');
+        const zone = btn.getAttribute('data-zone');
+
         const form = document.getElementById('edit-form');
         form.action = "/fleet/admin/edit/" + id + "/";
 
