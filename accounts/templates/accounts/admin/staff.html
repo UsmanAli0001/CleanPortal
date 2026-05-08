@@ -337,31 +337,30 @@
 </div>
 
 <div class="staff-tables-container">
-    <!-- Driver Details Table -->
+    <!-- Supervisor Table -->
     <div class="section-header" style="margin-top: 30px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-        <div style="background: var(--primary-blue); color: white; padding: 8px; border-radius: 8px;"><i data-lucide="truck" style="width: 20px; height: 20px;"></i></div>
-        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--primary-blue); margin: 0;">Driver Details Registry</h2>
+        <div style="background: #be185d; color: white; padding: 8px; border-radius: 8px;"><i data-lucide="shield-check" style="width: 20px; height: 20px;"></i></div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: #be185d; margin: 0;">Management & Supervision</h2>
     </div>
     <div class="admin-card">
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Staff Member</th>
-                    <th>License / Vehicle</th>
-                    <th>Contact</th>
-                    <th>Area</th>
-                    <th>Salary</th>
-                    <th>Exp</th>
+                    <th>Supervisor</th>
+                    <th>Supervisor ID</th>
+                    <th>Department / Zone</th>
+                    <th>Team Size</th>
+                    <th>Mgmt Exp</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for s in staff %}
-                {% if s.role == 'Driver' %}
+                {% if s.role == 'Supervisor' %}
                 <tr>
                     <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 35px; height: 35px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-weight: 800;">
+                            <div style="width: 35px; height: 35px; background: #fdf2f8; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #be185d; font-weight: 800;">
                                 {{ s.name|make_list|first }}
                             </div>
                             <div>
@@ -370,14 +369,10 @@
                             </div>
                         </div>
                     </td>
-                    <td>
-                        <div style="font-weight: 600; color: #1e293b;">{{ s.driver_detail.license_number|default:"N/A" }}</div>
-                        <div style="font-size: 0.7rem; color: #94a3b8;">{{ s.driver_detail.vehicle_assignment|default:"No vehicle" }}</div>
-                    </td>
-                    <td><span style="font-weight: 600; color: #64748b;">{{ s.phone }}</span></td>
-                    <td><div style="font-weight: 600; color: #1e293b;">{{ s.area }}</div></td>
-                    <td><span style="font-weight: 800; color: #16a34a;">Rs. {{ s.salary|default:"0.00" }}</span></td>
-                    <td><span style="font-weight: 600; color: #64748b;">{{ s.driver_detail.experience_years|default:"0" }} yr</span></td>
+                    <td><span style="font-weight: 600; color: #1e293b;">{{ s.supervisor_detail.supervisor_id|default:"N/A" }}</span></td>
+                    <td><div style="font-weight: 600; color: #1e293b;">{{ s.supervisor_detail.department_zone|default:s.area }}</div></td>
+                    <td><span class="status-pill" style="background: #fdf2f8; color: #be185d;">{{ s.supervisor_detail.staff_supervised|default:"0" }} Members</span></td>
+                    <td><span style="font-weight: 600; color: #64748b;">{{ s.supervisor_detail.management_experience|default:"0" }} yr</span></td>
                     <td>
                         <button class="action-btn btn-edit" onclick="openEditModal({{ s.id }}, '{{ s.name }}', '{{ s.email|default:'' }}', '{{ s.phone }}', '{{ s.cnic|default:'' }}', '{{ s.address|default:''|escapejs }}', '{{ s.role }}', '{{ s.area }}', '{{ s.worker_detail.age|default:'' }}', '{{ s.worker_detail.duties|default:''|escapejs }}', '{{ s.salary|default:'' }}', '{{ s.worker_detail.duty_time|default:'' }}', '{{ s.driver_detail.experience_years|default:s.operator_detail.experience_years|default:'' }}', '{{ s.driver_detail.dob|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_number|default:'' }}', '{{ s.driver_detail.license_expiry|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_category|default:'' }}', '{{ s.driver_detail.vehicle_assignment|default:'' }}', '{{ s.operator_detail.operator_id|default:'' }}', '{{ s.operator_detail.shift_assignment|default:'' }}', '{{ s.operator_detail.operational_qualification|default:'' }}', '{{ s.operator_detail.certifications|default:''|escapejs }}', '{{ s.supervisor_detail.supervisor_id|default:'' }}', '{{ s.supervisor_detail.department_zone|default:'' }}', '{{ s.supervisor_detail.management_experience|default:'' }}', '{{ s.supervisor_detail.staff_supervised|default:'' }}', '{{ s.supervisor_detail.education_level|default:'' }}', '{{ s.supervisor_detail.supervisory_certification|default:'' }}', '{{ s.supervisor_detail.key_responsibilities|default:''|escapejs }}')">
                             <i data-lucide="edit-3" style="width: 14px;"></i>
@@ -454,30 +449,31 @@
         </table>
     </div>
 
-    <!-- Supervisor Table -->
+    <!-- Driver Details Table -->
     <div class="section-header" style="margin-top: 40px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-        <div style="background: #be185d; color: white; padding: 8px; border-radius: 8px;"><i data-lucide="shield-check" style="width: 20px; height: 20px;"></i></div>
-        <h2 style="font-size: 1.25rem; font-weight: 800; color: #be185d; margin: 0;">Management & Supervision</h2>
+        <div style="background: var(--primary-blue); color: white; padding: 8px; border-radius: 8px;"><i data-lucide="truck" style="width: 20px; height: 20px;"></i></div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--primary-blue); margin: 0;">Driver Details Registry</h2>
     </div>
     <div class="admin-card">
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Supervisor</th>
-                    <th>Supervisor ID</th>
-                    <th>Department / Zone</th>
-                    <th>Team Size</th>
-                    <th>Mgmt Exp</th>
+                    <th>Staff Member</th>
+                    <th>License / Vehicle</th>
+                    <th>Contact</th>
+                    <th>Area</th>
+                    <th>Salary</th>
+                    <th>Exp</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for s in staff %}
-                {% if s.role == 'Supervisor' %}
+                {% if s.role == 'Driver' %}
                 <tr>
                     <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 35px; height: 35px; background: #fdf2f8; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #be185d; font-weight: 800;">
+                            <div style="width: 35px; height: 35px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-weight: 800;">
                                 {{ s.name|make_list|first }}
                             </div>
                             <div>
@@ -486,10 +482,14 @@
                             </div>
                         </div>
                     </td>
-                    <td><span style="font-weight: 600; color: #1e293b;">{{ s.supervisor_detail.supervisor_id|default:"N/A" }}</span></td>
-                    <td><div style="font-weight: 600; color: #1e293b;">{{ s.supervisor_detail.department_zone|default:s.area }}</div></td>
-                    <td><span class="status-pill" style="background: #fdf2f8; color: #be185d;">{{ s.supervisor_detail.staff_supervised|default:"0" }} Members</span></td>
-                    <td><span style="font-weight: 600; color: #64748b;">{{ s.supervisor_detail.management_experience|default:"0" }} yr</span></td>
+                    <td>
+                        <div style="font-weight: 600; color: #1e293b;">{{ s.driver_detail.license_number|default:"N/A" }}</div>
+                        <div style="font-size: 0.7rem; color: #94a3b8;">{{ s.driver_detail.vehicle_assignment|default:"No vehicle" }}</div>
+                    </td>
+                    <td><span style="font-weight: 600; color: #64748b;">{{ s.phone }}</span></td>
+                    <td><div style="font-weight: 600; color: #1e293b;">{{ s.area }}</div></td>
+                    <td><span style="font-weight: 800; color: #16a34a;">Rs. {{ s.salary|default:"0.00" }}</span></td>
+                    <td><span style="font-weight: 600; color: #64748b;">{{ s.driver_detail.experience_years|default:"0" }} yr</span></td>
                     <td>
                         <button class="action-btn btn-edit" onclick="openEditModal({{ s.id }}, '{{ s.name }}', '{{ s.email|default:'' }}', '{{ s.phone }}', '{{ s.cnic|default:'' }}', '{{ s.address|default:''|escapejs }}', '{{ s.role }}', '{{ s.area }}', '{{ s.worker_detail.age|default:'' }}', '{{ s.worker_detail.duties|default:''|escapejs }}', '{{ s.salary|default:'' }}', '{{ s.worker_detail.duty_time|default:'' }}', '{{ s.driver_detail.experience_years|default:s.operator_detail.experience_years|default:'' }}', '{{ s.driver_detail.dob|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_number|default:'' }}', '{{ s.driver_detail.license_expiry|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_category|default:'' }}', '{{ s.driver_detail.vehicle_assignment|default:'' }}', '{{ s.operator_detail.operator_id|default:'' }}', '{{ s.operator_detail.shift_assignment|default:'' }}', '{{ s.operator_detail.operational_qualification|default:'' }}', '{{ s.operator_detail.certifications|default:''|escapejs }}', '{{ s.supervisor_detail.supervisor_id|default:'' }}', '{{ s.supervisor_detail.department_zone|default:'' }}', '{{ s.supervisor_detail.management_experience|default:'' }}', '{{ s.supervisor_detail.staff_supervised|default:'' }}', '{{ s.supervisor_detail.education_level|default:'' }}', '{{ s.supervisor_detail.supervisory_certification|default:'' }}', '{{ s.supervisor_detail.key_responsibilities|default:''|escapejs }}')">
                             <i data-lucide="edit-3" style="width: 14px;"></i>
@@ -566,6 +566,7 @@
         </table>
     </div>
 </div>
+
 
 
 <!-- Modal -->

@@ -388,8 +388,8 @@
                         </td>
                         <td>
                             {% if v.current_complaint %}
-                            <span style="color: var(--primary-blue); font-weight: 700;">{{
-                                v.current_complaint.complaint_id }}</span>
+                            <span style="color: var(--primary-blue); font-weight: 700;">{{ v.current_complaint.complaint_id }}</span>
+
                             <div style="font-size: 0.75rem; color: #64748b;">{{ v.current_complaint.area }}</div>
                             {% else %}
                             <span style="color: #94a3b8;">Not Assigned</span>
@@ -398,8 +398,8 @@
                         <td style="font-weight: 600; color: #1e3a8a;">
                             {% if v.assigned_zone %}
                             <i data-lucide="map-pin"
-                                style="width:12px; height:12px; vertical-align:middle; margin-right:4px"></i>{{
-                            v.assigned_zone }}
+                                style="width:12px; height:12px; vertical-align:middle; margin-right:4px"></i>{{ v.assigned_zone }}
+
                             {% else %}
                             <span style="color:#94a3b8">No Zone</span>
                             {% endif %}
