@@ -235,6 +235,9 @@
             <a href="{% url 'admin_city_reports' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_city_reports' %}active{% endif %}">
                 <i data-lucide="database"></i> System Reports
             </a>
+            <a href="{% url 'admin_gallery' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_gallery' %}active{% endif %}">
+                <i data-lucide="image"></i> Manage Gallery
+            </a>
             <a href="{% url 'logout' %}" class="nav-item" style="margin-top: auto; color: #ef4444;">
                 <i data-lucide="log-out"></i> Logout
             </a>

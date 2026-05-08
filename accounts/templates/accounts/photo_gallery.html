@@ -1,0 +1,317 @@
+{% extends 'accounts/base.html' %}
+{% load static %}
+
+{% block title %}Photo Gallery | Clean Pak Portal{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --glass-white: rgba(255, 255, 255, 0.85);
+        --accent-blue: #2563eb;
+    }
+
+    .gallery-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 100px 5% 60px;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .gallery-hero::before {
+        content: ""; position: absolute; inset: 0;
+        background: url('https://www.transparenttextures.com/patterns/cubes.png');
+        opacity: 0.1; pointer-events: none;
+    }
+
+    .stats-bar {
+        display: flex; justify-content: center; gap: 40px; margin-top: 40px;
+    }
+    .stat-item { text-align: center; }
+    .stat-item .val { font-size: 2.2rem; font-weight: 950; color: var(--accent-blue); display: block; }
+    .stat-item .lab { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; }
+
+    .filter-section {
+        background: var(--glass-white);
+        backdrop-filter: blur(12px);
+        padding: 25px;
+        border-radius: 20px;
+        margin: -40px auto 40px;
+        width: 90%;
+        max-width: 1200px;
+        position: relative;
+        z-index: 10;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    .filter-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;
+    }
+
+    /* Masonry Grid */
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 30px;
+        padding: 0 5% 100px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .gallery-card {
+        background: white; border-radius: 24px; overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        border: 1px solid #f1f5f9;
+        display: flex; flex-direction: column;
+    }
+    .gallery-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(37, 99, 235, 0.15); border-color: var(--accent-blue); }
+
+    /* Comparison Slider */
+    .image-comparison {
+        position: relative; width: 100%; height: 260px; overflow: hidden;
+        cursor: ew-resize;
+    }
+    .img-comp-overlay {
+        position: absolute; top: 0; left: 0; width: 50%; height: 100%;
+        overflow: hidden; z-index: 2;
+    }
+    .img-comp-overlay img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .img-comp-base img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .slider-handle {
+        position: absolute; top: 0; bottom: 0; left: 50%; width: 4px;
+        background: white; z-index: 3; transform: translateX(-50%);
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .slider-handle::after {
+        content: "↔"; position: absolute; top: 50%; left: 50%;
+        width: 34px; height: 34px; background: white; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        transform: translate(-50%, -50%); color: var(--accent-blue);
+        font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+    .card-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .status-badge { padding: 5px 12px; border-radius: 50px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    .card-title { font-size: 1.2rem; font-weight: 800; color: #1e293b; margin: 0 0 10px; line-height: 1.3; }
+    .card-desc { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
+
+    .card-footer {
+        padding: 20px 25px; border-top: 1px solid #f1f5f9;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .like-btn {
+        display: flex; align-items: center; gap: 8px; border: none; background: none;
+        cursor: pointer; color: #94a3b8; font-weight: 700; transition: 0.3s;
+    }
+    .like-btn.liked { color: #ef4444; }
+    .like-btn:hover { transform: scale(1.1); }
+
+    .btn-details {
+        background: #f8fafc; color: #1e293b; padding: 10px 20px;
+        border-radius: 12px; font-size: 0.75rem; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+        text-decoration: none; border: 1px solid #e2e8f0;
+    }
+    .btn-details:hover { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+
+    .share-tray { display: flex; gap: 10px; margin-top: 15px; }
+    .share-btn { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #64748b; transition: 0.3s; text-decoration: none; }
+    .share-btn:hover { background: var(--accent-blue); color: white; }
+
+    /* Custom Select Styling */
+    .custom-select {
+        width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;
+        font-size: 0.85rem; font-weight: 600; color: #1e293b; background: white;
+    }
+
+    @media (max-width: 768px) {
+        .gallery-grid { grid-template-columns: 1fr; }
+        .gallery-hero { padding: 80px 20px 40px; }
+        .stats-bar { gap: 20px; flex-wrap: wrap; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="gallery-hero">
+    <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 950; margin-bottom: 10px;">Transformation <span>Gallery</span></h1>
+    <p style="color: #94a3b8; max-width: 600px; margin: 0 auto; font-size: 1.1rem; font-weight: 500;">Witness the evolution of our city. Real results, real impact, real improvements.</p>
+    
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="val">{{ stats.total_resolved }}</span>
+            <span class="lab">Resolved Issues</span>
+        </div>
+        <div class="stat-item">
+            <span class="val">{{ stats.total_projects }}</span>
+            <span class="lab">Showcases</span>
+        </div>
+        <div class="stat-item">
+            <span class="val">{{ stats.total_likes }}</span>
+            <span class="lab">Total Likes</span>
+        </div>
+        <div class="stat-item">
+            <span class="val">{{ stats.most_active_area.area|default:"Gujrat" }}</span>
+            <span class="lab">Most Active Area</span>
+        </div>
+    </div>
+</section>
+
+<div class="filter-section">
+    <form method="GET" action="{% url 'gallery_page' %}">
+        <div class="filter-grid">
+            <input type="text" name="search" class="custom-select" placeholder="Search transformations..." value="{{ request.GET.search|default:'' }}">
+            
+            <select name="category" class="custom-select" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="area" class="custom-select" onchange="this.form.submit()">
+                <option value="">All Areas</option>
+                {% for area in gujrat_areas %}
+                <option value="{{ area }}" {% if request.GET.area == area %}selected{% endif %}>{{ area }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="sort" class="custom-select" onchange="this.form.submit()">
+                <option value="latest">Latest Work</option>
+                <option value="liked" {% if request.GET.sort == 'liked' %}selected{% endif %}>Most Liked</option>
+                <option value="oldest" {% if request.GET.sort == 'oldest' %}selected{% endif %}>Recently Added</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+<div class="gallery-grid">
+    {% for item in items %}
+    <div class="gallery-card">
+        <!-- Before/After Slider -->
+        <div class="image-comparison" data-id="{{ item.id }}">
+            <div class="img-comp-base"><img src="{{ item.after_image.url }}" alt="After"></div>
+            <div class="img-comp-overlay"><img src="{{ item.before_image.url }}" alt="Before"></div>
+            <div class="slider-handle"></div>
+            
+            <!-- Floating Badges -->
+            <div style="position: absolute; top: 15px; left: 15px; z-index: 5; display: flex; gap: 8px;">
+                <span class="status-badge" style="background: rgba(0,0,0,0.6); color: white; backdrop-filter: blur(4px);">BEFORE</span>
+            </div>
+            <div style="position: absolute; top: 15px; right: 15px; z-index: 5;">
+                <span class="status-badge" style="background: var(--accent-blue); color: white;">AFTER</span>
+            </div>
+        </div>
+
+        <div class="card-content">
+            <div class="card-meta">
+                <span style="font-size: 0.7rem; font-weight: 850; color: var(--accent-blue); text-transform: uppercase;">{{ item.category.name }}</span>
+                <span class="status-badge" style="background: #dcfce7; color: #166534;">{{ item.status }}</span>
+            </div>
+            <h3 class="card-title">{{ item.title }}</h3>
+            <p class="card-desc">{{ item.description|truncatewords:20 }}</p>
+            
+            <div style="margin-top: auto; display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #94a3b8; font-weight: 600;">
+                <i data-lucide="map-pin" style="width: 14px;"></i> {{ item.area }}
+                <span style="margin: 0 5px;">•</span>
+                <i data-lucide="calendar" style="width: 14px;"></i> {{ item.created_at|date:"M d, Y" }}
+            </div>
+
+            <!-- Share Buttons -->
+            <div class="share-tray">
+                <a href="https://wa.me/?text=Check out this transformation: {{ request.build_absolute_uri }}" target="_blank" class="share-btn" title="Share on WhatsApp"><i data-lucide="phone"></i></a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="share-btn" title="Share on Facebook"><i data-lucide="facebook"></i></a>
+                <button onclick="copyLink(this, '{{ request.build_absolute_uri }}')" class="share-btn" title="Copy Link"><i data-lucide="link"></i></button>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <button class="like-btn {% if item.id in user_likes %}liked{% endif %}" onclick="handleLike(this, {{ item.id }})">
+                <i data-lucide="heart" fill="{% if item.id in user_likes %}currentColor{% else %}none{% endif %}"></i>
+                <span class="like-count">{{ item.likes_count }}</span>
+            </button>
+            <a href="#" class="btn-details">View Details</a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1/-1; text-align: center; padding: 100px 0;">
+        <i data-lucide="image" style="width: 60px; height: 60px; color: #cbd5e1; margin-bottom: 20px;"></i>
+        <h2 style="color: #64748b;">No transformations found matching your filters.</h2>
+        <a href="{% url 'gallery_page' %}" style="color: var(--accent-blue); font-weight: 700; text-decoration: none;">Reset All Filters</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+        initComparisonSliders();
+    });
+
+    function initComparisonSliders() {
+        const sliders = document.querySelectorAll('.image-comparison');
+        sliders.forEach(slider => {
+            const overlay = slider.querySelector('.img-comp-overlay');
+            const handle = slider.querySelector('.slider-handle');
+            
+            const move = (e) => {
+                let x = (e.pageX || e.touches[0].pageX) - slider.getBoundingClientRect().left;
+                if (x < 0) x = 0;
+                if (x > slider.offsetWidth) x = slider.offsetWidth;
+                
+                let percent = (x / slider.offsetWidth) * 100;
+                overlay.style.width = percent + '%';
+                handle.style.left = percent + '%';
+            };
+
+            slider.addEventListener('mousemove', move);
+            slider.addEventListener('touchmove', move);
+        });
+    }
+
+    async function handleLike(btn, id) {
+        try {
+            const response = await fetch("{% url 'gallery_like_api' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ item_id: id })
+            });
+            const data = await response.json();
+            
+            if (data.status === 'liked') {
+                btn.classList.add('liked');
+                btn.querySelector('i').setAttribute('fill', 'currentColor');
+            } else {
+                btn.classList.remove('liked');
+                btn.querySelector('i').setAttribute('fill', 'none');
+            }
+            btn.querySelector('.like-count').innerText = data.likes_count;
+        } catch (error) {
+            console.error('Error liking:', error);
+        }
+    }
+
+    function copyLink(btn, url) {
+        navigator.clipboard.writeText(url).then(() => {
+            const icon = btn.querySelector('i');
+            const originalIcon = icon.getAttribute('data-lucide');
+            icon.setAttribute('data-lucide', 'check');
+            lucide.createIcons();
+            setTimeout(() => {
+                icon.setAttribute('data-lucide', originalIcon);
+                lucide.createIcons();
+            }, 2000);
+        });
+    }
+</script>
+{% endblock %}

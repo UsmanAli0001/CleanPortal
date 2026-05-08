@@ -513,7 +513,7 @@
         opacity: 0;
         transform: translateY(30px);
         animation: revealTitle 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s forwards,
-                   textGlow 3s ease-in-out infinite alternate 2s;
+            textGlow 3s ease-in-out infinite alternate 2s;
         text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
@@ -537,6 +537,7 @@
         from {
             text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0px rgba(59, 130, 246, 0);
         }
+
         to {
             text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.4);
         }
@@ -731,6 +732,15 @@
             <p>View official service rates, category definitions, and transparent pricing structures.</p>
         </div>
         <a href="{% url 'pricing_catalog' %}" class="btn-dash"><i data-lucide="list"></i> View Catalog</a>
+    </div>
+
+    <div class="feature-card card-purple">
+        <div>
+            <div class="icon-box"><i data-lucide="image" style="width: 40px; height: 40px; color: #7c3aed;"></i></div>
+            <h4>Photo Gallery</h4>
+            <p>Explore the visual journey of our city's cleaning projects and community impact photos.</p>
+        </div>
+        <a href="{% url 'gallery_page' %}" class="btn-dash"><i data-lucide="camera"></i> View Gallery</a>
     </div>
 </div>
 

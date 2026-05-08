@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
 from decimal import Decimal
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -15,7 +15,8 @@ from .models import (
     Vehicle, VehicleLocation, ServiceCategory, ServiceBooking, ServicePaymentSetting,
 
     MunicipalServiceSchedule, ScheduleAlert, HolidayConfig, ComplaintPricingConfig,
-    Wallet, WalletTransaction, ContactMessage
+    Wallet, WalletTransaction, ContactMessage,
+    GalleryCategory, GalleryItem, GalleryLike
 )
 from .forms import LoginForm, RegistrationForm
 import random, string, json, math, time
@@ -629,6 +630,245 @@ def home(request):
 
 def about_view(request):
     return render(request, 'accounts/about.html')
+
+@login_required(login_url='login')
+def photo_gallery_view(request):
+    """View to display the professional Photo Gallery for users."""
+    items_qs = GalleryItem.objects.filter(show_on_homepage=True).order_by('-published_at', '-created_at')
+    categories = GalleryCategory.objects.all()
+    
+    # Filter logic
+    category_id = request.GET.get('category')
+    area = request.GET.get('area')
+    status = request.GET.get('status')
+    search = request.GET.get('search')
+    sort = request.GET.get('sort')
+
+    if category_id:
+        items_qs = items_qs.filter(category_id=category_id)
+    if area:
+        items_qs = items_qs.filter(area__icontains=area)
+    if status:
+        items_qs = items_qs.filter(status=status)
+    if search:
+        items_qs = items_qs.filter(Q(title__icontains=search) | Q(description__icontains=search) | Q(area__icontains=search))
+    
+    if sort == 'liked':
+        items_qs = items_qs.order_by('-likes_count')
+    elif sort == 'oldest':
+        items_qs = items_qs.order_by('created_at')
+
+    # Get user likes for UI state
+    user_likes = []
+    if request.user.is_authenticated:
+        user_likes = GalleryLike.objects.filter(user=request.user).values_list('gallery_item_id', flat=True)
+
+    # Global Stats for Sidebar/Header
+    stats = {
+        'total_resolved': Complaint.objects.filter(status='Completed').count(),
+        'total_projects': GalleryItem.objects.count(),
+        'total_likes': GalleryItem.objects.aggregate(Sum('likes_count'))['likes_count__sum'] or 0,
+        'most_active_area': Complaint.objects.values('area').annotate(count=Count('id')).order_by('-count').first()
+    }
+
+    context = {
+        'items': items_qs,
+        'categories': categories,
+        'user_likes': user_likes,
+        'stats': stats,
+        'gujrat_areas': GUJRAT_AREAS
+    }
+    return render(request, 'accounts/photo_gallery.html', context)
+
+@csrf_exempt
+def gallery_like_api(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        item_id = data.get('item_id')
+        item = get_object_or_404(GalleryItem, id=item_id)
+        
+        user = request.user if request.user.is_authenticated else None
+        ip = request.META.get('REMOTE_ADDR')
+        
+        # Check if already liked
+        like_filter = Q(gallery_item=item)
+        if user:
+            like_filter &= Q(user=user)
+        else:
+            like_filter &= Q(ip_address=ip) & Q(user__isnull=True)
+            
+        existing_like = GalleryLike.objects.filter(like_filter).first()
+        
+        if existing_like:
+            existing_like.delete()
+            item.likes_count = max(0, item.likes_count - 1)
+            item.save()
+            return JsonResponse({'status': 'unliked', 'likes_count': item.likes_count})
+        else:
+            GalleryLike.objects.create(gallery_item=item, user=user, ip_address=ip)
+            item.likes_count += 1
+            item.save()
+            return JsonResponse({'status': 'liked', 'likes_count': item.likes_count})
+            
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+@login_required
+def admin_gallery_view(request):
+    """Dashboard view for Gallery Administration."""
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    total_posts = GalleryItem.objects.count()
+    total_likes = GalleryItem.objects.aggregate(Sum('likes_count'))['likes_count__sum'] or 0
+    featured_posts = GalleryItem.objects.filter(is_featured=True).count()
+    hidden_posts = GalleryItem.objects.filter(show_on_homepage=False).count()
+    
+    # Simple Monthly Stats
+    last_6_months = []
+    for i in range(5, -1, -1):
+        d = timezone.now() - timedelta(days=i*30)
+        month_name = d.strftime('%b')
+        count = GalleryItem.objects.filter(created_at__month=d.month, created_at__year=d.year).count()
+        last_6_months.append({'month': month_name, 'count': count})
+
+    most_liked = GalleryItem.objects.order_by('-likes_count')[:5]
+
+    context = {
+        'total_posts': total_posts,
+        'total_likes': total_likes,
+        'featured_posts': featured_posts,
+        'hidden_posts': hidden_posts,
+        'monthly_stats': json.dumps(last_6_months),
+        'most_liked': most_liked,
+        'is_admin_view': True
+    }
+    return render(request, 'accounts/admin/admin_gallery_dashboard.html', context)
+
+@login_required
+def admin_gallery_list(request):
+    if not request.user.is_staff: return redirect('dashboard')
+    
+    items = GalleryItem.objects.all().order_by('-created_at')
+    
+    # Filters
+    cat = request.GET.get('category')
+    area = request.GET.get('area')
+    if cat: items = items.filter(category_id=cat)
+    if area: items = items.filter(area=area)
+    
+    categories = GalleryCategory.objects.all()
+    
+    return render(request, 'accounts/admin/admin_gallery_list.html', {
+        'items': items,
+        'categories': categories,
+        'gujrat_areas': GUJRAT_AREAS
+    })
+
+@login_required
+def admin_gallery_upload(request, pk=None):
+    if not request.user.is_staff: return redirect('dashboard')
+    
+    item = get_object_or_404(GalleryItem, pk=pk) if pk else None
+    
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        category_id = request.POST.get('category')
+        area = request.POST.get('area')
+        status = request.POST.get('status')
+        complaint_id_raw = request.POST.get('complaint_id')
+        
+        before_img = request.FILES.get('before_image')
+        after_img = request.FILES.get('after_image')
+        
+        is_featured = request.POST.get('is_featured') == 'on'
+        show_on_homepage = request.POST.get('show_on_homepage') == 'on'
+        
+        complaint = None
+        if complaint_id_raw:
+            complaint = Complaint.objects.filter(complaint_id__iexact=complaint_id_raw).first()
+
+        if item:
+            item.title = title
+            item.description = description
+            item.category_id = category_id
+            item.area = area
+            item.status = status
+            item.complaint = complaint
+            item.is_featured = is_featured
+            item.show_on_homepage = show_on_homepage
+            if before_img: item.before_image = before_img
+            if after_img: item.after_image = after_img
+            item.save()
+            messages.success(request, "Gallery item updated successfully.")
+        else:
+            GalleryItem.objects.create(
+                title=title, description=description, category_id=category_id,
+                area=area, status=status, complaint=complaint,
+                before_image=before_img, after_image=after_img,
+                is_featured=is_featured, show_on_homepage=show_on_homepage,
+                published_at=timezone.now()
+            )
+            messages.success(request, "New gallery item published!")
+            
+        return redirect('admin_gallery_list')
+
+    categories = GalleryCategory.objects.all()
+    return render(request, 'accounts/admin/admin_gallery_form.html', {
+        'item': item,
+        'categories': categories,
+        'gujrat_areas': GUJRAT_AREAS
+    })
+
+@login_required
+def admin_gallery_delete(request, pk):
+    if not request.user.is_staff: return redirect('dashboard')
+    get_object_or_404(GalleryItem, pk=pk).delete()
+    messages.warning(request, "Gallery item removed.")
+    return redirect('admin_gallery_list')
+
+
+@login_required
+def admin_gallery_categories(request):
+    if not request.user.is_staff: return redirect('dashboard')
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        icon = request.POST.get('icon', 'image')
+        color = request.POST.get('color', '#3b82f6')
+        GalleryCategory.objects.create(name=name, icon=icon, color=color)
+        messages.success(request, f"Category '{name}' added.")
+        return redirect('admin_gallery_categories')
+        
+    categories = GalleryCategory.objects.all()
+    return render(request, 'accounts/admin/admin_gallery_categories.html', {'categories': categories})
+
+@login_required
+def admin_category_delete(request, pk):
+    if not request.user.is_staff: return redirect('dashboard')
+    get_object_or_404(GalleryCategory, pk=pk).delete()
+    messages.warning(request, "Category removed.")
+    return redirect('admin_gallery_categories')
+
+@login_required
+def api_gallery_toggle(request):
+    if not request.user.is_staff: return JsonResponse({'error': 'Unauthorized'}, status=403)
+    try:
+        data = json.loads(request.body)
+        item = GalleryItem.objects.get(id=data.get('id'))
+        field = data.get('field')
+        if field == 'featured':
+            item.is_featured = not item.is_featured
+        elif field == 'visible':
+            item.show_on_homepage = not item.show_on_homepage
+        item.save()
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 def pricing_catalog_view(request):
     """View to display the full pricing and service category catalog."""

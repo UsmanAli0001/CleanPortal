@@ -22,7 +22,10 @@ from .views import (
     admin_feedback_view, delete_feedback_admin, citizen_reviews_view, submit_review_view,
     admin_notifications, notifications_view, service_history_view,
     admin_holiday_management, holiday_details_view, services_view,
-    admin_contact_messages, admin_reply_contact, delete_contact_message
+    admin_contact_messages, admin_reply_contact, delete_contact_message,
+    photo_gallery_view, admin_gallery_view, gallery_like_api,
+    admin_gallery_list, admin_gallery_upload, admin_gallery_delete,
+    admin_gallery_categories, admin_category_delete, api_gallery_toggle
 )
 
 urlpatterns = [
@@ -131,4 +134,14 @@ urlpatterns = [
     path('admin-contact/', admin_contact_messages, name='admin_contact_messages'),
     path('admin-contact/reply/<int:id>/', admin_reply_contact, name='admin_reply_contact'),
     path('admin-contact/delete/<int:id>/', delete_contact_message, name='delete_contact_message'),
+    path('Photo-Gallery/', photo_gallery_view, name='gallery_page'),
+    path('admin-Gallery/', admin_gallery_view, name='admin_gallery'),
+    path('admin-Gallery/list/', admin_gallery_list, name='admin_gallery_list'),
+    path('admin-Gallery/upload/', admin_gallery_upload, name='admin_gallery_upload'),
+    path('admin-Gallery/edit/<int:pk>/', admin_gallery_upload, name='admin_gallery_edit'),
+    path('admin-Gallery/delete/<int:pk>/', admin_gallery_delete, name='admin_gallery_delete'),
+    path('admin-Gallery/categories/', admin_gallery_categories, name='admin_gallery_categories'),
+    path('admin-Gallery/categories/delete/<int:pk>/', admin_category_delete, name='admin_category_delete'),
+    path('api/gallery/toggle/', api_gallery_toggle, name='api_gallery_toggle'),
+    path('api/gallery/like/', gallery_like_api, name='gallery_like_api'),
 ]

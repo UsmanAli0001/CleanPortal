@@ -1,0 +1,67 @@
+{% extends 'accounts/admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Manage Gallery Categories | Admin{% endblock %}
+
+{% block admin_extra_css %}
+.cat-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+.cat-card {
+    background: white; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;
+}
+.cat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <div>
+        <h1>Gallery Categories</h1>
+        <p>Organize your transformation showcases into logical groups.</p>
+    </div>
+</div>
+
+<div class="cat-grid">
+    <div class="admin-card" style="height: fit-content;">
+        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1rem;">Add New Category</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Category Name</label>
+                <input type="text" name="name" class="form-control" placeholder="e.g. Garbage Cleaning" required>
+            </div>
+            <div class="form-group">
+                <label>Lucide Icon Name</label>
+                <input type="text" name="icon" class="form-control" placeholder="e.g. trash-2" value="image">
+            </div>
+            <div class="form-group">
+                <label>Brand Color (Hex)</label>
+                <input type="color" name="color" class="form-control" value="#3b82f6" style="height: 45px; padding: 5px;">
+            </div>
+            <button type="submit" class="btn-manage" style="width: 100%; margin-top: 10px;">Save Category</button>
+        </form>
+    </div>
+
+    <div>
+        {% for cat in categories %}
+        <div class="cat-card">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="cat-icon" style="background: {{ cat.color }}20; color: {{ cat.color }};">
+                    <i data-lucide="{{ cat.icon }}"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0; color: #1e293b;">{{ cat.name }}</h4>
+                    <p style="margin: 0; font-size: 0.75rem; color: #64748b;">{{ cat.items.count }} Projects</p>
+                </div>
+            </div>
+            <a href="{% url 'admin_category_delete' cat.pk %}" class="btn-manage" style="background: #fee2e2; color: #b91c1c !important; padding: 8px 12px;" onclick="return confirm('Delete category?')">
+                <i data-lucide="trash-2"></i>
+            </a>
+        </div>
+        {% empty %}
+        <div class="admin-card" style="text-align: center; color: #94a3b8; padding: 40px;">
+            No categories yet. Create your first one to organize the gallery.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

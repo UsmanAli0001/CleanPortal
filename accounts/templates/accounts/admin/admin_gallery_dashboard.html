@@ -1,0 +1,192 @@
+{% extends 'accounts/admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}Gallery Dashboard | Admin{% endblock %}
+
+{% block admin_extra_css %}
+.gallery-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+.stat-box {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: 0.3s;
+}
+.stat-box:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+.stat-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+}
+.stat-info h3 { font-size: 0.65rem; color: #64748b; text-transform: uppercase; margin: 0; letter-spacing: 0.5px; }
+.stat-info .value { font-size: 1.4rem; font-weight: 800; color: #1e293b; margin: 2px 0 0; }
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+}
+.chart-container {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    height: 280px; /* Reduced fixed height */
+}
+.top-list {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    height: 280px; /* Match height */
+    overflow-y: auto;
+}
+.top-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+.top-item:last-child { border: none; }
+.top-item img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+.top-item .info { flex: 1; min-width: 0; }
+.top-item .info h4 { font-size: 0.9rem; margin: 0; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-item .likes { font-size: 0.8rem; font-weight: 700; color: #ef4444; display: flex; align-items: center; gap: 4px; }
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <div>
+        <h1>Gallery Control Center</h1>
+        <p>Monitor performance and engagement of city transformations.</p>
+    </div>
+    <div class="actions" style="display: flex; gap: 12px;">
+        <a href="{% url 'admin_gallery_categories' %}" class="btn-manage" style="background: white; color: #1e293b !important; border: 1px solid #e2e8f0;">
+            <i data-lucide="tag"></i> Categories
+        </a>
+        <a href="{% url 'admin_gallery_list' %}" class="btn-manage" style="background: white; color: #1e293b !important; border: 1px solid #e2e8f0;">
+            <i data-lucide="layout-grid"></i> Gallery Items
+        </a>
+        <a href="{% url 'admin_gallery_upload' %}" class="btn-manage" style="background: var(--admin-btn-gradient);">
+            <i data-lucide="plus"></i> Create Post
+        </a>
+    </div>
+</div>
+
+<div class="gallery-stats">
+    <div class="stat-box">
+        <div class="stat-icon" style="background: #eff6ff; color: #2563eb;">
+            <i data-lucide="image"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Total Posts</h3>
+            <div class="value">{{ total_posts }}</div>
+        </div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-icon" style="background: #fef2f2; color: #ef4444;">
+            <i data-lucide="heart"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Total Likes</h3>
+            <div class="value">{{ total_likes }}</div>
+        </div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-icon" style="background: #fef3c7; color: #d97706;">
+            <i data-lucide="star"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Featured</h3>
+            <div class="value">{{ featured_posts }}</div>
+        </div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-icon" style="background: #f1f5f9; color: #64748b;">
+            <i data-lucide="eye-off"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Hidden</h3>
+            <div class="value">{{ hidden_posts }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="chart-container">
+        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.1rem;">Engagement Trend (Last 6 Months)</h3>
+        <canvas id="galleryChart"></canvas>
+    </div>
+    <div class="top-list">
+        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.1rem;">Trending Projects</h3>
+        {% for item in most_liked %}
+        <div class="top-item">
+            <img src="{{ item.after_image.url }}" alt="">
+            <div class="info">
+                <h4>{{ item.title }}</h4>
+                <div class="likes"><i data-lucide="heart" style="width: 12px;"></i> {{ item.likes_count }}</div>
+            </div>
+            <a href="{% url 'admin_gallery_edit' item.pk %}" class="btn-manage" style="padding: 6px 12px;"><i data-lucide="edit-2" style="width: 14px;"></i></a>
+        </div>
+        {% empty %}
+        <p style="color: #64748b; font-size: 0.9rem;">No trending items yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('galleryChart').getContext('2d');
+    const monthlyData = JSON.parse('{{ monthly_stats|safe }}');
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: monthlyData.map(d => d.month),
+            datasets: [{
+                label: 'Showcase Uploads',
+                data: monthlyData.map(d => d.count),
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#2563eb',
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: '#f1f5f9' },
+                    ticks: { 
+                        font: { size: 10 },
+                        precision: 0,
+                        stepSize: 1
+                    }
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { font: { size: 10 } }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

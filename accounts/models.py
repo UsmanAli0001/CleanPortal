@@ -651,3 +651,55 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"Message from {self.name} ({self.category})"
+
+# --- PHOTO GALLERY SYSTEM ---
+
+class GalleryCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    icon = models.CharField(max_length=50, default='image', help_text="Lucide icon name")
+    color = models.CharField(max_length=20, default='#3b82f6', help_text="Hex color code for tags")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Gallery Categories"
+
+class GalleryItem(models.Model):
+    STATUS_CHOICES = [
+        ('Completed', 'Completed'),
+        ('Resolved', 'Resolved'),
+        ('In Progress', 'In Progress'),
+    ]
+
+    complaint = models.ForeignKey(Complaint, on_delete=models.SET_NULL, null=True, blank=True, related_name='gallery_items')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    category = models.ForeignKey(GalleryCategory, on_delete=models.CASCADE, related_name='items')
+    area = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Completed')
+    
+    before_image = models.ImageField(upload_to='gallery/before/')
+    after_image = models.ImageField(upload_to='gallery/after/')
+    
+    likes_count = models.IntegerField(default=0)
+    views_count = models.IntegerField(default=0)
+    
+    is_featured = models.BooleanField(default=False)
+    show_on_homepage = models.BooleanField(default=True)
+    allow_likes = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+class GalleryLike(models.Model):
+    gallery_item = models.ForeignKey(GalleryItem, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('gallery_item', 'user', 'ip_address')
