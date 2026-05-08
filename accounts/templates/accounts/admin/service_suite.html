@@ -6,11 +6,74 @@
 {% block admin_extra_css %}
 
 <style>
-    .admin-tabs { display: flex; gap: 30px; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; }
-    .tab-btn { padding: 15px 5px; cursor: pointer; font-weight: 700; color: #94a3b8; border-bottom: 3px solid transparent; }
-    .tab-btn.active { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    .suite-section { margin-bottom: 50px; }
+    .section-header { margin-bottom: 25px; display: flex; align-items: center; gap: 12px; border-left: 4px solid #cbd5e1; padding-left: 15px; }
+    .section-header h2 { font-size: 1.3rem; margin: 0; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+    .section-header i { width: 22px; height: 22px; }
+
+    .section-header.timetables { border-left-color: #2563eb; }
+    .section-header.timetables h2, .section-header.timetables i { color: #2563eb; }
+
+    .section-header.pricing { border-left-color: #10b981; }
+    .section-header.pricing h2, .section-header.pricing i { color: #10b981; }
+
+    .section-header.alerts { border-left-color: #ef4444; }
+    .section-header.alerts h2, .section-header.alerts i { color: #ef4444; }
+
+    /* Action Buttons Styling & Transitions */
+    .abtn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        outline: none;
+    }
+
+    .abtn i { width: 16px; height: 16px; transition: transform 0.3s ease; }
+
+    /* Edit Button - Aesthetic Blue */
+    .abtn.edit {
+        background: #f0f9ff;
+        color: #0369a1;
+        border-color: #e0f2fe;
+    }
+    .abtn.edit:hover {
+        background: #0369a1;
+        color: white;
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 15px -3px rgba(3, 105, 161, 0.3);
+    }
+    .abtn.edit:hover i { transform: rotate(-15deg); }
+
+    /* Delete Button - Aesthetic Red */
+    .abtn.del {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fee2e2;
+    }
+    .abtn.del:hover {
+        background: #ef4444;
+        color: white;
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
+    }
+    .abtn.del:hover i { animation: shake 0.3s ease-in-out; }
+
+    @keyframes shake {
+        0%, 100% { transform: rotate(0); }
+        25% { transform: rotate(10deg); }
+        75% { transform: rotate(-10deg); }
+    }
+
+
+
+
     
     .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
     .badge-Pending { background: #fff3e0; color: #ff9800; }
@@ -21,6 +84,17 @@
     .modal-bg { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 20px; }
     .modal-bg.open { display: flex; }
     .modal { background: white; border-radius: 30px; padding: 40px; width: 600px; max-width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+
+    /* Admin Stats Grid */
+    .admin-stats-grid { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 15px; margin-bottom: 30px; width: 100%; }
+    .stat-card { flex: 1; min-width: 0; background: white; border-radius: 16px; padding: 12px 18px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s; display: flex; flex-direction: row; align-items: center; gap: 12px; position: relative; overflow: hidden; }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1); border-color: #3b82f6; }
+    .stat-card .icon-box { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(30, 58, 138, 0.05); color: #1e3a8a; flex-shrink: 0; }
+    .stat-card .info-stack { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+    .stat-card .stat-label { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .stat-card .stat-value { font-size: 1.4rem; font-weight: 900; color: #1e293b; display: flex; align-items: center; gap: 8px; margin: 0; line-height: 1; }
+    .stat-card .sub-label { font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 50px; display: inline-flex; align-items: center; }
+
 </style>
 {% endblock %}
 
@@ -31,36 +105,57 @@
         <p>Manage city-wide bookings, timetables, and emergency alerts.</p>
     </div>
     <div style="display:flex; gap:10px">
-
         <button class="btn-manage" onclick="openModal('scheduleModal')"><i data-lucide="calendar"></i> Add Timetable</button>
         <button class="btn-manage" onclick="openModal('categoryModal')" style="background:var(--accent-green)"><i data-lucide="plus"></i> New Service</button>
+        <button class="btn-manage" onclick="openModal('alertModal')" style="background:#ef4444"><i data-lucide="bell"></i> Post Alert</button>
     </div>
 </div>
 
 <div class="admin-stats-grid">
-
     <div class="stat-card">
-        <span class="stat-label">Weekly Deliveries</span>
-        <p class="stat-value">24</p>
-        <div style="font-size: 0.8rem; color: var(--primary-blue); margin-top: 5px; font-weight: 600;">SCHEDULED TRIPS</div>
+        <div class="icon-box"><i data-lucide="calendar"></i></div>
+        <div class="info-stack">
+            <span class="stat-label">Municipal Timetables</span>
+            <div class="stat-value">
+                {{ schedules.count }}
+                <span class="sub-label" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; margin-left: 5px;">ACTIVE AREAS</span>
+            </div>
+        </div>
     </div>
     <div class="stat-card">
-        <span class="stat-label">Active Alerts</span>
-        <p class="stat-value" style="color:#ef4444">{{ alerts.count }}</p>
-        <div style="font-size: 0.8rem; color: #ef4444; margin-top: 5px; font-weight: 600;">NOTIFIED AREAS</div>
+        <div class="icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i data-lucide="tag"></i></div>
+        <div class="info-stack">
+            <span class="stat-label">Prices & Categories</span>
+            <div class="stat-value">
+                {{ categories.count }}
+                <span class="sub-label" style="background: rgba(16, 185, 129, 0.1); color: #10b981; margin-left: 5px;">CATEGORIES</span>
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon-box" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i data-lucide="bell"></i></div>
+        <div class="info-stack">
+            <span class="stat-label">Emergency Alerts</span>
+            <div class="stat-value">
+                {{ alerts.count }}
+                <span class="sub-label" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; margin-left: 5px;">ACTIVE ALERTS</span>
+            </div>
+        </div>
     </div>
 </div>
 
-<div class="admin-tabs">
-    <div class="tab-btn active" onclick="switchTab('timetables', this)">Municipal Timetables</div>
-    <div class="tab-btn" onclick="switchTab('pricing', this)">Prices & Categories</div>
-    <div class="tab-btn" onclick="switchTab('alerts', this)">Emergency Alerts</div>
-</div>
 
 
 
-<!-- Timetables Tab -->
-<div id="timetables" class="tab-panel active">
+
+<!-- Timetables Section -->
+<div class="suite-section">
+    <div class="section-header timetables">
+        <h2><i data-lucide="calendar"></i> Municipal Timetables</h2>
+    </div>
+
+
+
     <div class="admin-card" style="padding:0; overflow:hidden">
         <table class="admin-table">
             <thead>
@@ -92,8 +187,14 @@
     </div>
 </div>
 
-<!-- Pricing Tab -->
-<div id="pricing" class="tab-panel">
+<!-- Pricing Section -->
+<div class="suite-section">
+    <div class="section-header pricing">
+        <h2><i data-lucide="tag"></i> Prices & Categories</h2>
+    </div>
+
+
+
     <div class="admin-card" style="padding:0; overflow:hidden">
         <table class="admin-table">
             <thead>
@@ -142,9 +243,15 @@
     </div>
 </div>
 
-<!-- Alerts Tab -->
-<div id="alerts" class="tab-panel">
-    <button class="btn-manage" onclick="openModal('alertModal')" style="margin-bottom:20px; background:#ef4444"><i data-lucide="bell"></i> Post Emergency Alert</button>
+<!-- Alerts Section -->
+<div class="suite-section">
+    <div class="section-header alerts">
+        <h2><i data-lucide="bell"></i> Emergency Alerts</h2>
+    </div>
+
+
+
+
     <div class="admin-card" style="padding:25px">
         <h3 style="font-weight:800; font-size:1rem; margin-bottom:20px; color:var(--primary-blue)">Active Alerts</h3>
         {% for a in alerts %}
@@ -157,7 +264,8 @@
         </div>
         {% endfor %}
     </div>
-</div>
+    </div>
+
 
 
 
@@ -260,12 +368,7 @@
 
 {% block admin_extra_js %}
 <script>
-    function switchTab(id, el) {
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
-    }
+
 
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }

@@ -4,24 +4,45 @@
 {% block title %}Photo Gallery | Clean Pak Portal{% endblock %}
 
 {% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
     :root {
-        --glass-white: rgba(255, 255, 255, 0.85);
-        --accent-blue: #2563eb;
+        --glass-white: rgba(255, 255, 255, 0.03);
+        --accent-blue: #3b82f6;
+        --cinematic-dark: #020617;
+    }
+
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    h1, h2, h3, .stat-item .val { font-family: 'Outfit', sans-serif; }
+
+    @keyframes bgDrift {
+        0% { background-position: 0% 0%; }
+        50% { background-position: 100% 100%; }
+        100% { background-position: 0% 0%; }
     }
 
     .gallery-hero {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 100px 5% 60px;
+        background: radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.2) 0%, transparent 50%),
+                    radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                    var(--cinematic-dark);
+        padding: 140px 5% 100px;
         color: white;
         text-align: center;
         position: relative;
         overflow: hidden;
+        background-size: 200% 200%;
+        animation: bgDrift 20s ease-in-out infinite;
     }
     .gallery-hero::before {
         content: ""; position: absolute; inset: 0;
-        background: url('https://www.transparenttextures.com/patterns/cubes.png');
-        opacity: 0.1; pointer-events: none;
+        background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+        opacity: 0.1; pointer-events: none; mix-blend-mode: overlay;
+    }
+    .hero-glow {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        width: 100%; height: 100%;
+        background: radial-gradient(circle at center, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
+        pointer-events: none;
     }
 
     .stats-bar {
@@ -32,31 +53,44 @@
     .stat-item .lab { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; }
 
     .filter-section {
-        background: var(--glass-white);
-        backdrop-filter: blur(12px);
-        padding: 25px;
-        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px) saturate(180%);
+        padding: 8px;
+        border-radius: 100px;
         margin: -40px auto 40px;
-        width: 90%;
-        max-width: 1200px;
+        width: fit-content;
+        min-width: 600px;
+        max-width: 95%;
         position: relative;
         z-index: 10;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.4);
     }
 
     .filter-grid {
-        display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;
+        display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr; gap: 0;
+        align-items: center;
     }
+    .filter-divider { width: 1px; height: 25px; background: rgba(0,0,0,0.05); }
 
     /* Masonry Grid */
     .gallery-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 30px;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
         padding: 0 5% 100px;
         max-width: 1400px;
         margin: 0 auto;
+    }
+
+    @keyframes filterEntrance {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes cardEntrance {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .gallery-card {
@@ -66,12 +100,14 @@
         position: relative;
         border: 1px solid #f1f5f9;
         display: flex; flex-direction: column;
+        animation: cardEntrance 0.7s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+        animation-delay: calc(var(--stagger, 0) * 100ms);
     }
     .gallery-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(37, 99, 235, 0.15); border-color: var(--accent-blue); }
 
     /* Comparison Slider */
     .image-comparison {
-        position: relative; width: 100%; height: 260px; overflow: hidden;
+        position: relative; width: 100%; height: 220px; overflow: hidden;
         cursor: ew-resize;
     }
     .img-comp-overlay {
@@ -86,14 +122,19 @@
         box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
     .slider-handle::after {
-        content: "↔"; position: absolute; top: 50%; left: 50%;
-        width: 34px; height: 34px; background: white; border-radius: 50%;
+        content: ""; position: absolute; top: 50%; left: 50%;
+        width: 42px; height: 42px; background: white; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
         transform: translate(-50%, -50%); color: var(--accent-blue);
-        font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m18 8 4 4-4 4'/%3E%3Cpath d='m6 8-4 4 4 4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 22px;
+        border: 3px solid white;
     }
 
-    .card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+    .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
     .card-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
     .status-badge { padding: 5px 12px; border-radius: 50px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; }
     
@@ -101,7 +142,7 @@
     .card-desc { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
 
     .card-footer {
-        padding: 20px 25px; border-top: 1px solid #f1f5f9;
+        padding: 15px 20px; border-top: 1px solid #f1f5f9;
         display: flex; align-items: center; justify-content: space-between;
     }
     .like-btn {
@@ -111,25 +152,60 @@
     .like-btn.liked { color: #ef4444; }
     .like-btn:hover { transform: scale(1.1); }
 
-    .btn-details {
-        background: #f8fafc; color: #1e293b; padding: 10px 20px;
-        border-radius: 12px; font-size: 0.75rem; font-weight: 800;
-        text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+
+    .share-tray { display: flex; gap: 12px; margin-top: 15px; }
+    .share-btn { 
+        width: 38px; height: 38px; border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        background: #f8fafc; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
         text-decoration: none; border: 1px solid #e2e8f0;
     }
-    .btn-details:hover { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+    .share-btn:hover { transform: translateY(-3px); color: white; }
+    .share-btn.whatsapp:hover { background: #25D366; border-color: #25D366; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2); }
+    .share-btn.facebook:hover { background: #1877F2; border-color: #1877F2; box-shadow: 0 10px 20px rgba(24, 119, 242, 0.2); }
+    .share-btn svg { transition: transform 0.3s; }
+    .share-btn:hover svg { transform: scale(1.1); }
 
-    .share-tray { display: flex; gap: 10px; margin-top: 15px; }
-    .share-btn { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #64748b; transition: 0.3s; text-decoration: none; }
-    .share-btn:hover { background: var(--accent-blue); color: white; }
-
-    /* Custom Select Styling */
-    .custom-select {
-        width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;
-        font-size: 0.85rem; font-weight: 600; color: #1e293b; background: white;
+    /* Custom Cinematic Dropdowns */
+    .dropdown-container { 
+        position: relative; width: 100%; 
+        animation: filterEntrance 0.6s ease backwards;
     }
+    .custom-dropdown {
+        width: 220px; padding: 10px 20px; border-radius: 100px; 
+        background: transparent; border: none;
+        color: #1e293b; font-weight: 600;
+        display: flex; align-items: center; justify-content: space-between;
+        cursor: pointer; transition: 0.3s; font-size: 0.85rem;
+    }
+    .custom-dropdown:hover { background: white; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    
+    .dropdown-menu {
+        position: absolute; top: calc(100% + 10px); left: 0; width: 100%;
+        background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);
+        border-radius: 16px; border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        z-index: 100; opacity: 0; visibility: hidden; transform: translateY(10px);
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        max-height: 300px; overflow-y: auto; padding: 10px;
+    }
+    .dropdown-menu.active { opacity: 1; visibility: visible; transform: translateY(0); }
+    
+    .dropdown-item {
+        padding: 12px 15px; border-radius: 10px; transition: 0.2s;
+        font-size: 0.9rem; font-weight: 500; color: #475569;
+    }
+    .dropdown-item:hover { background: var(--accent-blue); color: white; }
+    .dropdown-item.selected { background: #f1f5f9; color: var(--accent-blue); font-weight: 700; }
+
+    .dropdown-menu::-webkit-scrollbar { width: 6px; }
+    .dropdown-menu::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
     @media (max-width: 768px) {
+        .filter-section { border-radius: 20px; width: 90%; min-width: auto; }
+        .filter-grid { grid-template-columns: 1fr; }
+        .filter-divider { display: none; }
+        .custom-dropdown { width: 100%; }
         .gallery-grid { grid-template-columns: 1fr; }
         .gallery-hero { padding: 80px 20px 40px; }
         .stats-bar { gap: 20px; flex-wrap: wrap; }
@@ -139,8 +215,9 @@
 
 {% block content %}
 <section class="gallery-hero">
-    <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 950; margin-bottom: 10px;">Transformation <span>Gallery</span></h1>
-    <p style="color: #94a3b8; max-width: 600px; margin: 0 auto; font-size: 1.1rem; font-weight: 500;">Witness the evolution of our city. Real results, real impact, real improvements.</p>
+    <div class="hero-glow"></div>
+    <h1 style="font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 950; margin-bottom: 15px; line-height: 1.1;">Transformation <span style="background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Gallery</span></h1>
+    <p style="color: #94a3b8; max-width: 650px; margin: 0 auto; font-size: 1.2rem; font-weight: 500; line-height: 1.6;">Witness the evolution of our city. Real results, real impact, real improvements. Every pixel tells a story of change.</p>
     
     <div class="stats-bar">
         <div class="stat-item">
@@ -163,36 +240,74 @@
 </section>
 
 <div class="filter-section">
-    <form method="GET" action="{% url 'gallery_page' %}">
+    <form method="GET" action="{% url 'gallery_page' %}" id="filterForm">
         <div class="filter-grid">
-            <input type="text" name="search" class="custom-select" placeholder="Search transformations..." value="{{ request.GET.search|default:'' }}">
-            
-            <select name="category" class="custom-select" onchange="this.form.submit()">
-                <option value="">All Categories</option>
-                {% for cat in categories %}
-                <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
-                {% endfor %}
-            </select>
+            <!-- Category Dropdown -->
+            <div class="dropdown-container">
+                <div class="custom-dropdown" onclick="toggleDropdown('cat-menu')">
+                    <span id="cat-label">
+                        {% if request.GET.category %}
+                            {% for cat in categories %}
+                                {% if request.GET.category == cat.id|stringformat:"s" %}{{ cat.name }}{% endif %}
+                            {% endfor %}
+                        {% else %}
+                            All Categories
+                        {% endif %}
+                    </span>
+                    <i data-lucide="chevron-down" style="width: 16px;"></i>
+                </div>
+                <div class="dropdown-menu" id="cat-menu">
+                    <div class="dropdown-item {% if not request.GET.category %}selected{% endif %}" onclick="selectOption('category', '', 'All Categories')">All Categories</div>
+                    {% for cat in categories %}
+                    <div class="dropdown-item {% if request.GET.category == cat.id|stringformat:'s' %}selected{% endif %}" onclick="selectOption('category', '{{ cat.id }}', '{{ cat.name }}')">{{ cat.name }}</div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="category" value="{{ request.GET.category|default:'' }}">
+            </div>
 
-            <select name="area" class="custom-select" onchange="this.form.submit()">
-                <option value="">All Areas</option>
-                {% for area in gujrat_areas %}
-                <option value="{{ area }}" {% if request.GET.area == area %}selected{% endif %}>{{ area }}</option>
-                {% endfor %}
-            </select>
+            <div class="filter-divider"></div>
 
-            <select name="sort" class="custom-select" onchange="this.form.submit()">
-                <option value="latest">Latest Work</option>
-                <option value="liked" {% if request.GET.sort == 'liked' %}selected{% endif %}>Most Liked</option>
-                <option value="oldest" {% if request.GET.sort == 'oldest' %}selected{% endif %}>Recently Added</option>
-            </select>
+            <!-- Area Dropdown -->
+            <div class="dropdown-container" style="animation-delay: 0.15s;">
+                <div class="custom-dropdown" onclick="toggleDropdown('area-menu')">
+                    <span id="area-label">{{ request.GET.area|default:'All Areas' }}</span>
+                    <i data-lucide="chevron-down" style="width: 16px;"></i>
+                </div>
+                <div class="dropdown-menu" id="area-menu">
+                    <div class="dropdown-item {% if not request.GET.area %}selected{% endif %}" onclick="selectOption('area', '', 'All Areas')">All Areas</div>
+                    {% for area in gujrat_areas %}
+                    <div class="dropdown-item {% if request.GET.area == area %}selected{% endif %}" onclick="selectOption('area', '{{ area }}', '{{ area }}')">{{ area }}</div>
+                    {% endfor %}
+                </div>
+                <input type="hidden" name="area" value="{{ request.GET.area|default:'' }}">
+            </div>
+
+            <div class="filter-divider"></div>
+
+            <!-- Sort Dropdown -->
+            <div class="dropdown-container" style="animation-delay: 0.3s;">
+                <div class="custom-dropdown" onclick="toggleDropdown('sort-menu')">
+                    <span id="sort-label">
+                        {% if request.GET.sort == 'liked' %}Most Liked
+                        {% elif request.GET.sort == 'oldest' %}Recently Added
+                        {% else %}Latest Work{% endif %}
+                    </span>
+                    <i data-lucide="chevron-down" style="width: 16px;"></i>
+                </div>
+                <div class="dropdown-menu" id="sort-menu">
+                    <div class="dropdown-item {% if request.GET.sort == 'latest' or not request.GET.sort %}selected{% endif %}" onclick="selectOption('sort', 'latest', 'Latest Work')">Latest Work</div>
+                    <div class="dropdown-item {% if request.GET.sort == 'liked' %}selected{% endif %}" onclick="selectOption('sort', 'liked', 'Most Liked')">Most Liked</div>
+                    <div class="dropdown-item {% if request.GET.sort == 'oldest' %}selected{% endif %}" onclick="selectOption('sort', 'oldest', 'Recently Added')">Recently Added</div>
+                </div>
+                <input type="hidden" name="sort" value="{{ request.GET.sort|default:'latest' }}">
+            </div>
         </div>
     </form>
 </div>
 
 <div class="gallery-grid">
     {% for item in items %}
-    <div class="gallery-card">
+    <div class="gallery-card" style="--stagger: {{ forloop.counter0 }}">
         <!-- Before/After Slider -->
         <div class="image-comparison" data-id="{{ item.id }}">
             <div class="img-comp-base"><img src="{{ item.after_image.url }}" alt="After"></div>
@@ -201,10 +316,10 @@
             
             <!-- Floating Badges -->
             <div style="position: absolute; top: 15px; left: 15px; z-index: 5; display: flex; gap: 8px;">
-                <span class="status-badge" style="background: rgba(0,0,0,0.6); color: white; backdrop-filter: blur(4px);">BEFORE</span>
+                <span class="status-badge" style="background: rgba(0,0,0,0.6); color: white; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); letter-spacing: 1px;">BEFORE</span>
             </div>
             <div style="position: absolute; top: 15px; right: 15px; z-index: 5;">
-                <span class="status-badge" style="background: var(--accent-blue); color: white;">AFTER</span>
+                <span class="status-badge" style="background: rgba(37, 99, 235, 0.9); color: white; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); letter-spacing: 1px;">AFTER</span>
             </div>
         </div>
 
@@ -224,9 +339,12 @@
 
             <!-- Share Buttons -->
             <div class="share-tray">
-                <a href="https://wa.me/?text=Check out this transformation: {{ request.build_absolute_uri }}" target="_blank" class="share-btn" title="Share on WhatsApp"><i data-lucide="phone"></i></a>
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="share-btn" title="Share on Facebook"><i data-lucide="facebook"></i></a>
-                <button onclick="copyLink(this, '{{ request.build_absolute_uri }}')" class="share-btn" title="Copy Link"><i data-lucide="link"></i></button>
+                <a href="https://wa.me/?text=Check out this transformation: {{ request.build_absolute_uri }}" target="_blank" class="share-btn whatsapp" title="Share on WhatsApp">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.586 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="share-btn facebook" title="Share on Facebook">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
             </div>
         </div>
 
@@ -235,7 +353,6 @@
                 <i data-lucide="heart" fill="{% if item.id in user_likes %}currentColor{% else %}none{% endif %}"></i>
                 <span class="like-count">{{ item.likes_count }}</span>
             </button>
-            <a href="#" class="btn-details">View Details</a>
         </div>
     </div>
     {% empty %}
@@ -301,17 +418,25 @@
         }
     }
 
-    function copyLink(btn, url) {
-        navigator.clipboard.writeText(url).then(() => {
-            const icon = btn.querySelector('i');
-            const originalIcon = icon.getAttribute('data-lucide');
-            icon.setAttribute('data-lucide', 'check');
-            lucide.createIcons();
-            setTimeout(() => {
-                icon.setAttribute('data-lucide', originalIcon);
-                lucide.createIcons();
-            }, 2000);
-        });
+    function toggleDropdown(id) {
+        const menu = document.getElementById(id);
+        const isOpen = menu.classList.contains('active');
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('active'));
+        if (!isOpen) menu.classList.add('active');
     }
+
+    function selectOption(name, value, label) {
+        const input = document.querySelector(`input[name="${name}"]`);
+        input.value = value;
+        document.getElementById('filterForm').submit();
+    }
+
+    // Close dropdowns on outside click
+    window.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown-container')) {
+            document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('active'));
+        }
+    });
+
 </script>
 {% endblock %}

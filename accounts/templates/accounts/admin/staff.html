@@ -45,23 +45,57 @@
     .role-operator { background: #fff7ed; color: #c2410c; }
     .role-supervisor { background: #fdf2f8; color: #be185d; }
 
+    /* Enhanced Action Buttons Styling & Transitions */
     .action-btn {
-        width: 35px;
-        height: 35px;
-        border-radius: 10px;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border: none;
+        border: 1px solid transparent;
         cursor: pointer;
-        margin: 0 2px;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        outline: none;
     }
 
-    .btn-edit { background: #f1f5f9; color: #64748b; }
-    .btn-edit:hover { background: #e2e8f0; color: var(--primary-blue); }
-    .btn-delete { background: #fff1f2; color: #f43f5e; }
-    .btn-delete:hover { background: #ffe4e6; }
+    .action-btn i { width: 16px; height: 16px; transition: transform 0.3s ease; }
+
+    /* Edit Button - Aesthetic Blue */
+    .btn-edit {
+        background: #f0f9ff;
+        color: #0369a1;
+        border-color: #e0f2fe;
+    }
+    .btn-edit:hover {
+        background: #0369a1;
+        color: white;
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 15px -3px rgba(3, 105, 161, 0.3);
+    }
+    .btn-edit:hover i { transform: rotate(-15deg); }
+
+    /* Delete Button - Aesthetic Red */
+    .btn-delete {
+        background: #fef2f2;
+        color: #b91c1c;
+        border-color: #fee2e2;
+    }
+    .btn-delete:hover {
+        background: #ef4444;
+        color: white;
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
+    }
+    .btn-delete:hover i { animation: shake 0.3s ease-in-out; }
+
+    @keyframes shake {
+        0%, 100% { transform: rotate(0); }
+        25% { transform: rotate(10deg); }
+        75% { transform: rotate(-10deg); }
+    }
+
 
     /* Modal Styling */
     .modal {
