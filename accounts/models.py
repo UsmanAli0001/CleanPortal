@@ -224,39 +224,74 @@ class Notification(models.Model):
 from django.contrib.auth.models import User
 
 class Staff(models.Model):
-
     ROLE = (
-
         ('Worker','Worker'),
-
         ('Driver','Driver'),
-
+        ('Operator','Operator'),
         ('Supervisor','Supervisor')
-
     )
 
-    name=models.CharField(max_length=100)
-
-    phone=models.CharField(max_length=20)
-
-    role=models.CharField(max_length=50,choices=ROLE)
-
-    area=models.CharField(max_length=100)
-
-    age = models.IntegerField(null=True, blank=True)
-
-    duties = models.CharField(max_length=200, blank=True, help_text="e.g., Sweeper, Garbage Pickup")
-
+    name = models.CharField(max_length=100)
+    email = models.EmailField(null=True, blank=True)
+    phone = models.CharField(max_length=20)
+    cnic = models.CharField(max_length=20, null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    role = models.CharField(max_length=50, choices=ROLE)
+    area = models.CharField(max_length=100)
     salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
-    duty_time = models.CharField(max_length=100, blank=True, help_text="e.g., Morning (8AM - 4PM)")
     
     user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_profile')
     assigned_zone = models.ForeignKey('Zone', on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_assignments')
 
     def __str__(self):
+        return f"{self.name} ({self.role})"
 
-        return self.name
+class DriverDetail(models.Model):
+    staff = models.OneToOneField(Staff, on_delete=models.CASCADE, related_name='driver_detail')
+    dob = models.DateField(null=True, blank=True)
+    license_number = models.CharField(max_length=50, null=True, blank=True)
+    license_expiry = models.DateField(null=True, blank=True)
+    license_category = models.CharField(max_length=50, null=True, blank=True)
+    vehicle_assignment = models.CharField(max_length=100, null=True, blank=True)
+    experience_years = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Driver: {self.staff.name}"
+
+class OperatorDetail(models.Model):
+    staff = models.OneToOneField(Staff, on_delete=models.CASCADE, related_name='operator_detail')
+    operator_id = models.CharField(max_length=50, null=True, blank=True)
+    shift_assignment = models.CharField(max_length=50, null=True, blank=True)
+    operational_qualification = models.CharField(max_length=100, null=True, blank=True)
+    experience_years = models.IntegerField(null=True, blank=True)
+    certifications = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Operator: {self.staff.name}"
+
+class SupervisorDetail(models.Model):
+    staff = models.OneToOneField(Staff, on_delete=models.CASCADE, related_name='supervisor_detail')
+    supervisor_id = models.CharField(max_length=50, null=True, blank=True)
+    department_zone = models.CharField(max_length=100, null=True, blank=True)
+    management_experience = models.IntegerField(null=True, blank=True)
+    staff_supervised = models.IntegerField(null=True, blank=True)
+    education_level = models.CharField(max_length=100, null=True, blank=True)
+    supervisory_certification = models.CharField(max_length=100, null=True, blank=True)
+    key_responsibilities = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Supervisor: {self.staff.name}"
+
+class WorkerDetail(models.Model):
+    staff = models.OneToOneField(Staff, on_delete=models.CASCADE, related_name='worker_detail')
+    age = models.IntegerField(null=True, blank=True)
+    duties = models.CharField(max_length=200, blank=True)
+    duty_time = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return f"Worker: {self.staff.name}"
+
+
 
 
 

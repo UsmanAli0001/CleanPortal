@@ -1,7 +1,9 @@
 from django.contrib import admin
 from .models import (
     Profile, Complaint, ComplaintTimeline, Staff,
+    DriverDetail, OperatorDetail, SupervisorDetail, WorkerDetail,
     Payment, Announcement, RouteAlert, Feedback,
+
     CleaningSchedule, AnnouncementRead, Zone,
     Vehicle, VehicleLocation, ComplaintPricingConfig
 )
@@ -37,7 +39,12 @@ class ComplaintAdmin(admin.ModelAdmin):
 
 admin.site.register(ComplaintTimeline)
 admin.site.register(Staff)
+admin.site.register(DriverDetail)
+admin.site.register(OperatorDetail)
+admin.site.register(SupervisorDetail)
+admin.site.register(WorkerDetail)
 admin.site.register(Payment)
+
 admin.site.register(RouteAlert)
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):

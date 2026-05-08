@@ -5,6 +5,15 @@
 
 {% block admin_extra_css %}
 <style>
+    :root {
+        --primary-blue: #1a237e;
+        --secondary-blue: #283593;
+        --accent-blue: #3f51b5;
+        --light-blue: #e8eaf6;
+        --success-green: #2e7d32;
+        --danger-red: #c62828;
+    }
+
     .staff-stats {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -23,16 +32,6 @@
         border: 1px solid #f1f5f9;
     }
 
-    .staff-card .icon-box {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-    }
-
     .status-pill {
         padding: 5px 12px;
         border-radius: 20px;
@@ -41,9 +40,10 @@
         text-transform: uppercase;
     }
     
-    .role-worker { background: #ecfdf5; color: #059669; }
-    .role-driver { background: #eff6ff; color: #2563eb; }
-    .role-supervisor { background: #fef2f2; color: #dc2626; }
+    .role-worker { background: #f3f4f6; color: #374151; }
+    .role-driver { background: #eff6ff; color: #1d4ed8; }
+    .role-operator { background: #fff7ed; color: #c2410c; }
+    .role-supervisor { background: #fdf2f8; color: #be185d; }
 
     .action-btn {
         width: 35px;
@@ -55,6 +55,7 @@
         border: none;
         cursor: pointer;
         margin: 0 2px;
+        transition: all 0.2s;
     }
 
     .btn-edit { background: #f1f5f9; color: #64748b; }
@@ -79,22 +80,25 @@
         justify-content: center;
     }
 
+
     .modal-content {
         background-color: white;
-        margin: auto;
+        margin: 0;
         padding: 0;
-        border-radius: 24px;
-        width: 640px;
+        border-radius: 12px;
+        width: 800px;
         max-width: 95%;
-        max-height: 90vh;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        border: 1px solid rgba(255,255,255,0.1);
-        position: relative;
+        max-height: 85vh;
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255,255,255,0.1);
+        position: relative;
         animation: modalFadeIn 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     }
+
+
 
     @keyframes modalFadeIn {
         from { transform: translateY(20px) scale(0.98); opacity: 0; }
@@ -102,64 +106,133 @@
     }
 
     .modal-header {
-        background: linear-gradient(rgba(26, 35, 126, 0.9), rgba(30, 27, 75, 0.98)), url("{% static 'accounts/img/staff_bg.png' %}");
-        background-size: cover;
-        background-position: center;
-        padding: 30px 35px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+        padding: 8px 20px;
         color: white;
         position: relative;
-        flex-shrink: 0;
-        border-bottom: 1px solid rgba(0,0,0,0.1);
     }
 
     .modal-header h2 {
         margin: 0;
-        font-size: 1.25rem;
+        font-size: 1rem;
         font-weight: 800;
-        letter-spacing: -0.5px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    .modal-header p {
-        margin: 3px 0 0;
+
+
+
+    /* Tabs Styling */
+    .modal-tabs {
+        display: flex;
+        background: #f8fafc;
+        padding: 0 20px;
+        border-bottom: 1px solid #e2e8f0;
+        overflow-x: auto;
+    }
+
+
+    .tab-btn {
+        padding: 10px 15px;
+        border: none;
+        background: none;
+        font-weight: 700;
         font-size: 0.8rem;
-        opacity: 0.8;
+        color: #64748b;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+
+
+    .tab-btn.active {
+        color: var(--primary-blue);
+    }
+
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: var(--primary-blue);
     }
 
     .modal-body {
-        padding: 30px 35px;
+        padding: 15px 25px;
+        background: #ffffff;
         overflow-y: auto;
         flex: 1;
-        background: #ffffff;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
     }
 
-    .close {
-        position: absolute;
-        right: 15px;
-        top: 15px;
-        font-size: 20px;
-        cursor: pointer;
-        color: white;
-        opacity: 0.6;
-        transition: 0.2s;
-        z-index: 10;
-        width: 28px;
-        height: 28px;
+    .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 10px;
+    }
+
+
+
+
+
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .form-section-title {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 10px;
     }
 
-    .close:hover {
-        opacity: 1;
+
+
+
+    .form-section-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #f1f5f9;
     }
 
     .form-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 20px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px 12px;
+        margin-bottom: 10px;
     }
+
+
+    .form-group.full-width {
+        grid-column: span 3;
+    }
+
+
+
 
     .form-group {
         margin-bottom: 0;
@@ -170,103 +243,85 @@
     }
 
     .form-group label {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 6px;
+        display: block;
+        margin-bottom: 2px;
         font-weight: 700;
-        color: #1e293b;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .form-group label i {
-        color: var(--primary-blue);
-        width: 12px;
+        color: #334155;
+        font-size: 0.65rem;
     }
 
     .form-group input, .form-group select, .form-group textarea {
         width: 100%;
-        padding: 10px 14px;
-        border-radius: 10px;
+        padding: 5px 8px;
+        border-radius: 6px;
         border: 2px solid #f1f5f9;
         background: #f8fafc;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: #1e293b;
-        transition: all 0.2s ease;
+        transition: all 0.2s;
     }
 
-    .form-group input:focus, .form-group select:focus {
+
+
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
         outline: none;
         border-color: var(--primary-blue);
         background: white;
-        box-shadow: 0 10px 15px -3px rgba(26, 35, 126, 0.1);
-    }
-
-    .btn-submit {
-        flex: 1;
-        background: var(--primary-blue);
-        color: white;
-        border: none;
-        padding: 14px;
-        border-radius: 12px;
-        font-weight: 800;
-        font-size: 0.9rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        box-shadow: 0 10px 25px -5px rgba(26, 35, 126, 0.4);
-    }
-
-    .btn-cancel {
-        flex: 1;
-        background: #f1f5f9;
-        color: #64748b;
-        border: none;
-        padding: 14px;
-        border-radius: 12px;
-        font-weight: 800;
-        font-size: 0.9rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .modal-content form {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(26, 35, 126, 0.08);
     }
 
     .modal-footer {
         display: flex;
-        gap: 15px;
-        padding: 20px 35px;
+        gap: 10px;
+        padding: 8px 20px;
         background: #f8fafc;
         border-top: 1px solid #f1f5f9;
-        flex-shrink: 0;
     }
 
-    .btn-submit:hover {
-        box-shadow: 0 12px 20px -5px rgba(26, 35, 126, 0.5);
-        background: #1a1b4b;
+
+    .btn-submit {
+        flex: 2;
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 800;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 10px 20px rgba(26, 35, 126, 0.2);
     }
 
-    .btn-cancel:hover {
-        background: #e2e8f0;
-        color: #1e293b;
+    .btn-cancel {
+        flex: 1;
+        background: white;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 800;
+        cursor: pointer;
     }
 
-    /* Modal Scroll Prevention */
-    body.modal-open {
-        overflow: hidden;
+
+
+    .close {
+        position: absolute;
+        right: 15px;
+        top: 15px;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        opacity: 0.7;
     }
+
+
+
+    .close:hover { opacity: 1; }
 </style>
 {% endblock %}
 
@@ -274,140 +329,419 @@
 <div class="page-header">
     <div>
         <h1>Staff Management</h1>
-        <p>Register and manage your field workforce.</p>
+        <p>Comprehensive workforce administration and deployment.</p>
     </div>
-    <div style="display: flex; gap: 10px; align-items: center;">
-
-        <button class="nav-btn" style="background: var(--primary-blue); color: white !important; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box;" onclick="openAddModal()">
-            <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i> Add New Staff
-        </button>
-    </div>
+    <button class="nav-btn" style="background: var(--primary-blue); color: white !important; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="openAddModal()">
+        <i data-lucide="user-plus"></i> Add New Staff
+    </button>
 </div>
 
-<div class="admin-card">
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>Member</th>
-                <th>Age</th>
-                <th>Contact</th>
-                <th>Role & Area</th>
-                <th>Duties</th>
-                <th>Salary</th>
-                <th>Duty Time</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for s in staff %}
-            <tr>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 40px; height: 40px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-blue); font-weight: 800;">
-                            {{ s.name|make_list|first }}
+<div class="staff-tables-container">
+    <!-- Driver Details Table -->
+    <div class="section-header" style="margin-top: 30px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <div style="background: var(--primary-blue); color: white; padding: 8px; border-radius: 8px;"><i data-lucide="truck" style="width: 20px; height: 20px;"></i></div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--primary-blue); margin: 0;">Driver Details Registry</h2>
+    </div>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Staff Member</th>
+                    <th>License / Vehicle</th>
+                    <th>Contact</th>
+                    <th>Area</th>
+                    <th>Salary</th>
+                    <th>Exp</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in staff %}
+                {% if s.role == 'Driver' %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 35px; height: 35px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-weight: 800;">
+                                {{ s.name|make_list|first }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: #1e293b;">{{ s.name }}</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">{{ s.email|default:"No email" }}</div>
+                            </div>
                         </div>
-                        <div>
-                            <div style="font-weight: 700; color: var(--primary-blue);">{{ s.name }}</div>
-                            <div style="font-size: 0.75rem; color: #64748b;">ID: #ST{{ s.id|stringformat:"04d" }}</div>
-                        </div>
-                    </div>
-                </td>
-                <td><span style="font-weight: 600;">{{ s.age|default:"--" }}</span></td>
-                <td><span style="color: #64748b;">{{ s.phone }}</span></td>
-                <td>
-                    <span class="status-pill role-{{ s.role|lower }}">{{ s.role }}</span>
-                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;"><i data-lucide="map-pin" style="width: 12px; height: 12px; vertical-align: middle;"></i> {{ s.area }}</div>
-                </td>
-                <td>
-                    <div style="max-width: 150px; font-size: 0.85rem; color: #475569;">{{ s.duties|default:"Not specified" }}</div>
-                </td>
-                <td>
-                    <span style="font-weight: 700; color: #16a34a;">Rs. {{ s.salary|default:"0.00" }}</span>
-                </td>
-                <td>
-                    <div style="font-size: 0.85rem; color: #64748b; display: flex; align-items: center; gap: 5px;">
-                        <i data-lucide="clock" style="width: 14px;"></i> {{ s.duty_time|default:"--" }}
-                    </div>
-                </td>
-                <td>
-                    <button class="action-btn btn-edit" onclick="openEditModal({{ s.id }}, '{{ s.name }}', '{{ s.phone }}', '{{ s.role }}', '{{ s.area }}', '{{ s.age|default:'' }}', '{{ s.duties|default:'' }}', '{{ s.salary|default:'' }}', '{{ s.duty_time|default:'' }}')">
-                        <i data-lucide="edit-3" style="width: 16px;"></i>
-                    </button>
-                    <form method="POST" style="display: inline;">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id" value="{{ s.id }}">
-                        <button type="submit" class="action-btn btn-delete" onclick="return confirm('Are you sure you want to remove this staff member?')">
-                            <i data-lucide="trash-2" style="width: 16px;"></i>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: #1e293b;">{{ s.driver_detail.license_number|default:"N/A" }}</div>
+                        <div style="font-size: 0.7rem; color: #94a3b8;">{{ s.driver_detail.vehicle_assignment|default:"No vehicle" }}</div>
+                    </td>
+                    <td><span style="font-weight: 600; color: #64748b;">{{ s.phone }}</span></td>
+                    <td><div style="font-weight: 600; color: #1e293b;">{{ s.area }}</div></td>
+                    <td><span style="font-weight: 800; color: #16a34a;">Rs. {{ s.salary|default:"0.00" }}</span></td>
+                    <td><span style="font-weight: 600; color: #64748b;">{{ s.driver_detail.experience_years|default:"0" }} yr</span></td>
+                    <td>
+                        <button class="action-btn btn-edit" onclick="openEditModal({{ s.id }}, '{{ s.name }}', '{{ s.email|default:'' }}', '{{ s.phone }}', '{{ s.cnic|default:'' }}', '{{ s.address|default:''|escapejs }}', '{{ s.role }}', '{{ s.area }}', '{{ s.worker_detail.age|default:'' }}', '{{ s.worker_detail.duties|default:''|escapejs }}', '{{ s.salary|default:'' }}', '{{ s.worker_detail.duty_time|default:'' }}', '{{ s.driver_detail.experience_years|default:s.operator_detail.experience_years|default:'' }}', '{{ s.driver_detail.dob|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_number|default:'' }}', '{{ s.driver_detail.license_expiry|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_category|default:'' }}', '{{ s.driver_detail.vehicle_assignment|default:'' }}', '{{ s.operator_detail.operator_id|default:'' }}', '{{ s.operator_detail.shift_assignment|default:'' }}', '{{ s.operator_detail.operational_qualification|default:'' }}', '{{ s.operator_detail.certifications|default:''|escapejs }}', '{{ s.supervisor_detail.supervisor_id|default:'' }}', '{{ s.supervisor_detail.department_zone|default:'' }}', '{{ s.supervisor_detail.management_experience|default:'' }}', '{{ s.supervisor_detail.staff_supervised|default:'' }}', '{{ s.supervisor_detail.education_level|default:'' }}', '{{ s.supervisor_detail.supervisory_certification|default:'' }}', '{{ s.supervisor_detail.key_responsibilities|default:''|escapejs }}')">
+                            <i data-lucide="edit-3" style="width: 14px;"></i>
                         </button>
-                    </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="8" style="text-align: center; padding: 50px; color: #94a3b8;">
-                    <i data-lucide="users" style="width: 48px; height: 48px; margin-bottom: 15px; opacity: 0.3;"></i>
-                    <p>No staff records found. Add your first team member to get started.</p>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                        <form method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="{{ s.id }}">
+                            <button type="submit" class="action-btn btn-delete" onclick="return confirm('Delete this record?')">
+                                <i data-lucide="trash-2" style="width: 14px;"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Operator Table -->
+    <div class="section-header" style="margin-top: 40px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <div style="background: #f97316; color: white; padding: 8px; border-radius: 8px;"><i data-lucide="settings" style="width: 20px; height: 20px;"></i></div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: #c2410c; margin: 0;">Operations Workforce</h2>
+    </div>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Staff Member</th>
+                    <th>Operator ID</th>
+                    <th>Shift</th>
+                    <th>Qualification</th>
+                    <th>Exp</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in staff %}
+                {% if s.role == 'Operator' %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 35px; height: 35px; background: #fff7ed; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #c2410c; font-weight: 800;">
+                                {{ s.name|make_list|first }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: #1e293b;">{{ s.name }}</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">{{ s.email|default:"No email" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span style="font-weight: 600; color: #1e293b;">{{ s.operator_detail.operator_id|default:"N/A" }}</span></td>
+                    <td><span class="status-pill" style="background: #fff7ed; color: #c2410c;">{{ s.operator_detail.shift_assignment }}</span></td>
+                    <td><div style="font-size: 0.8rem; color: #64748b;">{{ s.operator_detail.operational_qualification|default:"N/A" }}</div></td>
+                    <td><span style="font-weight: 600; color: #64748b;">{{ s.operator_detail.experience_years|default:"0" }} yr</span></td>
+                    <td>
+                        <button class="action-btn btn-edit" onclick="openEditModal({{ s.id }}, '{{ s.name }}', '{{ s.email|default:'' }}', '{{ s.phone }}', '{{ s.cnic|default:'' }}', '{{ s.address|default:''|escapejs }}', '{{ s.role }}', '{{ s.area }}', '{{ s.worker_detail.age|default:'' }}', '{{ s.worker_detail.duties|default:''|escapejs }}', '{{ s.salary|default:'' }}', '{{ s.worker_detail.duty_time|default:'' }}', '{{ s.driver_detail.experience_years|default:s.operator_detail.experience_years|default:'' }}', '{{ s.driver_detail.dob|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_number|default:'' }}', '{{ s.driver_detail.license_expiry|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_category|default:'' }}', '{{ s.driver_detail.vehicle_assignment|default:'' }}', '{{ s.operator_detail.operator_id|default:'' }}', '{{ s.operator_detail.shift_assignment|default:'' }}', '{{ s.operator_detail.operational_qualification|default:'' }}', '{{ s.operator_detail.certifications|default:''|escapejs }}', '{{ s.supervisor_detail.supervisor_id|default:'' }}', '{{ s.supervisor_detail.department_zone|default:'' }}', '{{ s.supervisor_detail.management_experience|default:'' }}', '{{ s.supervisor_detail.staff_supervised|default:'' }}', '{{ s.supervisor_detail.education_level|default:'' }}', '{{ s.supervisor_detail.supervisory_certification|default:'' }}', '{{ s.supervisor_detail.key_responsibilities|default:''|escapejs }}')">
+                            <i data-lucide="edit-3" style="width: 14px;"></i>
+                        </button>
+                        <form method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="{{ s.id }}">
+                            <button type="submit" class="action-btn btn-delete" onclick="return confirm('Delete this record?')">
+                                <i data-lucide="trash-2" style="width: 14px;"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Supervisor Table -->
+    <div class="section-header" style="margin-top: 40px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <div style="background: #be185d; color: white; padding: 8px; border-radius: 8px;"><i data-lucide="shield-check" style="width: 20px; height: 20px;"></i></div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: #be185d; margin: 0;">Management & Supervision</h2>
+    </div>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Supervisor</th>
+                    <th>Supervisor ID</th>
+                    <th>Department / Zone</th>
+                    <th>Team Size</th>
+                    <th>Mgmt Exp</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in staff %}
+                {% if s.role == 'Supervisor' %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 35px; height: 35px; background: #fdf2f8; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #be185d; font-weight: 800;">
+                                {{ s.name|make_list|first }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: #1e293b;">{{ s.name }}</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">{{ s.email|default:"No email" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span style="font-weight: 600; color: #1e293b;">{{ s.supervisor_detail.supervisor_id|default:"N/A" }}</span></td>
+                    <td><div style="font-weight: 600; color: #1e293b;">{{ s.supervisor_detail.department_zone|default:s.area }}</div></td>
+                    <td><span class="status-pill" style="background: #fdf2f8; color: #be185d;">{{ s.supervisor_detail.staff_supervised|default:"0" }} Members</span></td>
+                    <td><span style="font-weight: 600; color: #64748b;">{{ s.supervisor_detail.management_experience|default:"0" }} yr</span></td>
+                    <td>
+                        <button class="action-btn btn-edit" onclick="openEditModal({{ s.id }}, '{{ s.name }}', '{{ s.email|default:'' }}', '{{ s.phone }}', '{{ s.cnic|default:'' }}', '{{ s.address|default:''|escapejs }}', '{{ s.role }}', '{{ s.area }}', '{{ s.worker_detail.age|default:'' }}', '{{ s.worker_detail.duties|default:''|escapejs }}', '{{ s.salary|default:'' }}', '{{ s.worker_detail.duty_time|default:'' }}', '{{ s.driver_detail.experience_years|default:s.operator_detail.experience_years|default:'' }}', '{{ s.driver_detail.dob|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_number|default:'' }}', '{{ s.driver_detail.license_expiry|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_category|default:'' }}', '{{ s.driver_detail.vehicle_assignment|default:'' }}', '{{ s.operator_detail.operator_id|default:'' }}', '{{ s.operator_detail.shift_assignment|default:'' }}', '{{ s.operator_detail.operational_qualification|default:'' }}', '{{ s.operator_detail.certifications|default:''|escapejs }}', '{{ s.supervisor_detail.supervisor_id|default:'' }}', '{{ s.supervisor_detail.department_zone|default:'' }}', '{{ s.supervisor_detail.management_experience|default:'' }}', '{{ s.supervisor_detail.staff_supervised|default:'' }}', '{{ s.supervisor_detail.education_level|default:'' }}', '{{ s.supervisor_detail.supervisory_certification|default:'' }}', '{{ s.supervisor_detail.key_responsibilities|default:''|escapejs }}')">
+                            <i data-lucide="edit-3" style="width: 14px;"></i>
+                        </button>
+                        <form method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="{{ s.id }}">
+                            <button type="submit" class="action-btn btn-delete" onclick="return confirm('Delete this record?')">
+                                <i data-lucide="trash-2" style="width: 14px;"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Field Worker Table -->
+    <div class="section-header" style="margin-top: 40px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+        <div style="background: #374151; color: white; padding: 8px; border-radius: 8px;"><i data-lucide="users" style="width: 20px; height: 20px;"></i></div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: #374151; margin: 0;">Field Service Staff</h2>
+    </div>
+    <div class="admin-card">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Worker</th>
+                    <th>Duties</th>
+                    <th>Shift Time</th>
+                    <th>Area</th>
+                    <th>Salary</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in staff %}
+                {% if s.role == 'Worker' %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 35px; height: 35px; background: #f3f4f6; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #374151; font-weight: 800;">
+                                {{ s.name|make_list|first }}
+                            </div>
+                            <div>
+                                <div style="font-weight: 700; color: #1e293b;">{{ s.name }}</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8;">{{ s.phone }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><div style="font-size: 0.8rem; color: #64748b;">{{ s.worker_detail.duties|default:"General Maintenance" }}</div></td>
+                    <td><span class="status-pill role-worker">{{ s.worker_detail.duty_time|default:"8AM - 4PM" }}</span></td>
+                    <td><div style="font-weight: 600; color: #1e293b;">{{ s.area }}</div></td>
+                    <td><span style="font-weight: 800; color: #16a34a;">Rs. {{ s.salary|default:"0.00" }}</span></td>
+                    <td>
+                        <button class="action-btn btn-edit" onclick="openEditModal({{ s.id }}, '{{ s.name }}', '{{ s.email|default:'' }}', '{{ s.phone }}', '{{ s.cnic|default:'' }}', '{{ s.address|default:''|escapejs }}', '{{ s.role }}', '{{ s.area }}', '{{ s.worker_detail.age|default:'' }}', '{{ s.worker_detail.duties|default:''|escapejs }}', '{{ s.salary|default:'' }}', '{{ s.worker_detail.duty_time|default:'' }}', '{{ s.driver_detail.experience_years|default:s.operator_detail.experience_years|default:'' }}', '{{ s.driver_detail.dob|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_number|default:'' }}', '{{ s.driver_detail.license_expiry|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_category|default:'' }}', '{{ s.driver_detail.vehicle_assignment|default:'' }}', '{{ s.operator_detail.operator_id|default:'' }}', '{{ s.operator_detail.shift_assignment|default:'' }}', '{{ s.operator_detail.operational_qualification|default:'' }}', '{{ s.operator_detail.certifications|default:''|escapejs }}', '{{ s.supervisor_detail.supervisor_id|default:'' }}', '{{ s.supervisor_detail.department_zone|default:'' }}', '{{ s.supervisor_detail.management_experience|default:'' }}', '{{ s.supervisor_detail.staff_supervised|default:'' }}', '{{ s.supervisor_detail.education_level|default:'' }}', '{{ s.supervisor_detail.supervisory_certification|default:'' }}', '{{ s.supervisor_detail.key_responsibilities|default:''|escapejs }}')">
+                            <i data-lucide="edit-3" style="width: 14px;"></i>
+                        </button>
+                        <form method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="id" value="{{ s.id }}">
+                            <button type="submit" class="action-btn btn-delete" onclick="return confirm('Delete this record?')">
+                                <i data-lucide="trash-2" style="width: 14px;"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<!-- Add Modal -->
-<div id="addModal" class="modal">
+
+<!-- Modal -->
+<div id="staffModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <span class="close" onclick="closeModal('addModal')">&times;</span>
-            <h2>Add Staff Member</h2>
-            <p>Create a new profile for the workforce registry.</p>
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Add Staff Member</h2>
         </div>
-        <form method="POST">
+        
+        <div class="modal-tabs">
+            <button class="tab-btn active" id="tab_driver" onclick="switchTab('driver')">Driver Details</button>
+            <button class="tab-btn" id="tab_operator" onclick="switchTab('operator')">Operator</button>
+            <button class="tab-btn" id="tab_supervisor" onclick="switchTab('supervisor')">Supervisor</button>
+            <button class="tab-btn" id="tab_worker" onclick="switchTab('worker')">Field Worker</button>
+        </div>
+
+        <form method="POST" id="staffForm">
             {% csrf_token %}
-            <input type="hidden" name="action" value="add">
+            <input type="hidden" name="action" id="formAction" value="add">
+            <input type="hidden" name="id" id="staffId">
+            <input type="hidden" name="role" id="staffRole" value="Driver">
+
             <div class="modal-body">
+                <!-- Common Identity Fields -->
+                <div class="form-section-title">Primary Identity & Location</div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label><i data-lucide="user"></i> Full Name</label>
-                        <input type="text" name="name" required placeholder="e.g. John Doe">
+                        <label>Full Name</label>
+                        <input type="text" name="name" id="f_name" required placeholder="e.g. Ahmad Ali">
                     </div>
                     <div class="form-group">
-                        <label><i data-lucide="hash"></i> Age</label>
-                        <input type="number" name="age" placeholder="e.g. 25">
+                        <label>Email Address</label>
+                        <input type="email" name="email" id="f_email" placeholder="email@example.com">
                     </div>
                     <div class="form-group">
-                        <label><i data-lucide="phone"></i> Contact Number</label>
-                        <input type="text" name="phone" required placeholder="03xx-xxxxxxx">
+                        <label>Phone Number</label>
+                        <input type="text" name="phone" id="f_phone" required placeholder="03xx-xxxxxxx">
                     </div>
                     <div class="form-group">
-                        <label><i data-lucide="briefcase"></i> Role</label>
-                        <select name="role">
-                            <option value="Worker">Worker</option>
-                            <option value="Driver">Driver</option>
-                            <option value="Supervisor">Supervisor</option>
-                        </select>
+                        <label>CNIC Number</label>
+                        <input type="text" name="cnic" id="f_cnic" placeholder="xxxxx-xxxxxxx-x">
+                    </div>
+                    <div class="form-group">
+                        <label>Assigned Area / Zone</label>
+                        <input type="text" name="area" id="f_area" required placeholder="e.g. Model Town">
+                    </div>
+                    <div class="form-group">
+                        <label>Monthly Salary (PKR)</label>
+                        <input type="number" name="salary" id="f_salary" placeholder="Amount">
                     </div>
                     <div class="form-group full-width">
-                        <label><i data-lucide="map-pin"></i> Assigned Area</label>
-                        <input type="text" name="area" required placeholder="e.g. Fawara Chowk">
+                        <label>Residential Address</label>
+                        <textarea name="address" id="f_address" rows="2" placeholder="Full residential address"></textarea>
                     </div>
-                    <div class="form-group full-width">
-                        <label><i data-lucide="clipboard-list"></i> Duties</label>
-                        <input type="text" name="duties" placeholder="e.g. Sweeper, Garbage Pickup">
+                </div>
+
+                <!-- Driver Tab Content -->
+                <div id="driver_tab" class="tab-content active">
+                    <div class="form-section-title">Driver Information</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>License Number</label>
+                            <input type="text" name="license_number" id="f_license_number" placeholder="License ID">
+                        </div>
+                        <div class="form-group">
+                            <label>License Category</label>
+                            <input type="text" name="license_category" id="f_license_category" placeholder="e.g. LTV, HTV">
+                        </div>
+                        <div class="form-group">
+                            <label>License Expiry Date</label>
+                            <input type="date" name="license_expiry" id="f_license_expiry">
+                        </div>
+                        <div class="form-group">
+                            <label>Vehicle Assignment</label>
+                            <input type="text" name="vehicle_assignment" id="f_vehicle_assignment" placeholder="Vehicle ID / Plate">
+                        </div>
+                        <div class="form-group">
+                            <label>Date of Birth</label>
+                            <input type="date" name="dob" id="f_dob">
+                        </div>
+                        <div class="form-group">
+                            <label>Experience (Years)</label>
+                            <input type="number" name="experience_years" id="f_driver_exp" placeholder="Years">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label><i data-lucide="banknote"></i> Salary (Rs.)</label>
-                        <input type="number" step="0.01" name="salary" placeholder="Amount">
+                </div>
+
+                <!-- Operator Tab Content -->
+                <div id="operator_tab" class="tab-content">
+                    <div class="form-section-title">Operator Profile</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Operator ID</label>
+                            <input type="text" name="operator_id" id="f_operator_id" placeholder="OP-XXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Shift Assignment</label>
+                            <select name="shift_assignment" id="f_shift">
+                                <option value="Morning">Morning (8AM - 4PM)</option>
+                                <option value="Afternoon">Afternoon (4PM - 12AM)</option>
+                                <option value="Night">Night (12AM - 8AM)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Qualification Level</label>
+                            <input type="text" name="operational_qualification" id="f_qual" placeholder="e.g. Level 3 Certified">
+                        </div>
+                        <div class="form-group">
+                            <label>Experience (Years)</label>
+                            <input type="number" name="experience_years_op" id="f_op_exp" placeholder="Years">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Certifications / Specialty</label>
+                            <textarea name="certifications" id="f_certs" rows="2" placeholder="List any relevant certifications or specialty skills"></textarea>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label><i data-lucide="clock"></i> Duty Time</label>
-                        <input type="text" name="duty_time" placeholder="e.g. 8AM - 4PM">
+                </div>
+
+                <!-- Supervisor Tab Content -->
+                <div id="supervisor_tab" class="tab-content">
+                    <div class="form-section-title">Supervisory Details</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Supervisor ID</label>
+                            <input type="text" name="supervisor_id" id="f_supervisor_id" placeholder="SUP-XXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Department / Zone</label>
+                            <input type="text" name="department_zone" id="f_dept" placeholder="Administrative Zone">
+                        </div>
+                        <div class="form-group">
+                            <label>Education Level</label>
+                            <input type="text" name="education_level" id="f_edu" placeholder="e.g. Graduate, Masters">
+                        </div>
+                        <div class="form-group">
+                            <label>Staff Supervised</label>
+                            <input type="number" name="staff_supervised" id="f_staff_count" placeholder="Number of team members">
+                        </div>
+                        <div class="form-group">
+                            <label>Management Experience</label>
+                            <input type="number" name="management_experience" id="f_mgmt_exp" placeholder="Years">
+                        </div>
+                        <div class="form-group">
+                            <label>Certification Status</label>
+                            <input type="text" name="supervisory_certification" id="f_sup_cert" placeholder="e.g. Active, Pending">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Key Responsibilities</label>
+                            <textarea name="key_responsibilities" id="f_resp" rows="3" placeholder="Primary management tasks and oversights..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Worker Tab Content -->
+                <div id="worker_tab" class="tab-content">
+                    <div class="form-section-title">Field Worker Details</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="number" name="age" id="f_worker_age" placeholder="Age">
+                        </div>
+                        <div class="form-group">
+                            <label>Duty Timing</label>
+                            <input type="text" name="duty_time" id="f_duty_time" placeholder="e.g. 7AM - 3PM">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Assigned Duties</label>
+                            <textarea name="duties" id="f_duties" rows="3" placeholder="e.g. Street Sweeping, Garbage Collection"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn-cancel" onclick="closeModal('addModal')">Cancel</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
                 <button type="submit" class="btn-submit">
                     <i data-lucide="save"></i> Save Staff Member
                 </button>
@@ -416,101 +750,92 @@
     </div>
 </div>
 
-<!-- Edit Modal -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <span class="close" onclick="closeModal('editModal')">&times;</span>
-            <h2>Edit Staff Details</h2>
-            <p>Modify the existing workforce profile information.</p>
-        </div>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="edit">
-            <input type="hidden" name="id" id="edit_id">
-            <div class="modal-body">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label><i data-lucide="user"></i> Full Name</label>
-                        <input type="text" name="name" id="edit_name" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i data-lucide="hash"></i> Age</label>
-                        <input type="number" name="age" id="edit_age">
-                    </div>
-                    <div class="form-group">
-                        <label><i data-lucide="phone"></i> Contact Number</label>
-                        <input type="text" name="phone" id="edit_phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label><i data-lucide="briefcase"></i> Role</label>
-                        <select name="role" id="edit_role">
-                            <option value="Worker">Worker</option>
-                            <option value="Driver">Driver</option>
-                            <option value="Supervisor">Supervisor</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width">
-                        <label><i data-lucide="map-pin"></i> Assigned Area</label>
-                        <input type="text" name="area" id="edit_area" required>
-                    </div>
-                    <div class="form-group full-width">
-                        <label><i data-lucide="clipboard-list"></i> Duties</label>
-                        <input type="text" name="duties" id="edit_duties">
-                    </div>
-                    <div class="form-group">
-                        <label><i data-lucide="banknote"></i> Salary (Rs.)</label>
-                        <input type="number" step="0.01" name="salary" id="edit_salary">
-                    </div>
-                    <div class="form-group">
-                        <label><i data-lucide="clock"></i> Duty Time</label>
-                        <input type="text" name="duty_time" id="edit_duty_time">
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-cancel" onclick="closeModal('editModal')">Cancel</button>
-                <button type="submit" class="btn-submit">
-                    <i data-lucide="refresh-cw"></i> Update Records
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-
 {% endblock %}
 
 {% block admin_extra_js %}
 <script>
+    function switchTab(role) {
+        // Update role hidden field
+        document.getElementById('staffRole').value = role.charAt(0).toUpperCase() + role.slice(1);
+        
+        // Update Tab Buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById('tab_' + role).classList.add('active');
+
+        // Update Tab Content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(role + '_tab').classList.add('active');
+    }
+
     function openAddModal() {
-        document.getElementById('addModal').style.display = 'flex';
-        document.body.classList.add('modal-open');
+        document.getElementById('modalTitle').innerText = 'Add Staff Member';
+        document.getElementById('formAction').value = 'add';
+        document.getElementById('staffId').value = '';
+        document.getElementById('staffForm').reset();
+        switchTab('driver'); // Default
+        document.getElementById('staffModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     }
 
-    function openEditModal(id, name, phone, role, area, age, duties, salary, duty_time) {
-        document.getElementById('edit_id').value = id;
-        document.getElementById('edit_name').value = name;
-        document.getElementById('edit_phone').value = phone;
-        document.getElementById('edit_role').value = role;
-        document.getElementById('edit_area').value = area;
-        document.getElementById('edit_age').value = age;
-        document.getElementById('edit_duties').value = duties;
-        document.getElementById('edit_salary').value = salary;
-        document.getElementById('edit_duty_time').value = duty_time;
-        document.getElementById('editModal').style.display = 'flex';
-        document.body.classList.add('modal-open');
+    function openEditModal(id, name, email, phone, cnic, address, role, area, age, duties, salary, duty_time, exp, dob, lic_num, lic_exp, lic_cat, vehicle, op_id, shift, qual, certs, sup_id, dept, mgmt_exp, staff_count, edu, sup_cert, resp) {
+        document.getElementById('modalTitle').innerText = 'Edit Staff Details';
+        document.getElementById('formAction').value = 'edit';
+        document.getElementById('staffId').value = id;
+        
+        // Identity
+        document.getElementById('f_name').value = name;
+        document.getElementById('f_email').value = email;
+        document.getElementById('f_phone').value = phone;
+        document.getElementById('f_cnic').value = cnic;
+        document.getElementById('f_area').value = area;
+        document.getElementById('f_salary').value = salary;
+        document.getElementById('f_address').value = address;
+
+        // Role fields
+        document.getElementById('f_license_number').value = lic_num;
+        document.getElementById('f_license_category').value = lic_cat;
+        document.getElementById('f_license_expiry').value = lic_exp;
+        document.getElementById('f_vehicle_assignment').value = vehicle;
+        document.getElementById('f_dob').value = dob;
+        document.getElementById('f_driver_exp').value = exp;
+
+        document.getElementById('f_operator_id').value = op_id;
+        document.getElementById('f_shift').value = shift;
+        document.getElementById('f_qual').value = qual;
+        document.getElementById('f_op_exp').value = exp;
+        document.getElementById('f_certs').value = certs;
+
+        document.getElementById('f_supervisor_id').value = sup_id;
+        document.getElementById('f_dept').value = dept;
+        document.getElementById('f_edu').value = edu;
+        document.getElementById('f_staff_count').value = staff_count;
+        document.getElementById('f_mgmt_exp').value = mgmt_exp;
+        document.getElementById('f_sup_cert').value = sup_cert;
+        document.getElementById('f_resp').value = resp;
+
+        document.getElementById('f_worker_age').value = age;
+        document.getElementById('f_duty_time').value = duty_time;
+        document.getElementById('f_duties').value = duties;
+
+        // Set Tab based on current role
+        switchTab(role.toLowerCase());
+        
+        document.getElementById('staffModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     }
 
-    function closeModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-        document.body.classList.remove('modal-open');
+    function closeModal() {
+        document.getElementById('staffModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
     }
 
     window.onclick = function(event) {
         if (event.target.className === 'modal') {
-            event.target.style.display = 'none';
-            document.body.classList.remove('modal-open');
+            closeModal();
         }
     }
 </script>

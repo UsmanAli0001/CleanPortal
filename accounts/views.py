@@ -11,7 +11,9 @@ from django.conf import settings
 from .models import (
     Profile, Complaint, CleaningSchedule, ComplaintTimeline, Notification,
     Feedback, Announcement, AnnouncementRead, Staff, Payment, RouteAlert, Zone,
+    DriverDetail, OperatorDetail, SupervisorDetail, WorkerDetail,
     Vehicle, VehicleLocation, ServiceCategory, ServiceBooking, ServicePaymentSetting,
+
     MunicipalServiceSchedule, ScheduleAlert, HolidayConfig, ComplaintPricingConfig,
     Wallet, WalletTransaction, ContactMessage
 )
@@ -1130,30 +1132,108 @@ def staff_management(request):
     if request.method == "POST":
         action = request.POST.get('action')
         if action == 'add':
-            Staff.objects.create(
+            s = Staff.objects.create(
                 name=request.POST['name'],
+                email=request.POST.get('email'),
                 phone=request.POST['phone'],
+                cnic=request.POST.get('cnic'),
+                address=request.POST.get('address'),
                 role=request.POST['role'],
                 area=request.POST['area'],
-                age=request.POST.get('age') or None,
-                duties=request.POST.get('duties'),
-                salary=request.POST.get('salary') or 0,
-                duty_time=request.POST.get('duty_time')
+                salary=request.POST.get('salary') or 0
             )
-            messages.success(request, "Staff member added.")
+            
+            role = s.role
+            if role == 'Driver':
+                DriverDetail.objects.create(
+                    staff=s,
+                    dob=request.POST.get('dob') or None,
+                    license_number=request.POST.get('license_number'),
+                    license_expiry=request.POST.get('license_expiry') or None,
+                    license_category=request.POST.get('license_category'),
+                    vehicle_assignment=request.POST.get('vehicle_assignment'),
+                    experience_years=request.POST.get('experience_years') or None
+                )
+            elif role == 'Operator':
+                OperatorDetail.objects.create(
+                    staff=s,
+                    operator_id=request.POST.get('operator_id'),
+                    shift_assignment=request.POST.get('shift_assignment'),
+                    operational_qualification=request.POST.get('operational_qualification'),
+                    experience_years=request.POST.get('experience_years_op') or None,
+                    certifications=request.POST.get('certifications')
+                )
+            elif role == 'Supervisor':
+                SupervisorDetail.objects.create(
+                    staff=s,
+                    supervisor_id=request.POST.get('supervisor_id'),
+                    department_zone=request.POST.get('department_zone'),
+                    management_experience=request.POST.get('management_experience') or None,
+                    staff_supervised=request.POST.get('staff_supervised') or None,
+                    education_level=request.POST.get('education_level'),
+                    supervisory_certification=request.POST.get('supervisory_certification'),
+                    key_responsibilities=request.POST.get('key_responsibilities')
+                )
+            elif role == 'Worker':
+                WorkerDetail.objects.create(
+                    staff=s,
+                    age=request.POST.get('age') or None,
+                    duties=request.POST.get('duties'),
+                    duty_time=request.POST.get('duty_time')
+                )
+
+            messages.success(request, "Staff member added successfully.")
         elif action == 'edit':
             sid = request.POST.get('id')
             s = Staff.objects.get(id=sid)
             s.name = request.POST['name']
+            s.email = request.POST.get('email')
             s.phone = request.POST['phone']
+            s.cnic = request.POST.get('cnic')
+            s.address = request.POST.get('address')
             s.role = request.POST['role']
             s.area = request.POST['area']
-            s.age = request.POST.get('age') or None
-            s.duties = request.POST.get('duties')
             s.salary = request.POST.get('salary') or 0
-            s.duty_time = request.POST.get('duty_time')
             s.save()
+
+            role = s.role
+            if role == 'Driver':
+                detail, _ = DriverDetail.objects.get_or_create(staff=s)
+                detail.dob = request.POST.get('dob') or None
+                detail.license_number = request.POST.get('license_number')
+                detail.license_expiry = request.POST.get('license_expiry') or None
+                detail.license_category = request.POST.get('license_category')
+                detail.vehicle_assignment = request.POST.get('vehicle_assignment')
+                detail.experience_years = request.POST.get('experience_years') or None
+                detail.save()
+            elif role == 'Operator':
+                detail, _ = OperatorDetail.objects.get_or_create(staff=s)
+                detail.operator_id = request.POST.get('operator_id')
+                detail.shift_assignment = request.POST.get('shift_assignment')
+                detail.operational_qualification = request.POST.get('operational_qualification')
+                detail.experience_years = request.POST.get('experience_years_op') or None
+                detail.certifications = request.POST.get('certifications')
+                detail.save()
+            elif role == 'Supervisor':
+                detail, _ = SupervisorDetail.objects.get_or_create(staff=s)
+                detail.supervisor_id = request.POST.get('supervisor_id')
+                detail.department_zone = request.POST.get('department_zone')
+                detail.management_experience = request.POST.get('management_experience') or None
+                detail.staff_supervised = request.POST.get('staff_supervised') or None
+                detail.education_level = request.POST.get('education_level')
+                detail.supervisory_certification = request.POST.get('supervisory_certification')
+                detail.key_responsibilities = request.POST.get('key_responsibilities')
+                detail.save()
+            elif role == 'Worker':
+                detail, _ = WorkerDetail.objects.get_or_create(staff=s)
+                detail.age = request.POST.get('age') or None
+                detail.duties = request.POST.get('duties')
+                detail.duty_time = request.POST.get('duty_time')
+                detail.save()
+
             messages.success(request, "Staff details updated.")
+
+
         elif action == 'delete':
             sid = request.POST.get('id')
             Staff.objects.filter(id=sid).delete()
