@@ -416,10 +416,11 @@ class Zone(models.Model):
 
 class Vehicle(models.Model):
     VEHICLE_TYPES = [
-        ('garbage_truck', 'Garbage Truck'),
-        ('water_tanker', 'Water Tanker'),
-        ('service_vehicle', 'Service Vehicle'),
-        ('sweeper', 'Road Sweeper'),
+        ('Garbage issue', 'Garbage truck'),
+        ('Drainage issue', 'Drain cleaner truck'),
+        ('Street light issue', 'Lift truck'),
+        ('Water issue', 'Water tanker'),
+        ('Street cleaning', 'Road cleaning truck'),
     ]
     STATUS_CHOICES = [
         ('Active', 'Active / On Duty'),
@@ -445,6 +446,8 @@ class Vehicle(models.Model):
     base_lng = models.FloatField(default=74.0790)
     sim_phase = models.FloatField(default=0.0, help_text="Simulation phase offset for GPS trajectory")
     source_name = models.CharField(max_length=100, default='Main Depot', help_text="Starting point name, e.g., 'West Garage'")
+    assign_date = models.DateField(null=True, blank=True)
+    estimating_time = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

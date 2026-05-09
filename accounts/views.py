@@ -27,6 +27,7 @@ from datetime import datetime, timedelta, time as dt_time
 from django.db.models import Q, Avg, Sum, Count
 from allauth.account.models import EmailAddress
 import stripe
+import calendar
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -618,11 +619,15 @@ def home(request):
     pending_reports = Complaint.objects.filter(status='Waiting').count()
     area_summary = Complaint.objects.values('area').distinct().count()
 
+    # Fetch top 3 latest feedbacks with high ratings (4 or 5 stars)
+    feedbacks = Feedback.objects.filter(rating__gte=4).order_by('-created_at')[:3]
+
     context = {
         'total_complaints': total_complaints,
         'resolved_issues': resolved_issues,
         'pending_reports': pending_reports,
-        'area_summary': len(GUJRAT_AREAS)
+        'area_summary': len(GUJRAT_AREAS),
+        'feedbacks': feedbacks,
     }
 
     return render(request, 'accounts/home.html', context)
@@ -727,13 +732,51 @@ def admin_gallery_view(request):
     featured_posts = GalleryItem.objects.filter(is_featured=True).count()
     hidden_posts = GalleryItem.objects.filter(show_on_homepage=False).count()
     
-    # Simple Monthly Stats
-    last_6_months = []
-    for i in range(5, -1, -1):
-        d = timezone.now() - timedelta(days=i*30)
-        month_name = d.strftime('%b')
-        count = GalleryItem.objects.filter(created_at__month=d.month, created_at__year=d.year).count()
-        last_6_months.append({'month': month_name, 'count': count})
+    today = timezone.now().date()
+    
+    def get_gallery_trend(days_count=None, months_count=None):
+        if months_count:
+            start_date = today - timedelta(days=months_count * 30)
+            is_yearly = True
+        else:
+            start_date = today - timedelta(days=days_count)
+            is_yearly = False
+            
+        labels = []
+        uploads = []
+        likes = []
+        
+        if is_yearly:
+            for i in range(11, -1, -1):
+                # Monthly labels for last 12 months
+                # We use a simple way to get the month/year for the last 12 months
+                first = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
+                m = first.month
+                y = first.year
+                label = calendar.month_name[m][:3] + " " + str(y)[2:]
+                labels.append(label)
+                
+                uploads.append(GalleryItem.objects.filter(created_at__year=y, created_at__month=m).count())
+                likes.append(GalleryLike.objects.filter(created_at__year=y, created_at__month=m).count())
+        else:
+            for i in range(days_count - 1, -1, -1):
+                d = today - timedelta(days=i)
+                labels.append(d.strftime('%b %d'))
+                
+                uploads.append(GalleryItem.objects.filter(created_at__date=d).count())
+                likes.append(GalleryLike.objects.filter(created_at__date=d).count())
+                
+        return {
+            'labels': labels,
+            'uploads': uploads,
+            'likes': likes
+        }
+
+    trend_data = {
+        'weekly': get_gallery_trend(days_count=7),
+        'monthly': get_gallery_trend(days_count=30),
+        'yearly': get_gallery_trend(months_count=12)
+    }
 
     most_liked = GalleryItem.objects.order_by('-likes_count')[:5]
 
@@ -742,7 +785,7 @@ def admin_gallery_view(request):
         'total_likes': total_likes,
         'featured_posts': featured_posts,
         'hidden_posts': hidden_posts,
-        'monthly_stats': json.dumps(last_6_months),
+        'trend_data': json.dumps(trend_data),
         'most_liked': most_liked,
         'is_admin_view': True
     }
@@ -1003,6 +1046,7 @@ def admin_city_reports_view(request):
         submissions = []
         resolutions = []
         activities = []
+        trips = []
         
         if is_yearly:
             # Last 12 Months
@@ -1030,6 +1074,10 @@ def admin_city_reports_view(request):
                 signups = User.objects.filter(date_joined__year=y, date_joined__month=m).count()
                 submitters = m_qs.values('user').distinct().count()
                 activities.append(signups + submitters)
+                
+                # Activity (Vehicle Working - Based on Assign Date)
+                working = Vehicle.objects.filter(assign_date__year=y, assign_date__month=m).count()
+                trips.append(working)
         else:
             # Last N Days
             for i in range(days_count - 1, -1, -1):
@@ -1054,6 +1102,10 @@ def admin_city_reports_view(request):
                 signups = User.objects.filter(date_joined__date=d).count()
                 submitters = d_qs.values('user').distinct().count()
                 activities.append(signups + submitters)
+
+                # Activity (Vehicle Working - Based on Assign Date)
+                working = Vehicle.objects.filter(assign_date=d).count()
+                trips.append(working)
 
         # 3. Area Breakdown
         area_counts = period_qs.values('area').annotate(count=Count('id'))
@@ -1081,8 +1133,7 @@ def admin_city_reports_view(request):
         type_res_resolved = [item['resolved'] for item in type_res_qs]
         type_res_unresolved = [item['total'] - item['resolved'] for item in type_res_qs]
 
-        # 6. Vehicle Activity (Trips per period)
-        trips = [int(c * 1.2) + 2 for c in submissions]
+        # 6. Vehicle Activity (Real Metrics) - Already populated in the loops above
 
         return {
             'labels': labels,
@@ -1656,7 +1707,7 @@ def admin_zone_management(request):
 
 @login_required(login_url='login')
 def vehicle_tracking_view(request):
-    _seed_fleet()
+    # _seed_fleet() # Removed to prevent automatic recreation after deletion
     cid = request.GET.get('complaint_id')
     complaint = None
     vehicle = None
@@ -1851,14 +1902,15 @@ def detect_zone(request):
 # ============================================================
 
 FLEET_SEED_DATA = [
-    {'vehicle_id': 'GT-101', 'vehicle_type': 'garbage_truck',   'driver_name': 'Ahmed Khan',     'driver_phone': '0321-1234567', 'assigned_zone': 'Model Town',  'base_lat': 32.5736, 'base_lng': 74.0790, 'sim_phase': 0.00, 'status': 'Active',  'plate_number': 'GJT-451'},
-    {'vehicle_id': 'GT-102', 'vehicle_type': 'water_tanker',    'driver_name': 'Sajid Malik',    'driver_phone': '0300-9876543', 'assigned_zone': 'G.T. Road',   'base_lat': 32.5651, 'base_lng': 74.0843, 'sim_phase': 0.78, 'status': 'In Transit',  'plate_number': 'GJT-872'},
-    {'vehicle_id': 'GT-103', 'vehicle_type': 'service_vehicle', 'driver_name': 'Irfan Sheikh',   'driver_phone': '0345-5556666', 'assigned_zone': 'Bhimber Road','base_lat': 32.5510, 'base_lng': 74.0621, 'sim_phase': 1.57, 'status': 'Idle',    'plate_number': 'GJT-339'},
-    {'vehicle_id': 'GT-104', 'vehicle_type': 'sweeper',         'driver_name': 'Zahid Javed',    'driver_phone': '0311-2223333', 'assigned_zone': 'Shahdowla',   'base_lat': 32.5820, 'base_lng': 74.0912, 'sim_phase': 2.36, 'status': 'Arrived',  'plate_number': 'GJT-104'},
-    {'vehicle_id': 'GT-105', 'vehicle_type': 'garbage_truck',   'driver_name': 'Imran Ali',      'driver_phone': '0333-7778888', 'assigned_zone': 'Dinga Road',  'base_lat': 32.5470, 'base_lng': 74.1215, 'sim_phase': 3.14, 'status': 'Work in Progress',  'plate_number': 'GJT-605'},
-    {'vehicle_id': 'GT-106', 'vehicle_type': 'water_tanker',    'driver_name': 'Usman Raza',     'driver_phone': '0312-4445555', 'assigned_zone': 'Civil Lines', 'base_lat': 32.5762, 'base_lng': 74.0778, 'sim_phase': 3.93, 'status': 'Idle',    'plate_number': 'GJT-216'},
-    {'vehicle_id': 'GT-107', 'vehicle_type': 'service_vehicle', 'driver_name': 'Bilal Ahmad',    'driver_phone': '0322-6667777', 'assigned_zone': 'Kanjwani',    'base_lat': 32.5680, 'base_lng': 74.0550, 'sim_phase': 4.71, 'status': 'Delayed',  'plate_number': 'GJT-717'},
-    {'vehicle_id': 'GT-108', 'vehicle_type': 'sweeper',         'driver_name': 'Tariq Mehmood',  'driver_phone': '0331-8889999', 'assigned_zone': 'Gondal Road', 'base_lat': 32.5923, 'base_lng': 74.0710, 'sim_phase': 5.50, 'status': 'Offline', 'plate_number': 'GJT-308'},
+    {'vehicle_id': 'GT-101', 'vehicle_type': 'Garbage issue',      'driver_name': 'Ahmed Khan',     'driver_phone': '0321-1234567', 'assigned_zone': 'Model Town',  'base_lat': 32.5736, 'base_lng': 74.0790, 'sim_phase': 0.00, 'status': 'Active',  'plate_number': 'GJT-451'},
+    {'vehicle_id': 'GT-102', 'vehicle_type': 'Water issue',        'driver_name': 'Sajid Malik',    'driver_phone': '0300-9876543', 'assigned_zone': 'G.T. Road',   'base_lat': 32.5651, 'base_lng': 74.0843, 'sim_phase': 0.78, 'status': 'In Transit',  'plate_number': 'GJT-872'},
+    {'vehicle_id': 'GT-103', 'vehicle_type': 'Street light issue', 'driver_name': 'Irfan Sheikh',   'driver_phone': '0345-5556666', 'assigned_zone': 'Bhimber Road','base_lat': 32.5510, 'base_lng': 74.0621, 'sim_phase': 1.57, 'status': 'Idle',    'plate_number': 'GJT-339'},
+    {'vehicle_id': 'GT-104', 'vehicle_type': 'Street cleaning',    'driver_name': 'Zahid Javed',    'driver_phone': '0311-2223333', 'assigned_zone': 'Shahdowla',   'base_lat': 32.5820, 'base_lng': 74.0912, 'sim_phase': 2.36, 'status': 'Arrived',  'plate_number': 'GJT-104'},
+    {'vehicle_id': 'GT-105', 'vehicle_type': 'Garbage issue',      'driver_name': 'Imran Ali',      'driver_phone': '0333-7778888', 'assigned_zone': 'Dinga Road',  'base_lat': 32.5470, 'base_lng': 74.1215, 'sim_phase': 3.14, 'status': 'Work in Progress',  'plate_number': 'GJT-605'},
+    {'vehicle_id': 'GT-106', 'vehicle_type': 'Water issue',        'driver_name': 'Usman Raza',     'driver_phone': '0312-4445555', 'assigned_zone': 'Civil Lines', 'base_lat': 32.5762, 'base_lng': 74.0778, 'sim_phase': 3.93, 'status': 'Idle',    'plate_number': 'GJT-216'},
+    {'vehicle_id': 'GT-107', 'vehicle_type': 'Street light issue', 'driver_name': 'Bilal Ahmad',    'driver_phone': '0322-6667777', 'assigned_zone': 'Kanjwani',    'base_lat': 32.5680, 'base_lng': 74.0550, 'sim_phase': 4.71, 'status': 'Delayed',  'plate_number': 'GJT-717'},
+    {'vehicle_id': 'GT-108', 'vehicle_type': 'Street cleaning',    'driver_name': 'Tariq Mehmood',  'driver_phone': '0331-8889999', 'assigned_zone': 'Gondal Road', 'base_lat': 32.5923, 'base_lng': 74.0710, 'sim_phase': 5.50, 'status': 'Offline', 'plate_number': 'GJT-308'},
+    {'vehicle_id': 'GT-109', 'vehicle_type': 'Drainage issue',     'driver_name': 'Mubeen Shah',    'driver_phone': '0300-1112222', 'assigned_zone': 'Fawara Chowk','base_lat': 32.5700, 'base_lng': 74.0700, 'sim_phase': 1.23, 'status': 'Idle',    'plate_number': 'GJT-909'},
 ]
 
 def _seed_fleet():
@@ -1897,7 +1949,7 @@ def _sim_pos(v):
 @login_required(login_url='login')
 def api_vehicles_list(request):
     """Return all active vehicles with their current simulated positions."""
-    _seed_fleet()
+    # _seed_fleet()
     vehicle_data = []
     for v in Vehicle.objects.filter(is_active=True).order_by('vehicle_id'):
         lat, lng, spd = _sim_pos(v)
@@ -1963,7 +2015,7 @@ def fleet_admin_view(request):
     if not request.user.is_staff:
         messages.error(request, 'Access denied. Staff permissions required.')
         return redirect('dashboard')
-    _seed_fleet()
+    # _seed_fleet()
     vehicles = Vehicle.objects.all().order_by('vehicle_id')
     zones = Zone.objects.all()
     supervisors = Staff.objects.filter(role='Supervisor')
@@ -1981,10 +2033,11 @@ def fleet_admin_view(request):
 
     # Calculate counts for charts
     v_types = {
-        'garbage': vehicles.filter(vehicle_type='garbage_truck').count(),
-        'water': vehicles.filter(vehicle_type='water_tanker').count(),
-        'service': vehicles.filter(vehicle_type='service_vehicle').count(),
-        'sweeper': vehicles.filter(vehicle_type='sweeper').count(),
+        'garbage': vehicles.filter(vehicle_type='Garbage issue').count(),
+        'water': vehicles.filter(vehicle_type='Water issue').count(),
+        'service': vehicles.filter(vehicle_type='Street light issue').count(),
+        'sweeper': vehicles.filter(vehicle_type='Street cleaning').count(),
+        'drainage': vehicles.filter(vehicle_type='Drainage issue').count(),
     }
 
     context = {
@@ -2073,6 +2126,8 @@ def fleet_add_vehicle(request):
                 sim_phase=round(_rnd.uniform(0, 6.28), 2),
                 latitude=float(request.POST.get('latitude')) if request.POST.get('latitude') else None,
                 longitude=float(request.POST.get('longitude')) if request.POST.get('longitude') else None,
+                assign_date=request.POST.get('assign_date') or None,
+                estimating_time=request.POST.get('estimating_time', '').strip(),
             )
             messages.success(request, 'Vehicle added successfully!')
         except Exception as e:
@@ -2134,6 +2189,8 @@ def fleet_edit_vehicle(request, pk):
                 pass
 
             vehicle.source_name = request.POST.get('source_name', vehicle.source_name).strip()
+            vehicle.assign_date = request.POST.get('assign_date') or None
+            vehicle.estimating_time = request.POST.get('estimating_time', '').strip()
             vehicle.save()
             messages.success(request, f'Vehicle {vehicle.vehicle_id} updated successfully!')
         except Exception as e:
@@ -2152,7 +2209,7 @@ def fleet_delete_vehicle(request, pk):
             vehicle = Vehicle.objects.get(pk=pk)
             vid = vehicle.vehicle_id
             vehicle.delete()
-            messages.success(request, f'Vehicle {vid} deleted.')
+            messages.warning(request, f'Vehicle {vid} deleted.')
         except Vehicle.DoesNotExist:
             messages.error(request, 'Vehicle not found.')
     return redirect('fleet_admin')

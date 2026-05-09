@@ -650,7 +650,7 @@
         /* --- Cinematic Toast Notifications --- */
         #toast-container {
             position: fixed;
-            bottom: 30px;
+            top: 30px;
             right: 30px;
             z-index: 9999;
             display: flex;
@@ -760,11 +760,11 @@
         }
 
         /* Toast Variations */
-        .toast-success { border-color: #10b981; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(16, 185, 129, 0.3); }
-        .toast-success:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(16, 185, 129, 0.5); }
-        .toast-success::before { background: #10b981; box-shadow: 2px 0 10px rgba(16, 185, 129, 0.4); }
-        .toast-success .toast-icon { background: #ecfdf5; color: #10b981; }
-        .toast-success .toast-progress-fill { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+        .toast-success { border-color: #3b82f6; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(59, 130, 246, 0.3); }
+        .toast-success:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(59, 130, 246, 0.5); }
+        .toast-success::before { background: linear-gradient(180deg, #3b82f6, #1d4ed8); box-shadow: 2px 0 10px rgba(59, 130, 246, 0.4); }
+        .toast-success .toast-icon { background: #eff6ff; color: #3b82f6; }
+        .toast-success .toast-progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
 
         .toast-error { border-color: #ef4444; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(239, 68, 68, 0.3); }
         .toast-error:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(239, 68, 68, 0.5); }
@@ -772,11 +772,17 @@
         .toast-error .toast-icon { background: #fef2f2; color: #ef4444; }
         .toast-error .toast-progress-fill { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
 
-        .toast-warning { border-color: #f59e0b; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(245, 158, 11, 0.3); }
-        .toast-warning:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(245, 158, 11, 0.5); }
-        .toast-warning::before { background: #f59e0b; box-shadow: 2px 0 10px rgba(245, 158, 11, 0.4); }
-        .toast-warning .toast-icon { background: #fffbeb; color: #f59e0b; }
-        .toast-warning .toast-progress-fill { background: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+        .toast-warning { border-color: #ef4444; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(239, 68, 68, 0.3); }
+        .toast-warning:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(239, 68, 68, 0.5); }
+        .toast-warning::before { background: #ef4444; box-shadow: 2px 0 10px rgba(239, 68, 68, 0.4); }
+        .toast-warning .toast-icon { background: #fef2f2; color: #ef4444; }
+        .toast-warning .toast-progress-fill { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+
+        .toast-blue { border-color: #3b82f6; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(59, 130, 246, 0.3); }
+        .toast-blue:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(59, 130, 246, 0.5); }
+        .toast-blue::before { background: linear-gradient(180deg, #3b82f6, #1d4ed8); box-shadow: 2px 0 10px rgba(59, 130, 246, 0.4); }
+        .toast-blue .toast-icon { background: #eff6ff; color: #3b82f6; }
+        .toast-blue .toast-progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
 
         @keyframes shrink {
             from { transform: scaleX(1); }
@@ -964,11 +970,12 @@
                 if (type === 'warning') icon = 'alert-triangle';
 
                 toast.innerHTML = `
+                    ${type !== 'warning' ? `
                     <div class="toast-icon">
                         <i data-lucide="${icon}"></i>
-                    </div>
+                    </div>` : ''}
                     <div class="toast-content">
-                        <div class="toast-title">${title}</div>
+                        ${title ? `<div class="toast-title">${title}</div>` : ''}
                         <div class="toast-message">${message}</div>
                     </div>
                     <div class="toast-progress">
@@ -1004,13 +1011,26 @@
                     title = 'Error';
                 {% elif message.tags == 'warning' %}
                     type = 'warning';
-                    title = 'Warning';
+                    title = 'Deleted!';
                 {% endif %}
                 
                 Toast.show(title, "{{ message|escapejs }}", type);
             {% endfor %}
         });
         {% endif %}
+
+        // Login Success Toast Trigger
+        document.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem('justLoggedIn')) {
+                Toast.show(
+                    "Welcome Back!",
+                    "You have successfully logged in.<br>Enjoy the smooth experience with our secure platform",
+                    "blue",
+                    6000
+                );
+                sessionStorage.removeItem('justLoggedIn');
+            }
+        });
 
         // Monitor for new System Broadcasts
         let lastToastId = sessionStorage.getItem('lastBroadcastId');

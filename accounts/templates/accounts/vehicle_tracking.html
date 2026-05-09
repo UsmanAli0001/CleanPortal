@@ -137,7 +137,7 @@
     }
 
     .content-area {
-        max-width: 850px;
+        max-width: 1200px;
         margin: 80px auto 60px;
         padding: 0 20px;
     }
@@ -146,7 +146,7 @@
         background: var(--glass);
         backdrop-filter: blur(30px);
         border-radius: 40px;
-        padding: 35px 45px;
+        padding: 35px 30px;
         border: 1px solid var(--glass-border);
         box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.08),
             inset 0 0 0 1px rgba(255, 255, 255, 0.5);
@@ -363,7 +363,7 @@
     /* Info Grid */
     .data-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(6, 1fr);
         gap: 0;
         background: rgba(15, 23, 42, 0.04);
         padding: 30px;
@@ -467,16 +467,16 @@
 
     @media (max-width: 992px) {
         .data-grid {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 40px;
         }
 
         .data-card {
-            border-right: none;
+            border-right: 1px solid rgba(15, 23, 42, 0.1);
         }
 
-        .data-card:nth-child(odd) {
-            border-right: 1px solid rgba(15, 23, 42, 0.1);
+        .data-card:nth-child(3n) {
+            border-right: none;
         }
     }
 
@@ -560,15 +560,18 @@
                 <p
                     style="color: #64748b; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-truck" style="color: var(--primary);"></i>
-                    {{ tracked_vehicle.get_vehicle_type_display }}
-                    <span style="opacity: 0.3;">|</span>
                     {{ tracked_vehicle.plate_number }}
                 </p>
             </div>
             <div style="text-align: right;">
-                <div class="data-label">Assigned To</div>
-                <div style="font-weight: 900; color: var(--slate-900); font-size: 1.2rem; letter-spacing: -0.5px;">
-                    Complaint <span style="color: var(--primary);">#{{ complaint.complaint_id }}</span></div>
+                <div class="data-label">Assigned Complaint & Area</div>
+                <div style="font-weight: 900; color: var(--slate-900); font-size: 1.1rem; letter-spacing: -0.5px;">
+                    {{ complaint.complaint_id }}
+                    <span
+                        style="color: #64748b; font-size: 0.85rem; font-weight: 700; display: block; margin-top: 4px;">
+                        <i class="fas fa-map-marker-alt" style="color: var(--primary);"></i> {{ complaint.area }}
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -629,8 +632,16 @@
                 <div class="data-value">{{ tracked_vehicle.driver_phone }}</div>
             </div>
             <div class="data-card">
-                <div class="data-label">Vehicle Zone</div>
-                <div class="data-value">{{ tracked_vehicle.assigned_zone }}</div>
+                <div class="data-label">Assign Date</div>
+                <div class="data-value">{{ tracked_vehicle.assign_date|default:"-" }}</div>
+            </div>
+            <div class="data-card">
+                <div class="data-label">Estimating Time</div>
+                <div class="data-value">{{ tracked_vehicle.estimating_time|default:"-" }}</div>
+            </div>
+            <div class="data-card">
+                <div class="data-label">Vehicle Type</div>
+                <div class="data-value">{{ tracked_vehicle.get_vehicle_type_display }}</div>
             </div>
             <div class="data-card">
                 <div class="data-label">Current Status</div>

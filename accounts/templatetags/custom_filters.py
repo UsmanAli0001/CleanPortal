@@ -27,3 +27,7 @@ def split_comma(value):
     if not value:
         return []
     return [s.strip() for s in value.split(',') if s.strip()]
+
+@register.filter(name='get_range')
+def get_range(value):
+    return range(value)

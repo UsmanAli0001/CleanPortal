@@ -216,11 +216,6 @@
         </div>
 
         <div class="input-group">
-            <label>Subject</label>
-            <input type="text" id="feedbackComment" class="classic-input" placeholder="Sum it up in a few words...">
-        </div>
-
-        <div class="input-group">
             <label>Detailed Review</label>
             <textarea id="feedbackReview" class="classic-input" placeholder="Share the details of your service experience..."></textarea>
         </div>
@@ -247,7 +242,6 @@
 
     function submitFeedback() {
         const ratingInput = document.querySelector('input[name="rating"]:checked');
-        const commentInput = document.getElementById('feedbackComment');
         const reviewInput = document.getElementById('feedbackReview');
         const submitBtn = document.getElementById('submitFeedbackBtn');
         
@@ -256,10 +250,9 @@
             return; 
         }
         
-        const comment = commentInput.value.trim();
         const review = reviewInput.value.trim();
-        if (!comment && !review) { 
-            showToast('Write something before publishing.', 'error'); 
+        if (!review) { 
+            showToast('Write your review before publishing.', 'error'); 
             return; 
         }
 
@@ -274,7 +267,7 @@
             },
             body: JSON.stringify({ 
                 rating: ratingInput.value, 
-                comment: comment, 
+                comment: "", 
                 review: review 
             })
         })

@@ -59,7 +59,39 @@
 .top-item img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
 .top-item .info { flex: 1; min-width: 0; }
 .top-item .info h4 { font-size: 0.9rem; margin: 0; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.top-item .likes { font-size: 0.8rem; font-weight: 700; color: #ef4444; display: flex; align-items: center; gap: 4px; }
+.chart-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    transition: 0.2s;
+    cursor: pointer;
+}
+.chart-filter-container:hover { border-color: #cbd5e1; background: #f8fafc; }
+.chart-filter-container select {
+    border: none;
+    background: transparent;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    padding-right: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3'%3E%3C/polygon%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right center;
+}
+.chart-filter-container::before {
+    content: 'Filter';
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-right: 4px;
+}
 {% endblock %}
 
 {% block admin_content %}
@@ -121,9 +153,20 @@
 </div>
 
 <div class="dashboard-grid">
-    <div class="chart-container">
-        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.1rem;">Engagement Trend (Last 6 Months)</h3>
-        <canvas id="galleryChart"></canvas>
+    <div class="chart-container" style="height: auto; min-height: 320px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 1.1rem;">Engagement Trend</h3>
+            <div class="chart-filter-container">
+                <select onchange="updateChart(this.value)">
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+        </div>
+        <div style="height: 220px;">
+            <canvas id="galleryChart"></canvas>
+        </div>
     </div>
     <div class="top-list">
         <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.1rem;">Trending Projects</h3>
@@ -146,47 +189,100 @@
 {% block admin_extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('galleryChart').getContext('2d');
-    const monthlyData = JSON.parse('{{ monthly_stats|safe }}');
-    
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: monthlyData.map(d => d.month),
-            datasets: [{
-                label: 'Showcase Uploads',
-                data: monthlyData.map(d => d.count),
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                borderWidth: 3,
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#2563eb',
-                pointRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
+    const allTrendData = JSON.parse('{{ trend_data|safe }}');
+    let galleryChart;
+
+    function initChart(timeframe = 'weekly') {
+        const ctx = document.getElementById('galleryChart').getContext('2d');
+        const data = allTrendData[timeframe];
+
+        if (galleryChart) galleryChart.destroy();
+
+        galleryChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: 'Showcase Posts',
+                        data: data.uploads,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#2563eb',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Engagement (Likes)',
+                        data: data.likes,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#ef4444',
+                        pointRadius: 0,
+                        borderDash: [5, 5]
+                    }
+                ]
             },
-            scales: {
-                y: { 
-                    beginAtZero: true, 
-                    grid: { color: '#f1f5f9' },
-                    ticks: { 
-                        font: { size: 10 },
-                        precision: 0,
-                        stepSize: 1
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
+                plugins: {
+                    legend: { 
+                        display: true,
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15,
+                            font: { size: 10, weight: '700', family: "'Inter', sans-serif" },
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                        padding: 12,
+                        titleFont: { size: 13, weight: 'bold' },
+                        bodyFont: { size: 12 },
+                        cornerRadius: 8,
+                        displayColors: true
                     }
                 },
-                x: { 
-                    grid: { display: false },
-                    ticks: { font: { size: 10 } }
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { color: '#f1f5f9', drawBorder: false },
+                        ticks: { 
+                            font: { size: 10, weight: '600' },
+                            precision: 0,
+                            padding: 10
+                        }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { 
+                            font: { size: 10, weight: '600' },
+                            padding: 10
+                        }
+                    }
                 }
             }
-        }
-    });
+        });
+    }
+
+    function updateChart(timeframe) {
+        initChart(timeframe);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => initChart('weekly'));
 </script>
 {% endblock %}
