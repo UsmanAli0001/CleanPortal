@@ -193,12 +193,69 @@
 
     .admin-table tr:hover td { background: #f8fafc; }
 
-    {% block admin_extra_css %}{% endblock %}
+    /* Admin Notification Styles */
+    .nav-dropdown-item {
+        display: flex;
+        gap: 12px;
+        padding: 12px 16px;
+        text-decoration: none;
+        color: #1e293b;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f1f5f9;
+    }
 
+    .nav-dropdown-item:hover {
+        background: #f8fafc;
+    }
+
+    .nav-dropdown-item.unread {
+        background: rgba(56, 189, 248, 0.05);
+        border-left: 3px solid #38bdf8;
+    }
+
+    .nav-dropdown-item .icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .nav-dropdown-item h4 {
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    .nav-dropdown-item p {
+        color: #64748b;
+        line-height: 1.4;
+    }
+
+    {% block admin_extra_css %}{% endblock %}
 </style>
 {% endblock %}
 
 {% block nav_links %}{% endblock %}
+
+{% block notification_bell %}
+<div class="nav-bell-container">
+    <div class="nav-bell" id="adminNotificationBell" style="background: rgba(56, 189, 248, 0.15); border-color: #38bdf8;">
+        <i data-lucide="bell-ring"></i>
+        <div class="badge" id="adminAlertBadge" style="background: #38bdf8; border-color: #0f172a; box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);">0</div>
+    </div>
+    <div class="nav-dropdown" style="width: 380px;">
+        <div class="nav-dropdown-header" style="background: #f0f9ff; border-bottom: 1px solid #bae6fd;">
+            <span>Admin Control Center</span>
+            <a href="javascript:void(0)" onclick="markAdminRead()" style="color: #38bdf8;">Clear All</a>
+        </div>
+        <div class="nav-dropdown-body" id="adminNavDropdownList">
+            <!-- Admin Notifications populated dynamically -->
+        </div>
+    </div>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="admin-layout">
@@ -253,7 +310,79 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         lucide.createIcons();
+        fetchAdminNotifications();
+        
+        // Refresh every 30 seconds
+        setInterval(fetchAdminNotifications, 30000);
     });
+
+    function fetchAdminNotifications() {
+        fetch("{% url 'get_admin_notifications' %}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const badge = document.getElementById('adminAlertBadge');
+                    const unreadCount = data.unread_count;
+
+                    if (badge) {
+                        if (unreadCount > 0) {
+                            badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+
+                    const list = document.getElementById('adminNavDropdownList');
+                    if (list) {
+                        if (data.notifications.length === 0) {
+                            list.innerHTML = '<div class="nav-dropdown-empty"><i data-lucide="check-circle" style="width: 40px; height: 40px; color: #10b981; margin-bottom: 10px;"></i><br>System Operational: No New Alerts</div>';
+                        } else {
+                            let html = data.notifications.map(ann => {
+                                let icon = 'info';
+                                if (ann.type === 'complaint') icon = 'alert-circle';
+                                if (ann.type === 'feedback') icon = 'message-circle';
+                                if (ann.type === 'like') icon = 'heart';
+                                if (ann.type === 'update') icon = 'refresh-cw';
+                                if (ann.type === 'review') icon = 'star';
+                                if (ann.source === 'public') icon = 'megaphone';
+
+                                return `
+                                <a href="${ann.link || '#'}" class="nav-dropdown-item ${ann.is_read ? '' : 'unread'} ${ann.type} ${ann.source}">
+                                    <div class="icon" style="background: ${ann.source === 'public' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(56, 189, 248, 0.1)'}; color: ${ann.source === 'public' ? '#6366f1' : '#38bdf8'}; border: 1px solid ${ann.source === 'public' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(56, 189, 248, 0.2)'};">
+                                        <i data-lucide="${icon}" style="width: 14px; height: 14px;"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <h4 style="margin: 0; font-size: 0.85rem;">${ann.type_display}</h4>
+                                            <span style="font-size: 0.65rem; color: #94a3b8;">${ann.created_at}</span>
+                                        </div>
+                                        <p style="margin-top: 4px; font-size: 0.75rem;">${ann.message}</p>
+                                    </div>
+                                </a>
+                                `;
+                            }).join('');
+                            
+                            // Add View All link
+                            html += `<a href="{% url 'admin_notifications' %}" style="display: block; text-align: center; padding: 12px; font-size: 0.85rem; color: #38bdf8; text-decoration: none; font-weight: 700; background: #f8fafc; border-top: 1px solid #f1f5f9; transition: 0.2s;">View All Control Logs</a>`;
+                            
+                            list.innerHTML = html;
+                        }
+                        lucide.createIcons();
+                    }
+                }
+            });
+    }
+
+    function markAdminRead() {
+        fetch("{% url 'mark_admin_notifications_read' %}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchAdminNotifications();
+                }
+            });
+    }
 </script>
 {% block admin_extra_js %}{% endblock %}
 {% endblock %}

@@ -568,6 +568,8 @@
         }
     }
 </style>
+
+
 {% endblock %}
 
 {% block content %}
@@ -699,6 +701,8 @@
 
 
 
+
+
     <div class="feature-card card-success">
         <div>
             <div class="icon-box"><img src="{% static 'accounts/images/feedback.png' %}" class="feature-icon"></div>
@@ -794,11 +798,11 @@
 
                     // Handle Announcement Banner
                     const banner = document.getElementById('announcementBanner');
-                    if (data.latest_alert) {
+                    if (data.latest_alert && banner) {
                         document.getElementById('bannerTitle').innerText = data.latest_alert.title;
                         document.getElementById('bannerMessage').innerText = data.latest_alert.message.substring(0, 80) + '...';
                         banner.style.display = 'flex';
-                    } else {
+                    } else if (banner) {
                         banner.style.display = 'none';
                     }
                 }

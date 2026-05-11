@@ -89,21 +89,21 @@
     }
 
     @keyframes cardEntrance {
-        from { opacity: 0; transform: translateY(30px); }
+        from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
     .gallery-card {
         background: white; border-radius: 24px; overflow: hidden;
         box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         position: relative;
         border: 1px solid #f1f5f9;
         display: flex; flex-direction: column;
         animation: cardEntrance 0.7s cubic-bezier(0.23, 1, 0.32, 1) backwards;
         animation-delay: calc(var(--stagger, 0) * 100ms);
     }
-    .gallery-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(37, 99, 235, 0.15); border-color: var(--accent-blue); }
+    .gallery-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(37, 99, 235, 0.12); border-color: var(--accent-blue); }
 
     /* Comparison Slider */
     .image-comparison {
@@ -231,6 +231,10 @@
         <div class="stat-item">
             <span class="val">{{ stats.total_likes }}</span>
             <span class="lab">Total Likes</span>
+        </div>
+        <div class="stat-item">
+            <span class="val">{{ stats.total_views }}</span>
+            <span class="lab">Total Views</span>
         </div>
         <div class="stat-item">
             <span class="val">{{ stats.most_active_area.area|default:"Gujrat" }}</span>
@@ -436,6 +440,30 @@
         if (!e.target.closest('.dropdown-container')) {
             document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('active'));
         }
+    });
+
+    // View Tracking Logic
+    async function trackView(id) {
+        try {
+            await fetch("{% url 'gallery_view_api' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ item_id: id })
+            });
+        } catch (error) {
+            console.error('Error tracking view:', error);
+        }
+    }
+
+    // Attach click listeners to all gallery cards for view tracking
+    document.querySelectorAll('.gallery-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const itemId = this.querySelector('.image-comparison').getAttribute('data-id');
+            trackView(itemId);
+        }, { once: true }); // Count only once per page load to prevent spam
     });
 
 </script>

@@ -6,7 +6,7 @@
 {% block admin_extra_css %}
 .gallery-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 15px;
     margin-bottom: 25px;
 }
@@ -133,6 +133,15 @@
         </div>
     </div>
     <div class="stat-box">
+        <div class="stat-icon" style="background: #f0fdf4; color: #10b981;">
+            <i data-lucide="eye"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Total Views</h3>
+            <div class="value">{{ total_views }}</div>
+        </div>
+    </div>
+    <div class="stat-box">
         <div class="stat-icon" style="background: #fef3c7; color: #d97706;">
             <i data-lucide="star"></i>
         </div>
@@ -175,7 +184,10 @@
             <img src="{{ item.after_image.url }}" alt="">
             <div class="info">
                 <h4>{{ item.title }}</h4>
-                <div class="likes"><i data-lucide="heart" style="width: 12px;"></i> {{ item.likes_count }}</div>
+                <div style="display: flex; gap: 10px; font-size: 0.7rem; color: #64748b;">
+                    <span><i data-lucide="heart" style="width: 10px;"></i> {{ item.likes_count }}</span>
+                    <span><i data-lucide="eye" style="width: 10px;"></i> {{ item.views_count }}</span>
+                </div>
             </div>
             <a href="{% url 'admin_gallery_edit' item.pk %}" class="btn-manage" style="padding: 6px 12px;"><i data-lucide="edit-2" style="width: 14px;"></i></a>
         </div>

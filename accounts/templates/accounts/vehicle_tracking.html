@@ -465,6 +465,65 @@
         }
     }
 
+    /* New Styles for Assigned Complaint & Area */
+    .assigned-header-glow {
+        font-size: 1rem !important;
+        font-weight: 950 !important;
+        color: #2563eb !important;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        text-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+        margin-bottom: 12px !important;
+        display: block;
+        animation: textGlow 2s infinite alternate;
+    }
+
+    .complaint-id-aesthetic {
+        font-size: 1.5rem !important;
+        color: #3b82f6 !important;
+        font-weight: 900 !important;
+        letter-spacing: -1px;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        display: inline-block;
+        position: relative;
+    }
+
+    .complaint-id-aesthetic:hover {
+        transform: scale(1.1) translateY(-2px);
+        color: #1d4ed8 !important;
+        text-shadow: 0 0 25px rgba(29, 78, 216, 0.8);
+    }
+
+    .area-cinematic {
+        font-size: 2.6rem !important;
+        font-weight: 950 !important;
+        color: #ef4444 !important;
+        letter-spacing: -2.5px;
+        line-height: 1;
+        margin-top: 10px !important;
+        display: block;
+        text-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
+        animation: cinematicFloat 4s infinite ease-in-out;
+    }
+
+    @keyframes textGlow {
+        from { text-shadow: 0 0 10px rgba(37, 99, 235, 0.2); }
+        to { text-shadow: 0 0 20px rgba(37, 99, 235, 0.6); }
+    }
+
+    @keyframes cinematicFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+
+    .status-glow {
+        display: inline-block;
+        font-weight: 950 !important;
+        text-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+        color: #10b981 !important;
+    }
+
     @media (max-width: 992px) {
         .data-grid {
             grid-template-columns: repeat(3, 1fr);
@@ -558,18 +617,17 @@
                     </span>
                 </div>
                 <p
-                    style="color: #64748b; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    style="color: #64748b; font-weight: 800; font-size: 1.35rem; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-truck" style="color: var(--primary);"></i>
                     {{ tracked_vehicle.plate_number }}
                 </p>
             </div>
             <div style="text-align: right;">
-                <div class="data-label">Assigned Complaint & Area</div>
-                <div style="font-weight: 900; color: var(--slate-900); font-size: 1.1rem; letter-spacing: -0.5px;">
-                    {{ complaint.complaint_id }}
-                    <span
-                        style="color: #64748b; font-size: 0.85rem; font-weight: 700; display: block; margin-top: 4px;">
-                        <i class="fas fa-map-marker-alt" style="color: var(--primary);"></i> {{ complaint.area }}
+                <div class="data-label assigned-header-glow">Assigned Complaint & Area</div>
+                <div style="margin-top: 5px;">
+                    <span class="complaint-id-aesthetic">{{ complaint.complaint_id }}</span>
+                    <span class="area-cinematic">
+                        <i class="fas fa-map-marker-alt" style="font-size: 1.8rem; vertical-align: middle; margin-right: 5px; opacity: 0.8;"></i>{{ complaint.area }}
                     </span>
                 </div>
             </div>
@@ -620,10 +678,7 @@
         <div class="data-grid">
             <div class="data-card">
                 <div class="data-label">Driver Name</div>
-                <div class="data-value" style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <div
-                        style="width: 35px; height: 35px; background: #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #64748b; font-weight: 900;">
-                        {{ tracked_vehicle.driver_name|slice:":1" }}</div>
+                <div class="data-value">
                     {{ tracked_vehicle.driver_name }}
                 </div>
             </div>
@@ -633,7 +688,12 @@
             </div>
             <div class="data-card">
                 <div class="data-label">Assign Date</div>
-                <div class="data-value">{{ tracked_vehicle.assign_date|default:"-" }}</div>
+                <div class="data-value">
+                    {{ tracked_vehicle.assign_date|default:"-" }}
+                    {% if tracked_vehicle.assign_time %}
+                    <span style="font-size: 0.8rem; color: #64748b; font-weight: 600; display: block;">{{ tracked_vehicle.assign_time|time:"h:i A" }}</span>
+                    {% endif %}
+                </div>
             </div>
             <div class="data-card">
                 <div class="data-label">Estimating Time</div>
@@ -651,9 +711,9 @@
                     {% elif tracked_vehicle.status == 'Work in Progress' %}
                     Cleaning in Progress...
                     {% elif tracked_vehicle.status == 'Completed' %}
-                    Service Completed
+                    <span class="status-glow" style="font-size: 1.4rem; line-height: 1.1; display: block;">Service<br>Completed</span>
                     {% elif tracked_vehicle.status == 'In Transit' %}
-                    Approaching (8-12m)
+                    Approaching ({{ tracked_vehicle.approaching_time|default:"10-20 mins" }})
                     {% else %}
                     Vehicle Dispatched
                     {% endif %}

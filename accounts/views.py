@@ -16,7 +16,7 @@ from .models import (
 
     MunicipalServiceSchedule, ScheduleAlert, HolidayConfig, ComplaintPricingConfig,
     Wallet, WalletTransaction, ContactMessage,
-    GalleryCategory, GalleryItem, GalleryLike
+    GalleryCategory, GalleryItem, GalleryLike, AdminNotification
 )
 from .forms import LoginForm, RegistrationForm
 import random, string, json, math, time
@@ -24,7 +24,7 @@ from django.http import JsonResponse, HttpResponse
 import csv
 from django.utils import timezone
 from datetime import datetime, timedelta, time as dt_time
-from django.db.models import Q, Avg, Sum, Count
+from django.db.models import Q, Avg, Sum, Count, F
 from allauth.account.models import EmailAddress
 import stripe
 import calendar
@@ -58,39 +58,109 @@ def register_view(request):
             # --- CUSTOM WELCOME EMAIL ---
             try:
                 subject = "Welcome to Clean Pak Portal"
-                message = f"""Welcome Clean Pak Portal
-Your account has been registered successfully!
-
-Hello {user.first_name},
-Welcome to Clean Pak Portal! We are excited to have you as part of our community working towards a cleaner and more organized Gujrat city.
-
-Your account is now active and ready to use. You can immediately access all our municipal services and participate in our civic initiatives.
-
-What can you do now?
-• Register Complaints:
-Report waste, drainage, or street light issues instantly.
-• Track Grievances:
-Get real-time updates on the progress of your reports.
-• Request Services:
-Book municipal cleaning or maintenance services easily.
-• Civic Intel:
-View live analytics of municipal performance across the city.
-Simply visit our portal and login to get started. No further steps are required for verification.
-
-Thank you for helping us make our city better!
-
-© 2026 Clean Pak Portal Administration.
-
-This is a confirmation email for your new account registration."""
                 
+                # Plain text version for fallback
+                text_content = f"""Dear {user.first_name},
+
+Welcome to Clean Pak Portal!
+
+Your account has been successfully created, and we’re excited to have you join our digital community dedicated to creating a cleaner and smarter environment.
+
+You can now submit complaints, track progress in real-time, and stay connected with every update through our smart portal system.
+
+━━━━━━━━━━━━━━━━━━━
+✨ Your Journey in 4 Steps
+From complaint to resolution — fully digital, fully traceable.
+━━━━━━━━━━━━━━━━━━━
+
+1️⃣ Register & Login: Create your free account or sign in with Google in seconds.
+2️⃣ Submit Report: Describe the issue, attach photos, pin the location. Done.
+3️⃣ Get Tracking ID: Receive your unique GRT ID instantly. Share & track anytime.
+4️⃣ Issue Resolved: Fleet dispatched, work done, admin confirms with after-image.
+
+━━━━━━━━━━━━━━━━━━
+
+Together, we can build a cleaner, safer, and smarter community.
+
+Best Regards,
+Clean Pak Portal Team
+
+Supervisor Names:
+• Usman Ali
+• Nida Shabir"""
+
+                # Aesthetic HTML version
+                html_content = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        .email-container {{ font-family: 'Outfit', 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; }}
+                        .header {{ background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: white; padding: 40px 20px; text-align: center; }}
+                        .header h1 {{ margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -1px; }}
+                        .content {{ padding: 40px; background-color: #ffffff; }}
+                        .welcome-title {{ font-size: 22px; color: #1e3a8a; font-weight: 800; margin-bottom: 20px; }}
+                        .journey-box {{ background-color: #f8fafc; border-radius: 20px; padding: 25px; margin: 30px 0; border: 1px solid #e2e8f0; }}
+                        .journey-header {{ font-size: 16px; font-weight: 800; color: #3b82f6; margin-bottom: 15px; display: block; text-transform: uppercase; }}
+                        .step {{ margin-bottom: 12px; font-size: 15px; }}
+                        .step b {{ color: #1e40af; }}
+                        .footer {{ background-color: #f1f5f9; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0; }}
+                        .supervisor-box {{ margin-top: 30px; padding-top: 20px; border-top: 2px solid #eff6ff; }}
+                        .supervisor-name {{ color: #2563eb; font-weight: 800; font-size: 16px; }}
+                        .brand-bold {{ color: #1d4ed8; font-weight: 900; }}
+                        .btn {{ display: inline-block; padding: 14px 30px; background: #1d4ed8; color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; margin-top: 20px; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="email-container">
+                        <div class="header">
+                            <h1>Clean Pak Portal</h1>
+                        </div>
+                        <div class="content">
+                            <div class="welcome-title">Welcome, {user.first_name}! 🎉</div>
+                            <p>Your account has been successfully created at <span class="brand-bold">Clean Pak Portal</span>.</p>
+                            <p>We’re excited to have you join our digital community dedicated to creating a cleaner and smarter environment.</p>
+                            <p>You can now submit complaints, track progress in real-time, and stay connected with every update through our smart portal system.</p>
+                            
+                            <div class="journey-box">
+                                <span class="journey-header">✨ Your Journey in 4 Steps</span>
+                                <div class="step">1️⃣ <b>Register & Login:</b> Create your free account or sign in with Google in seconds.</div>
+                                <div class="step">2️⃣ <b>Submit Report:</b> Describe the issue, attach photos, pin the location. Done.</div>
+                                <div class="step">3️⃣ <b>Get Tracking ID:</b> Receive your unique GRT ID instantly. Share & track anytime.</div>
+                                <div class="step">4️⃣ <b>Issue Resolved:</b> Fleet dispatched, work done, admin confirms with after-image.</div>
+                            </div>
+
+                            <p>Together, we can build a cleaner, safer, and smarter community.</p>
+                            
+                            <div class="supervisor-box">
+                                <p><b>Best Regards,</b><br><span class="brand-bold">Clean Pak Portal Team</span></p>
+                                <p><b>Supervisor Names:</b></p>
+                                <p>• <span class="supervisor-name">Usman Ali</span></p>
+                                <p>• <span class="supervisor-name">Nida Shabir</span></p>
+                            </div>
+                            
+                            <div style="text-align: center;">
+                                <a href="{request.build_absolute_uri('/')}" class="btn">Access Portal Now</a>
+                            </div>
+                        </div>
+                        <div class="footer">
+                            <p>&copy; 2026 <b>Clean Pak Portal</b>. All rights reserved.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """
+
                 send_mail(
                     subject,
-                    message,
+                    text_content,
                     settings.EMAIL_HOST_USER,
                     [user.email],
                     fail_silently=False,
+                    html_message=html_content
                 )
-                messages.success(request, f"Registration successful! A welcome email has been sent to {user.email}.")
+                messages.success(request, f"Registration successful! Welcome to the portal.")
+                request.session['show_welcome_modal'] = True
             except Exception as e:
                 messages.warning(request, f"Registration successful! However, there was an issue sending the welcome email: {str(e)}")
 
@@ -140,7 +210,8 @@ def login_view(request):
             return render(request, 'accounts/login.html', {'form': form})
 
     form = LoginForm()
-    return render(request, 'accounts/login.html', {'form': form})
+    show_welcome_modal = request.session.pop('show_welcome_modal', False)
+    return render(request, 'accounts/login.html', {'form': form, 'show_welcome_modal': show_welcome_modal})
 
 def check_email_exists(request):
     email = request.GET.get('email', None)
@@ -300,7 +371,7 @@ def admin_complaint_history_view(request):
 
 def logout_view(request):
     logout(request)
-    messages.success(request,"Logged out successfully")
+    messages.success(request,"Logged out")
     return redirect('login')
 
 
@@ -483,7 +554,7 @@ def link_stripe_account(request):
         wallet.is_linked = True
         wallet.save()
         
-        messages.success(request, "Stripe account linked successfully!")
+        messages.success(request, "Stripe account linked!")
         return redirect('wallet')
     
     return redirect('wallet')
@@ -589,6 +660,10 @@ def track_complaint(request):
         except Complaint.DoesNotExist:
             error = "Complaint not found. Please check your Complaint ID."
     
+    assigned_vehicle = None
+    if complaint:
+        assigned_vehicle = Vehicle.objects.filter(current_complaint=complaint).first()
+    
     is_owner = False
     if complaint and request.user.is_authenticated:
         is_owner = (complaint.user == request.user or complaint.email == request.user.email or complaint.email == request.user.username)
@@ -597,7 +672,8 @@ def track_complaint(request):
         'complaint': complaint,
         'timeline': timeline,
         'error': error,
-        'is_owner': is_owner
+        'is_owner': is_owner,
+        'vehicle': assigned_vehicle
     })
 
 def download_complaint_report(request, cid):
@@ -673,6 +749,7 @@ def photo_gallery_view(request):
         'total_resolved': Complaint.objects.filter(status='Completed').count(),
         'total_projects': GalleryItem.objects.count(),
         'total_likes': GalleryItem.objects.aggregate(Sum('likes_count'))['likes_count__sum'] or 0,
+        'total_views': GalleryItem.objects.aggregate(Sum('views_count'))['views_count__sum'] or 0,
         'most_active_area': Complaint.objects.values('area').annotate(count=Count('id')).order_by('-count').first()
     }
 
@@ -721,6 +798,22 @@ def gallery_like_api(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+@csrf_exempt
+def gallery_view_api(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        item_id = data.get('item_id')
+        
+        # Use update() to avoid triggering post_save signals for view counts
+        GalleryItem.objects.filter(id=item_id).update(views_count=F('views_count') + 1)
+        
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
 @login_required
 def admin_gallery_view(request):
     """Dashboard view for Gallery Administration."""
@@ -729,6 +822,7 @@ def admin_gallery_view(request):
     
     total_posts = GalleryItem.objects.count()
     total_likes = GalleryItem.objects.aggregate(Sum('likes_count'))['likes_count__sum'] or 0
+    total_views = GalleryItem.objects.aggregate(Sum('views_count'))['views_count__sum'] or 0
     featured_posts = GalleryItem.objects.filter(is_featured=True).count()
     hidden_posts = GalleryItem.objects.filter(show_on_homepage=False).count()
     
@@ -783,6 +877,7 @@ def admin_gallery_view(request):
     context = {
         'total_posts': total_posts,
         'total_likes': total_likes,
+        'total_views': total_views,
         'featured_posts': featured_posts,
         'hidden_posts': hidden_posts,
         'trend_data': json.dumps(trend_data),
@@ -795,7 +890,7 @@ def admin_gallery_view(request):
 def admin_gallery_list(request):
     if not request.user.is_staff: return redirect('dashboard')
     
-    items = GalleryItem.objects.all().order_by('-created_at')
+    items = GalleryItem.objects.all().order_by('-complaint__complaint_id', '-created_at')
     
     # Filters
     cat = request.GET.get('category')
@@ -847,7 +942,7 @@ def admin_gallery_upload(request, pk=None):
             if before_img: item.before_image = before_img
             if after_img: item.after_image = after_img
             item.save()
-            messages.success(request, "Gallery item updated successfully.")
+            messages.success(request, "Gallery item updated.")
         else:
             GalleryItem.objects.create(
                 title=title, description=description, category_id=category_id,
@@ -1260,7 +1355,7 @@ def submit_contact(request):
         except:
             pass
 
-        messages.success(request, "Your message has been sent successfully!")
+        messages.success(request, "Your message has been sent!")
         return redirect('contact')
     return redirect('contact')
 
@@ -1282,40 +1377,19 @@ def admin_reply_contact(request, id):
     msg = get_object_or_404(ContactMessage, id=id)
     
     if request.method == 'POST':
-        reply_content = request.POST.get('reply')
-        msg.reply = reply_content
-        msg.is_replied = True
-        msg.replied_by = request.user
-        msg.replied_at = timezone.now()
-        msg.save()
-        
-        # Send reply email to user
         try:
-            subject = f"Reply to your query: {msg.subject or 'Clean Pak Portal Inquiry'}"
-            email_body = f"Hello {msg.name},\n\nThank you for contacting us. Regarding your query:\n\n\"{msg.message}\"\n\nOur Response:\n{reply_content}\n\nBest regards,\nClean Pak Portal Team"
+            reply_content = request.POST.get('reply')
+            msg.reply = reply_content
+            msg.is_replied = True
+            msg.replied_by = request.user
+            msg.replied_at = timezone.now()
+            msg.save()
             
-            send_mail(
-                subject,
-                email_body,
-                settings.EMAIL_HOST_USER,
-                [msg.email],
-                fail_silently=True
-            )
-            
-            # Create in-app notification if user exists
-            user_recipient = User.objects.filter(email=msg.email).first()
-            if user_recipient:
-                Notification.objects.create(
-                    user=user_recipient,
-                    title="New Reply to your Inquiry",
-                    message=f"Admin has replied to your query about {msg.category}.",
-                    alert_type='success'
-                )
-                messages.success(request, f"Reply sent to {msg.email} (Email & In-app notification).")
-            else:
-                messages.success(request, f"Reply sent to {msg.email} (Email only - User not registered).")
+            messages.success(request, f"Reply saved and notification sent to {msg.email}.")
         except Exception as e:
-            messages.warning(request, f"Message saved, but there was an issue sending the email: {str(e)}")
+            messages.error(request, f"Error: {str(e)}")
+
+
             
         return redirect('admin_contact_messages')
         
@@ -1329,7 +1403,7 @@ def delete_contact_message(request, id):
         
     msg = get_object_or_404(ContactMessage, id=id)
     msg.delete()
-    messages.warning(request, "Contact inquiry deleted successfully.")
+    messages.warning(request, "Contact inquiry deleted.")
     return redirect('admin_contact_messages')
 
 @login_required
@@ -1404,7 +1478,7 @@ def admin_wallet_view(request):
     yearly_rev = Payment.objects.filter(date__gte=now-timedelta(days=365), status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
     total_rev = Payment.objects.filter(status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
     
-    recent_payments = Payment.objects.all().order_by('-date')[:100]
+    recent_payments = Payment.objects.select_related('complaint').all().order_by('-date')[:100]
     
     context = {
         'weekly_revenue': weekly_rev,
@@ -1473,7 +1547,7 @@ def staff_management(request):
                     duty_time=request.POST.get('duty_time')
                 )
 
-            messages.success(request, "Staff member added successfully.")
+            messages.success(request, "Staff member added.")
         elif action == 'edit':
             sid = request.POST.get('id')
             s = Staff.objects.get(id=sid)
@@ -1536,6 +1610,9 @@ def staff_management(request):
 
 @login_required
 def complaints(request):
+    if not request.user.is_staff:
+        messages.error(request, "Access Denied: Administrative permissions required.")
+        return redirect('dashboard')
     data = Complaint.objects.all().order_by('id')
     staff = Staff.objects.all()
 
@@ -1546,6 +1623,9 @@ def complaints(request):
 
 @login_required
 def update_complaint(request, id):
+    if not request.user.is_staff:
+        messages.error(request, "Access Denied: Administrative permissions required.")
+        return redirect('dashboard')
     complaint = Complaint.objects.get(id=id)
     if request.method == "POST":
         staff_id = request.POST.get('staff')
@@ -1583,10 +1663,18 @@ def update_complaint(request, id):
 
 @login_required
 def delete_complaint_admin(request, id):
-    if not request.user.is_staff: return redirect('dashboard')
-    Complaint.objects.filter(id=id).delete()
-    messages.warning(request, "Complaint has been removed from the system.")
-    return redirect('complaints')
+    if not request.user.is_staff:
+        return JsonResponse({'status': 'error', 'message': 'Access Denied: Administrative permissions required.'}, status=403)
+    
+    try:
+        complaint = Complaint.objects.get(id=id)
+        complaint_id = complaint.complaint_id
+        complaint.delete()
+        return JsonResponse({'status': 'success', 'message': f'Complaint {complaint_id} has been removed from the system.'})
+    except Complaint.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Complaint not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
 @login_required(login_url='login')
@@ -1657,7 +1745,7 @@ def admin_zone_management(request):
                     boundary=boundary,
                     assigned_staff=assigned_staff
                 )
-                messages.success(request, f"Zone '{request.POST.get('name')}' added successfully.")
+                messages.success(request, f"Zone '{request.POST.get('name')}' added.")
             except Exception as e:
                 messages.error(request, f"Error adding zone: {str(e)}")
 
@@ -1759,9 +1847,9 @@ def get_announcements(request):
         # 2. Personal Notifications
         personal_notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')[:25]
         
-        # 3. Personal Complaint Status Updates (Matching by user or matching by email)
-        user_complaints = Complaint.objects.filter(Q(email=request.user.email) | Q(name=request.user.username))
-        status_updates = ComplaintTimeline.objects.filter(complaint__in=user_complaints).order_by('-created_at')[:20]
+        # 3. Personal Complaint Status Updates - Now handled by Notification model in signals.py
+        # We no longer pull from ComplaintTimeline here to avoid duplicates.
+
         
         # Section removed: Community Reviews (Feedback) - Global view
         
@@ -1780,7 +1868,14 @@ def get_announcements(request):
                 'is_read': ann.id in read_ann_ids
             })
             
+        seen_notifications = set()
         for pn in personal_notifications:
+            # Create a unique key based on title and message to identify duplicates
+            notif_key = f"{pn.title}|{pn.message}"
+            if notif_key in seen_notifications:
+                continue
+            seen_notifications.add(notif_key)
+            
             data.append({
                 'unique_id': f"notif_{pn.id}",
                 'id': pn.id,
@@ -1792,19 +1887,9 @@ def get_announcements(request):
                 'raw_time': pn.timestamp.timestamp(),
                 'is_read': pn.is_read
             })
+
             
-        for up in status_updates:
-            data.append({
-                'unique_id': f"up_{up.id}",
-                'id': up.id,
-                'type': 'status_update',
-                'title': f"Status Update: {up.complaint.complaint_id}",
-                'message': up.description,
-                'alert_type': 'info' if up.status != 'Completed' else 'success',
-                'created_at': get_time_str(up.created_at),
-                'raw_time': up.created_at.timestamp(),
-                'is_read': True 
-            })
+
         
         # Sort everything by raw timestamp descending
         data.sort(key=lambda x: x['raw_time'], reverse=True)
@@ -1842,6 +1927,23 @@ def mark_announcement_read(request, pk):
             return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
     
     return JsonResponse({'status': 'error', 'message': 'Invalid type'}, status=400)
+
+@login_required(login_url='login')
+def mark_all_user_notifications_read(request):
+    """Marks all personal notifications and administrative updates as read for the user."""
+    # 1. Mark personal notifications as read
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    
+    # 2. Mark announcements as read (using AnnouncementRead mapping)
+    active_announcements = Announcement.objects.filter(is_active=True)
+    for ann in active_announcements:
+        AnnouncementRead.objects.get_or_create(user=request.user, announcement=ann)
+        
+    # 3. For staff, mark admin notifications as read
+    if request.user.is_staff:
+        AdminNotification.objects.filter(is_read=False).update(is_read=True)
+        
+    return JsonResponse({'status': 'success'})
 
 # --- ZONE MANAGEMENT API ---
 
@@ -1971,6 +2073,8 @@ def api_vehicles_list(request):
             'base_lng': v.base_lng,
             'source_name': v.source_name,
             'sim_phase': v.sim_phase,
+            'approaching_time': v.approaching_time,
+            'assign_time': v.assign_time.strftime('%H:%M') if v.assign_time else None,
         })
     qs = Vehicle.objects.all()
     stats = {
@@ -2059,6 +2163,7 @@ def fleet_admin_view(request):
         'assigned_zone_obj': assigned_zone_obj,
         'all_users': User.objects.all(),
         'gujrat_areas': GUJRAT_AREAS,
+        'categories': ServiceCategory.objects.all(),
     }
     return render(request, 'accounts/admin/fleet_management.html', context)
 
@@ -2127,9 +2232,11 @@ def fleet_add_vehicle(request):
                 latitude=float(request.POST.get('latitude')) if request.POST.get('latitude') else None,
                 longitude=float(request.POST.get('longitude')) if request.POST.get('longitude') else None,
                 assign_date=request.POST.get('assign_date') or None,
+                assign_time=request.POST.get('assign_time') or None,
                 estimating_time=request.POST.get('estimating_time', '').strip(),
+                approaching_time=request.POST.get('approaching_time', '').strip(),
             )
-            messages.success(request, 'Vehicle added successfully!')
+            messages.success(request, 'Vehicle added!')
         except Exception as e:
             messages.error(request, f'Error adding vehicle: {e}')
     return redirect('fleet_admin')
@@ -2190,9 +2297,11 @@ def fleet_edit_vehicle(request, pk):
 
             vehicle.source_name = request.POST.get('source_name', vehicle.source_name).strip()
             vehicle.assign_date = request.POST.get('assign_date') or None
+            vehicle.assign_time = request.POST.get('assign_time') or None
             vehicle.estimating_time = request.POST.get('estimating_time', '').strip()
+            vehicle.approaching_time = request.POST.get('approaching_time', '').strip()
             vehicle.save()
-            messages.success(request, f'Vehicle {vehicle.vehicle_id} updated successfully!')
+            messages.success(request, f'Vehicle {vehicle.vehicle_id} updated!')
         except Exception as e:
             messages.error(request, f'Error updating vehicle: {e}')
     return redirect('fleet_admin')
@@ -2307,7 +2416,7 @@ def _seed_municipal_schedules():
             MunicipalServiceSchedule.objects.create(
                 service=garbage_svc,
                 area_name="Fawara Chowk",
-                union_council="UC-01 Central",
+                union_council="",
                 start_time=dt_time(8, 0),
                 end_time=dt_time(12, 0),
                 frequency="Daily",
@@ -2316,7 +2425,7 @@ def _seed_municipal_schedules():
             MunicipalServiceSchedule.objects.create(
                 service=garbage_svc,
                 area_name="Jalalpur Jattan",
-                union_council="UC-15 North",
+                union_council="",
                 start_time=dt_time(9, 30),
                 end_time=dt_time(13, 0),
                 frequency="Weekly",
@@ -2328,7 +2437,7 @@ def _seed_municipal_schedules():
             MunicipalServiceSchedule.objects.create(
                 service=water_svc,
                 area_name="Model Town",
-                union_council="UC-04 South",
+                union_council="",
                 start_time=dt_time(6, 0),
                 end_time=dt_time(9, 0),
                 frequency="Daily",
@@ -2434,7 +2543,7 @@ def update_payment_settings(request):
         settings.merchant_key = request.POST.get('merchant_key')
         settings.is_active = 'is_active' in request.POST
         settings.save()
-        messages.success(request, "Payment settings updated successfully.")
+        messages.success(request, "Payment settings updated.")
         
     return redirect('service_admin')
 
@@ -2543,7 +2652,7 @@ def booking_stripe_success(request):
     wallet.save()
     
     del request.session['pending_booking_id']
-    messages.success(request, "Service booked successfully!")
+    messages.success(request, "Service booked!")
     return render(request, 'accounts/booking_success.html', {'booking': booking})
 
 # --- MUNICIPAL SCHEDULE VIEWS ---
@@ -2562,8 +2671,7 @@ def schedule_public_view(request):
     
     if query:
         schedules = schedules.filter(
-            Q(area_name__icontains=query) | 
-            Q(union_council__icontains=query)
+            Q(area_name__icontains=query)
         )
     
     active_alerts = ScheduleAlert.objects.filter(is_active=True).order_by('-created_at')
@@ -2577,7 +2685,7 @@ def schedule_public_view(request):
         else:
             # Check for specific "Delayed" status via active alerts
             has_alert = active_alerts.filter(
-                Q(area__icontains=s.area_name) | Q(area__icontains=s.union_council),
+                Q(area__icontains=s.area_name),
                 service=s.service
             ).exists()
             
@@ -2616,14 +2724,14 @@ def admin_schedule_manage(request):
             MunicipalServiceSchedule.objects.create(
                 service_id=request.POST['service_id'],
                 area_name=request.POST['area_name'],
-                union_council=request.POST['union_council'],
+                union_council=request.POST.get('union_council', ''),
                 start_time=request.POST['start_time'],
                 end_time=request.POST['end_time'],
                 frequency=request.POST['frequency'],
                 day_of_week=request.POST.get('day_of_week'),
                 admin_notes=request.POST.get('admin_notes', '')
             )
-            messages.success(request, "Schedule added successfully.")
+            messages.success(request, "Schedule added.")
             
         elif action == 'post_alert':
             ScheduleAlert.objects.create(
@@ -2650,7 +2758,7 @@ def admin_schedule_manage(request):
             sched = MunicipalServiceSchedule.objects.get(id=sid)
             sched.service_id = request.POST['service_id']
             sched.area_name = request.POST['area_name']
-            sched.union_council = request.POST['union_council']
+            sched.union_council = request.POST.get('union_council', '')
             sched.start_time = request.POST['start_time']
             sched.end_time = request.POST['end_time']
             sched.frequency = request.POST['frequency']
@@ -2755,7 +2863,7 @@ def payment_admin_view(request):
                 urgent_price=request.POST['urgent_price'],
                 is_active='is_active' in request.POST
             )
-            messages.success(request, "Pricing tier added successfully.")
+            messages.success(request, "Pricing tier added.")
             
         elif action == 'edit_pricing':
             pid = request.POST.get('id')
@@ -2806,7 +2914,7 @@ def delete_feedback_admin(request, id):
         return redirect('dashboard')
     
     Feedback.objects.filter(id=id).delete()
-    messages.warning(request, "Feedback entry deleted successfully.")
+    messages.warning(request, "Feedback entry deleted.")
     return redirect('admin_feedback')
 
 @login_required(login_url='login')
@@ -2844,7 +2952,7 @@ def admin_notifications(request):
                 alert_type=request.POST['alert_type'],
                 is_active=True
             )
-            messages.success(request, "System-wide announcement broadcasted successfully!")
+            messages.success(request, "System-wide announcement broadcasted!")
             
         elif action == 'send_personal':
             user_id = request.POST.get('user_id')
@@ -2868,6 +2976,7 @@ def admin_notifications(request):
 
     context = {
         'announcements': Announcement.objects.all().order_by('-created_at'),
+        'admin_notifications': AdminNotification.objects.all().order_by('-created_at')[:100],
         'users': User.objects.filter(is_staff=False).order_by('username'),
         'is_admin_view': True
     }
@@ -2970,3 +3079,93 @@ def holiday_details_view(request, pk):
         'today': timezone.now().date()
     }
     return render(request, 'accounts/holiday_details.html', context)
+
+@login_required
+def get_admin_notifications(request):
+    if not request.user.is_staff:
+        return JsonResponse({'status': 'error', 'message': 'Forbidden'}, status=403)
+    
+    # Get operational alerts
+    admin_notifs = AdminNotification.objects.all().order_by('-created_at')[:50]
+    # Get public system announcements
+    public_announcements = Announcement.objects.filter(is_active=True).order_by('-created_at')[:10]
+    
+    unread_count = AdminNotification.objects.filter(is_read=False).count()
+    
+    data = []
+    # Add Admin Notifications
+    for n in admin_notifs:
+        data.append({
+            'id': n.id,
+            'source': 'admin',
+            'type': n.type,
+            'type_display': n.get_type_display(),
+            'message': n.message,
+            'link': n.link,
+            'is_read': n.is_read,
+            'created_at': n.created_at.strftime('%Y-%m-%d %H:%M')
+        })
+    
+    # Add Public Announcements
+    for a in public_announcements:
+        data.append({
+            'id': a.id,
+            'source': 'public',
+            'type': 'announcement',
+            'type_display': 'System Announcement',
+            'message': a.message,
+            'link': reverse('notifications'),
+            'is_read': True, # Announcements are generally informational for admins here
+            'created_at': a.created_at.strftime('%Y-%m-%d %H:%M')
+        })
+    
+    # Sort merged list by date
+    data.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    return JsonResponse({
+        'status': 'success',
+        'notifications': data[:40], # Show top 40 merged
+        'unread_count': unread_count
+    })
+
+@login_required
+def mark_admin_notifications_read(request):
+    if not request.user.is_staff:
+        return JsonResponse({'status': 'error', 'message': 'Forbidden'}, status=403)
+    
+    AdminNotification.objects.filter(is_read=False).update(is_read=True)
+    return JsonResponse({'status': 'success'})
+
+@login_required
+def delete_admin_notification(request, pk):
+    if not request.user.is_staff:
+        messages.error(request, "Access Denied.")
+        return redirect('dashboard')
+    
+    get_object_or_404(AdminNotification, id=pk).delete()
+    messages.warning(request, "Operational log entry permanently removed.")
+    return redirect('admin_notifications')
+
+@login_required
+def mark_single_admin_notification_read(request, pk):
+    if not request.user.is_staff:
+        return JsonResponse({'status': 'error', 'message': 'Forbidden'}, status=403)
+    
+    notification = get_object_or_404(AdminNotification, id=pk)
+    notification.is_read = True
+    notification.save()
+    return redirect('admin_notifications')
+
+@login_required
+def delete_all_admin_notifications(request):
+    """Permanently removes all administrative operational log entries."""
+    if not request.user.is_staff:
+        messages.error(request, "Access Denied.")
+        return redirect('dashboard')
+    
+    count = AdminNotification.objects.all().count()
+    AdminNotification.objects.all().delete()
+    messages.warning(request, f"Successfully cleared {count} operational log entries.")
+    return redirect('admin_notifications')
+
+

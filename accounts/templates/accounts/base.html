@@ -34,23 +34,31 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+
             /* Hide scrollbar for Chrome, Safari and Opera */
             &::-webkit-scrollbar {
                 display: none;
             }
+
             /* Hide scrollbar for IE, Edge and Firefox */
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
         }
 
         html {
+
             /* Hide scrollbar for Chrome, Safari and Opera */
             &::-webkit-scrollbar {
                 display: none;
             }
+
             /* Hide scrollbar for IE, Edge and Firefox */
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
         }
 
         /* Navbar Styling Redesign */
@@ -647,6 +655,7 @@
             font-size: 0.95rem;
             font-weight: 500;
         }
+
         /* --- Cinematic Toast Notifications --- */
         #toast-container {
             position: fixed;
@@ -671,8 +680,8 @@
             display: flex;
             align-items: center;
             gap: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 
-                        0 0 25px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15),
+                0 0 25px rgba(59, 130, 246, 0.3);
             transform: translateX(120%) scale(0.9);
             transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
             position: relative;
@@ -682,8 +691,8 @@
 
         .cinematic-toast:hover {
             transform: scale(1.02);
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2), 
-                        0 0 35px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2),
+                0 0 35px rgba(59, 130, 246, 0.5);
         }
 
         .cinematic-toast.show {
@@ -760,33 +769,110 @@
         }
 
         /* Toast Variations */
-        .toast-success { border-color: #3b82f6; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(59, 130, 246, 0.3); }
-        .toast-success:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(59, 130, 246, 0.5); }
-        .toast-success::before { background: linear-gradient(180deg, #3b82f6, #1d4ed8); box-shadow: 2px 0 10px rgba(59, 130, 246, 0.4); }
-        .toast-success .toast-icon { background: #eff6ff; color: #3b82f6; }
-        .toast-success .toast-progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+        .toast-success {
+            border-color: #3b82f6;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 25px rgba(59, 130, 246, 0.3);
+        }
 
-        .toast-error { border-color: #ef4444; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(239, 68, 68, 0.3); }
-        .toast-error:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(239, 68, 68, 0.5); }
-        .toast-error::before { background: #ef4444; box-shadow: 2px 0 10px rgba(239, 68, 68, 0.4); }
-        .toast-error .toast-icon { background: #fef2f2; color: #ef4444; }
-        .toast-error .toast-progress-fill { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+        .toast-success:hover {
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2), 0 0 35px rgba(59, 130, 246, 0.5);
+        }
 
-        .toast-warning { border-color: #ef4444; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(239, 68, 68, 0.3); }
-        .toast-warning:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(239, 68, 68, 0.5); }
-        .toast-warning::before { background: #ef4444; box-shadow: 2px 0 10px rgba(239, 68, 68, 0.4); }
-        .toast-warning .toast-icon { background: #fef2f2; color: #ef4444; }
-        .toast-warning .toast-progress-fill { background: #ef4444; box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+        .toast-success::before {
+            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+            box-shadow: 2px 0 10px rgba(59, 130, 246, 0.4);
+        }
 
-        .toast-blue { border-color: #3b82f6; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 25px rgba(59, 130, 246, 0.3); }
-        .toast-blue:hover { box-shadow: 0 30px 60px -12px rgba(0,0,0,0.2), 0 0 35px rgba(59, 130, 246, 0.5); }
-        .toast-blue::before { background: linear-gradient(180deg, #3b82f6, #1d4ed8); box-shadow: 2px 0 10px rgba(59, 130, 246, 0.4); }
-        .toast-blue .toast-icon { background: #eff6ff; color: #3b82f6; }
-        .toast-blue .toast-progress-fill { background: linear-gradient(90deg, #3b82f6, #60a5fa); box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+        .toast-success .toast-icon {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .toast-success .toast-progress-fill {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .toast-error {
+            border-color: #ef4444;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 25px rgba(239, 68, 68, 0.3);
+        }
+
+        .toast-error:hover {
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2), 0 0 35px rgba(239, 68, 68, 0.5);
+        }
+
+        .toast-error::before {
+            background: #ef4444;
+            box-shadow: 2px 0 10px rgba(239, 68, 68, 0.4);
+        }
+
+        .toast-error .toast-icon {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .toast-error .toast-progress-fill {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .toast-warning {
+            border-color: #ef4444;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 25px rgba(239, 68, 68, 0.3);
+        }
+
+        .toast-warning:hover {
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2), 0 0 35px rgba(239, 68, 68, 0.5);
+        }
+
+        .toast-warning::before {
+            background: #ef4444;
+            box-shadow: 2px 0 10px rgba(239, 68, 68, 0.4);
+        }
+
+        .toast-warning .toast-icon {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .toast-warning .toast-progress-fill {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .toast-blue {
+            border-color: #3b82f6;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .toast-blue:hover {
+            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.2), 0 0 35px rgba(59, 130, 246, 0.5);
+        }
+
+        .toast-blue::before {
+            background: linear-gradient(180deg, #3b82f6, #1d4ed8);
+            box-shadow: 2px 0 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .toast-blue .toast-icon {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .toast-blue .toast-progress-fill {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
 
         @keyframes shrink {
-            from { transform: scaleX(1); }
-            to { transform: scaleX(0); }
+            from {
+                transform: scaleX(1);
+            }
+
+            to {
+                transform: scaleX(0);
+            }
         }
 
         .toast-animate-progress {
@@ -830,21 +916,28 @@
 
         <div class="nav-right">
             {% if user.is_authenticated %}
+            {% block notification_bell %}
             <div class="nav-bell-container">
                 <div class="nav-bell">
                     <i data-lucide="bell"></i>
                     <div class="badge" id="globalAlertBadge">0</div>
                 </div>
                 <div class="nav-dropdown">
-                    <div class="nav-dropdown-header">
-                        System Alerts
-                        <a href="{% url 'notifications' %}">View Inbox</a>
+                    <div class="nav-dropdown-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>System Alerts</span>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <button onclick="markAllNavRead(event)" title="Mark all as read" style="background: none; border: none; cursor: pointer; color: #10b981; display: flex; align-items: center; transition: 0.3s;" onmouseover="this.style.filter='drop-shadow(0 0 5px #10b981)'" onmouseout="this.style.filter='none'">
+                                <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
+                            </button>
+                            <a href="{% url 'notifications' %}" style="font-size: 0.75rem; font-weight: 700; color: #6366f1; text-decoration: none;">View Inbox</a>
+                        </div>
                     </div>
                     <div class="nav-dropdown-body" id="globalNavDropdownList">
                         <!-- Notifications populated dynamically -->
                     </div>
                 </div>
             </div>
+            {% endblock %}
             <a href="{% url 'logout' %}" class="nav-btn">Log Out</a>
             {% endif %}
         </div>
@@ -945,6 +1038,17 @@
                 });
         }
 
+        function markAllNavRead(event) {
+            if (event) event.stopPropagation();
+            fetch("{% url 'mark_all_read' %}")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        fetchGlobalNotifications();
+                    }
+                });
+        }
+
         document.addEventListener('DOMContentLoaded', fetchGlobalNotifications);
         {% endif %}
 
@@ -963,7 +1067,7 @@
 
                 const toast = document.createElement('div');
                 toast.className = `cinematic-toast toast-${type}`;
-                
+
                 let icon = 'check-circle';
                 if (type === 'error') icon = 'alert-circle';
                 if (type === 'info') icon = 'info';
@@ -1001,20 +1105,20 @@
         {% if messages %}
         document.addEventListener('DOMContentLoaded', () => {
             {% for message in messages %}
-                let type = 'info';
-                let title = 'Notification';
-                {% if message.tags == 'success' %}
-                    type = 'success';
-                    title = 'Success!';
-                {% elif message.tags == 'error' %}
-                    type = 'error';
-                    title = 'Error';
-                {% elif message.tags == 'warning' %}
-                    type = 'warning';
-                    title = 'Deleted!';
-                {% endif %}
-                
-                Toast.show(title, "{{ message|escapejs }}", type);
+            let type = 'info';
+            let title = 'Notification';
+            {% if message.tags == 'success' %}
+            type = 'success';
+            title = '';
+            {% elif message.tags == 'error' %}
+            type = 'error';
+            title = 'Error';
+            {% elif message.tags == 'warning' %}
+            type = 'warning';
+            title = 'Deleted!';
+            {% endif %}
+
+            Toast.show(title, "{{ message|escapejs }}", type);
             {% endfor %}
         });
         {% endif %}
@@ -1034,7 +1138,7 @@
 
         // Monitor for new System Broadcasts
         let lastToastId = sessionStorage.getItem('lastBroadcastId');
-        
+
         function checkNewBroadcasts(data) {
             if (data.latest_alert && data.latest_alert.unique_id !== lastToastId) {
                 const alert = data.latest_alert;
@@ -1053,36 +1157,36 @@
         const originalFetch = window.fetchGlobalNotifications;
         if (typeof fetchGlobalNotifications === 'function') {
             const oldFetch = fetchGlobalNotifications;
-            window.fetchGlobalNotifications = function() {
+            window.fetchGlobalNotifications = function () {
                 fetch("{% url 'get_announcements' %}")
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        checkNewBroadcasts(data);
-                        // Original logic follows
-                        const badge = document.getElementById('globalAlertBadge');
-                        const unreadCount = data.announcements.filter(a => !a.is_read).length;
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            checkNewBroadcasts(data);
+                            // Original logic follows
+                            const badge = document.getElementById('globalAlertBadge');
+                            const unreadCount = data.announcements.filter(a => !a.is_read).length;
 
-                        if (badge) {
-                            if (unreadCount > 0) {
-                                badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
-                                badge.style.display = 'block';
-                            } else {
-                                badge.style.display = 'none';
+                            if (badge) {
+                                if (unreadCount > 0) {
+                                    badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                                    badge.style.display = 'block';
+                                } else {
+                                    badge.style.display = 'none';
+                                }
                             }
-                        }
 
-                        const list = document.getElementById('globalNavDropdownList');
-                        if (list) {
-                            if (data.announcements.length === 0) {
-                                list.innerHTML = '<div class="nav-dropdown-empty"><i data-lucide="check-circle" style="width: 40px; height: 40px; color: #10b981; margin-bottom: 10px;"></i><br>All Caught Up!</div>';
-                            } else {
-                                list.innerHTML = data.announcements.slice(0, 5).map(ann => {
-                                    let icon = 'bell';
-                                    if (ann.type === 'personal') icon = 'mail';
-                                    if (ann.type === 'status_update') icon = 'activity';
+                            const list = document.getElementById('globalNavDropdownList');
+                            if (list) {
+                                if (data.announcements.length === 0) {
+                                    list.innerHTML = '<div class="nav-dropdown-empty"><i data-lucide="check-circle" style="width: 40px; height: 40px; color: #10b981; margin-bottom: 10px;"></i><br>All Caught Up!</div>';
+                                } else {
+                                    list.innerHTML = data.announcements.slice(0, 5).map(ann => {
+                                        let icon = 'bell';
+                                        if (ann.type === 'personal') icon = 'mail';
+                                        if (ann.type === 'status_update') icon = 'activity';
 
-                                    return `
+                                        return `
                                     <a href="{% url 'notifications' %}" class="nav-dropdown-item ${ann.is_read ? '' : 'unread'} ${ann.alert_type || 'info'}">
                                         <div class="icon"><i data-lucide="${icon}" style="width: 14px; height: 14px;"></i></div>
                                         <div>
@@ -1091,12 +1195,12 @@
                                         </div>
                                     </a>
                                     `;
-                                }).join('') + `<a href="{% url 'notifications' %}" style="display: block; text-align: center; padding: 12px; font-size: 0.85rem; color: #6366f1; text-decoration: none; font-weight: 700; background: #f8fafc; border-top: 1px solid #f1f5f9; transition: 0.2s;">View All Notifications</a>`;
+                                    }).join('') + `<a href="{% url 'notifications' %}" style="display: block; text-align: center; padding: 12px; font-size: 0.85rem; color: #6366f1; text-decoration: none; font-weight: 700; background: #f8fafc; border-top: 1px solid #f1f5f9; transition: 0.2s;">View All Notifications</a>`;
+                                }
+                                lucide.createIcons();
                             }
-                            lucide.createIcons();
                         }
-                    }
-                });
+                    });
             }
         }
     </script>

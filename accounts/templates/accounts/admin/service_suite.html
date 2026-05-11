@@ -161,7 +161,7 @@
             <thead>
                 <tr>
                     <th>Service</th>
-                    <th>Area / Area UC</th>
+                    <th>Area Name</th>
                     <th>Timings</th>
                     <th>Frequency</th>
                     <th>Actions</th>
@@ -171,12 +171,12 @@
                 {% for s in schedules %}
                 <tr>
                     <td><strong>{{ s.service.name }}</strong></td>
-                    <td>{{ s.area_name }}<br><small>{{ s.union_council }}</small></td>
+                    <td>{{ s.area_name }}</td>
                     <td>{{ s.start_time|time:"H:i" }} - {{ s.end_time|time:"H:i" }}</td>
                     <td>{{ s.frequency }} {% if s.day_of_week %}({{ s.day_of_week }}){% endif %}</td>
                     <td>
                         <div style="display:flex; gap:8px">
-                            <button class="abtn edit" onclick="openEditSchedule('{{ s.id }}', '{{ s.service.id }}', '{{ s.area_name }}', '{{ s.union_council }}', '{{ s.start_time|time:'H:i' }}', '{{ s.end_time|time:'H:i' }}', '{{ s.frequency }}', '{{ s.day_of_week|default:'' }}', '{{ s.admin_notes|escapejs }}')"><i data-lucide="edit-3"></i></button>
+                            <button class="abtn edit" onclick="openEditSchedule('{{ s.id }}', '{{ s.service.id }}', '{{ s.area_name }}', '{{ s.start_time|time:'H:i' }}', '{{ s.end_time|time:'H:i' }}', '{{ s.frequency }}', '{{ s.day_of_week|default:'' }}', '{{ s.admin_notes|escapejs }}')"><i data-lucide="edit-3"></i></button>
                             <form action="{% url 'admin_schedule_manage' %}" method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_schedule"><input type="hidden" name="id" value="{{ s.id }}"><button class="abtn del"><i data-lucide="trash-2"></i></button></form>
                         </div>
                     </td>
@@ -312,9 +312,9 @@
                     {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
                 </select>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px">
-                <div class="fg"><label class="fl">Area Name</label><input class="fi" name="area_name" id="schedArea" required></div>
-                <div class="fg"><label class="fl">Union Council</label><input class="fi" name="union_council" id="schedUC" required></div>
+            <div class="fg" style="margin-top:15px">
+                <label class="fl">Area Name</label>
+                <input class="fi" name="area_name" id="schedArea" required>
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-top:15px">
                 <div class="fg"><label class="fl">Start Time</label><input class="fi" type="time" name="start_time" id="schedStart" required></div>
@@ -327,7 +327,7 @@
                 </div>
                 <div class="fg">
                     <label class="fl">Specific Day</label>
-                    <select name="day_of_week" id="schedDay" class="fi"><option value="">None (Daily)</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select>
+                    <select name="day_of_week" id="schedDay" class="fi"><option value="">None (Daily)</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option><option>All Day</option></select>
                 </div>
             </div>
             <div style="display:flex; gap:12px; margin-top:25px">
@@ -387,13 +387,12 @@
         openModal('categoryModal');
     }
 
-    function openEditSchedule(id, svc, area, uc, start, end, freq, day, notes) {
+    function openEditSchedule(id, svc, area, start, end, freq, day, notes) {
         document.getElementById('schedModalTitle').innerText = 'Edit Timetable';
         document.getElementById('schedAction').value = 'edit_schedule';
         document.getElementById('schedId').value = id;
         document.getElementById('schedService').value = svc;
         document.getElementById('schedArea').value = area;
-        document.getElementById('schedUC').value = uc;
         document.getElementById('schedStart').value = start;
         document.getElementById('schedEnd').value = end;
         document.getElementById('schedFreq').value = freq;

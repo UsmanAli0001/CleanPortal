@@ -236,7 +236,7 @@ style body {
 /* Hover Effect */
 
 .feature:hover {
-    transform: translateY(-8px);
+    transform: translateY(-4px);
 }
 
 /* Feature Image */
@@ -272,7 +272,7 @@ style body {
 }
 
 .card:hover {
-    transform: translateY(-8px);
+    transform: translateY(-4px);
 }
 
 .card img {

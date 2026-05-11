@@ -447,7 +447,9 @@ class Vehicle(models.Model):
     sim_phase = models.FloatField(default=0.0, help_text="Simulation phase offset for GPS trajectory")
     source_name = models.CharField(max_length=100, default='Main Depot', help_text="Starting point name, e.g., 'West Garage'")
     assign_date = models.DateField(null=True, blank=True)
+    assign_time = models.TimeField(null=True, blank=True)
     estimating_time = models.CharField(max_length=50, blank=True, null=True)
+    approaching_time = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. 8-12m")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -536,12 +538,13 @@ class MunicipalServiceSchedule(models.Model):
     ]
     DAYS_OF_WEEK = [
         ('Monday', 'Monday'), ('Tuesday', 'Tuesday'), ('Wednesday', 'Wednesday'),
-        ('Thursday', 'Thursday'), ('Friday', 'Friday'), ('Saturday', 'Saturday'), ('Sunday', 'Sunday')
+        ('Thursday', 'Thursday'), ('Friday', 'Friday'), ('Saturday', 'Saturday'), ('Sunday', 'Sunday'),
+        ('All Day', 'All Day')
     ]
     
     service = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, related_name='municipal_schedules')
     area_name = models.CharField(max_length=150, help_text="e.g., Fawara Chowk")
-    union_council = models.CharField(max_length=150, help_text="e.g., Model Town")
+    union_council = models.CharField(max_length=150, help_text="e.g., Model Town", blank=True, null=True)
     start_time = models.TimeField()
     end_time = models.TimeField()
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default='Daily')
@@ -706,3 +709,24 @@ class GalleryLike(models.Model):
 
     class Meta:
         unique_together = ('gallery_item', 'user', 'ip_address')
+
+class AdminNotification(models.Model):
+    TYPE_CHOICES = [
+        ('complaint', 'New Complaint'),
+        ('feedback', 'User Feedback'),
+        ('like', 'Gallery Like'),
+        ('update', 'Admin Update'),
+        ('review', 'New Review'),
+    ]
+    
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES)
+    message = models.TextField()
+    link = models.CharField(max_length=255, blank=True, null=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_type_display()} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+    class Meta:
+        ordering = ['-created_at']

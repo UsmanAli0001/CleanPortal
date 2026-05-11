@@ -164,6 +164,23 @@
         margin-top: 5px;
     }
 
+    .btn-delete-icon {
+        background: #ef4444 !important;
+        color: white !important;
+        padding: 8px 10px !important;
+        border-radius: 6px !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease !important;
+    }
+
+    .btn-delete-icon:hover {
+        background: #dc2626 !important;
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+    }
+
     .empty-state {
         text-align: center;
         padding: 60px 40px;
@@ -309,10 +326,15 @@
                             {% endif %}
                         </div>
 
-                        <div class="form-group-full">
-                            <button type="submit" class="btn-manage btn-update">
+                        <div class="form-group-full" style="display: flex; gap: 8px; align-items: center;">
+                            <button type="submit" class="btn-manage btn-update" style="flex: 1; margin-top: 0;">
                                 <i data-lucide="refresh-cw" style="width: 14px;"></i> Update Record
                             </button>
+                            <a href="javascript:void(0)" class="btn-delete-icon" 
+                               title="Delete Permanently"
+                               onclick="deleteComplaint(this, '{{ c.id }}', '{{ c.complaint_id }}')">
+                                <i data-lucide="trash-2" style="width: 16px;"></i>
+                            </a>
                         </div>
                     </form>
                 </td>
@@ -347,6 +369,57 @@
                 tr[i].style.display = "";
             } else {
                 tr[i].style.display = "none";
+            }
+        }
+    }
+
+    async function deleteComplaint(btn, id, cid) {
+        if (!confirm(`CRITICAL ACTION: Are you sure you want to PERMANENTLY DELETE complaint ${cid}? This action cannot be undone.`)) return;
+
+        try {
+            const response = await fetch(`/delete-complaint/${id}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                // Smooth removal animation
+                const row = btn.closest('.complaint-row');
+                row.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(30px)';
+                
+                setTimeout(() => {
+                    row.remove();
+                    // Show success toast
+                    if (window.Toast) {
+                        Toast.show('Deleted!', data.message, 'warning');
+                    }
+                    
+                    // Check if table is empty to show empty state
+                    const trs = document.getElementsByClassName("complaint-row");
+                    if (trs.length === 0) {
+                        location.reload();
+                    }
+                }, 500);
+            } else {
+                if (window.Toast) {
+                    Toast.show('Error', data.message, 'error');
+                } else {
+                    alert(data.message);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            if (window.Toast) {
+                Toast.show('Error', 'An unexpected error occurred.', 'error');
+            } else {
+                alert('An unexpected error occurred.');
             }
         }
     }

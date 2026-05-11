@@ -373,7 +373,7 @@
     <!-- Search Section -->
     <section class="search-wrapper">
         <form method="GET" class="premium-search">
-            <input type="text" name="q" value="{{ query }}" placeholder="Search by area, street or union council...">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search by area or street...">
             <button type="submit" class="premium-search-btn">
                 <i data-lucide="search"></i> Search
             </button>
@@ -464,7 +464,7 @@
                 <div class="card-body">
                     <div class="detail-row">
                         <i data-lucide="map-pin"></i>
-                        <span><strong>Area:</strong> {{ item.data.area_name }} <span style="opacity: 0.6;">({{ item.data.union_council }})</span></span>
+                        <span><strong>Area:</strong> {{ item.data.area_name }}</span>
                     </div>
                     
                     <div class="detail-row">

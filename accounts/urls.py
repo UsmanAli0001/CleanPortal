@@ -7,7 +7,7 @@ from .views import (
     schedule_public_view, admin_schedule_manage, maintenance_view, emergency_view, download_reports_view,
     submit_feedback, zone_management_view, vehicle_tracking_view,
     stripe_checkout, stripe_success, stripe_cancel,
-    get_announcements, mark_announcement_read,
+    get_announcements, mark_announcement_read, mark_all_user_notifications_read,
     get_zones, detect_zone,
     # Fleet Management
     api_vehicles_list, api_vehicle_history,
@@ -23,9 +23,11 @@ from .views import (
     admin_notifications, notifications_view, service_history_view,
     admin_holiday_management, holiday_details_view, services_view,
     admin_contact_messages, admin_reply_contact, delete_contact_message,
-    photo_gallery_view, admin_gallery_view, gallery_like_api,
+    photo_gallery_view, admin_gallery_view, gallery_like_api, gallery_view_api,
     admin_gallery_list, admin_gallery_upload, admin_gallery_delete,
-    admin_gallery_categories, admin_category_delete, api_gallery_toggle
+    admin_gallery_categories, admin_category_delete, api_gallery_toggle,
+    get_admin_notifications, mark_admin_notifications_read, delete_admin_notification, mark_single_admin_notification_read,
+    delete_all_admin_notifications
 )
 
 urlpatterns = [
@@ -53,6 +55,7 @@ urlpatterns = [
     path('notifications/', notifications_view, name='notifications'),
     path('api/announcements/', get_announcements, name='get_announcements'),
     path('api/announcements/read/<int:pk>/', mark_announcement_read, name='mark_announcement_read'),
+    path('api/announcements/read-all/', mark_all_user_notifications_read, name='mark_all_read'),
 
     # Zones API
     path('api/zones/', get_zones, name='get_zones'),
@@ -144,4 +147,10 @@ urlpatterns = [
     path('admin-Gallery/categories/delete/<int:pk>/', admin_category_delete, name='admin_category_delete'),
     path('api/gallery/toggle/', api_gallery_toggle, name='api_gallery_toggle'),
     path('api/gallery/like/', gallery_like_api, name='gallery_like_api'),
+    path('api/gallery/view/', gallery_view_api, name='gallery_view_api'),
+    path('api/admin-notifications/', get_admin_notifications, name='get_admin_notifications'),
+    path('api/admin-notifications/read/', mark_admin_notifications_read, name='mark_admin_notifications_read'),
+    path('admin-notifications/delete/<int:pk>/', delete_admin_notification, name='delete_admin_notification'),
+    path('admin-notifications/read-single/<int:pk>/', mark_single_admin_notification_read, name='mark_single_admin_notification_read'),
+    path('admin-notifications/delete-all/', delete_all_admin_notifications, name='delete_all_admin_notifications'),
 ]

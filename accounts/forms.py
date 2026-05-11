@@ -5,12 +5,14 @@ class LoginForm(forms.Form):
     email = forms.EmailField(widget=forms.EmailInput(attrs={
         'placeholder': 'Enter your email',
         'class': 'form-input',
-        'required': 'required'
+        'required': 'required',
+        'autocomplete': 'off'
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'placeholder': 'Enter your password',
         'class': 'form-input',
-        'required': 'required'
+        'required': 'required',
+        'autocomplete': 'new-password'
     }))
     remember_me = forms.BooleanField(required=False, widget=forms.CheckboxInput(attrs={
         'id': 'rememberMe'
@@ -20,27 +22,32 @@ class RegistrationForm(forms.ModelForm):
     first_name = forms.CharField(widget=forms.TextInput(attrs={
         'placeholder': 'First Name',
         'class': 'form-input',
-        'required': 'required'
+        'required': 'required',
+        'autocomplete': 'off'
     }))
     last_name = forms.CharField(widget=forms.TextInput(attrs={
         'placeholder': 'Last Name',
         'class': 'form-input',
-        'required': 'required'
+        'required': 'required',
+        'autocomplete': 'off'
     }))
     email = forms.EmailField(widget=forms.EmailInput(attrs={
         'placeholder': 'Email Address',
         'class': 'form-input',
-        'required': 'required'
+        'required': 'required',
+        'autocomplete': 'off'
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'placeholder': 'Password',
         'class': 'form-input',
-        'required': 'required'
+        'required': 'required',
+        'autocomplete': 'new-password'
     }))
     confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={
         'placeholder': 'Confirm Password',
         'class': 'form-input',
-        'required': 'required'
+        'required': 'required',
+        'autocomplete': 'new-password'
     }))
 
     class Meta:

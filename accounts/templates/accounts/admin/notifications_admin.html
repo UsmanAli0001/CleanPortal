@@ -43,6 +43,38 @@
     
     .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .btn-delete:hover { background: #ef4444; color: white; }
+    
+    .btn-read:hover { background: #10b981 !important; color: white !important; }
+
+    /* Glowing Action Icons */
+    .icon-action-btn {
+        width: 42px; height: 42px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none; text-decoration: none;
+    }
+    
+    .icon-action-btn i { width: 20px; height: 20px; }
+
+    .glow-green {
+        background: #f0fdf4; color: #10b981;
+        box-shadow: 0 0 0px rgba(16, 185, 129, 0);
+    }
+    .glow-green:hover {
+        background: #10b981; color: white;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        transform: translateY(-3px);
+    }
+
+    .glow-red {
+        background: #fef2f2; color: #ef4444;
+        box-shadow: 0 0 0px rgba(239, 68, 68, 0);
+    }
+    .glow-red:hover {
+        background: #ef4444; color: white;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+        transform: translateY(-3px);
+    }
 </style>
 {% endblock %}
 
@@ -135,32 +167,99 @@
     </div>
 
     <!-- Active Global Announcements -->
-    <div class="notif-list-card">
-        <h3><i data-lucide="list"></i> Active Announcements</h3>
+    <div class="notif-grid" style="margin-top: 40px; grid-template-columns: 1fr;">
+        <div class="notif-list-card">
+            <h3><i data-lucide="list"></i> Active Announcements</h3>
+            <div class="notif-list">
+                {% for ann in announcements %}
+                    <div class="list-item">
+                        <div class="item-info">
+                            <h4>{{ ann.title }} <span class="badge-type tag-{{ ann.alert_type }}">{{ ann.alert_type }}</span></h4>
+                            <p>{{ ann.message|truncatewords:20 }}</p>
+                            <small style="color: #94a3b8; font-weight: 600;">Broadcasted on {{ ann.created_at|date:"M d, Y H:i" }}</small>
+                        </div>
+                        <form method="POST" style="margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete_announcement">
+                            <input type="hidden" name="id" value="{{ ann.id }}">
+                            <button type="submit" class="btn-delete">
+                                <i data-lucide="trash-2" style="width: 18px;"></i>
+                            </button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                        <i data-lucide="info" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
+                        <p>No active system-wide announcements found.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="notif-list-card" style="margin-top: 40px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <div style="flex: 1;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;"><i data-lucide="history" style="color: #38bdf8;"></i> Operational Control Logs</h3>
+                <p style="color: #64748b; font-size: 0.9rem; margin-top: 5px; margin-bottom: 0;">Real-time log of complaints, feedback, likes, and administrative updates.</p>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button onclick="markAllSeen()" class="icon-action-btn glow-green" title="Mark All as Seen">
+                    <i data-lucide="check-check"></i>
+                </button>
+                <a href="{% url 'delete_all_admin_notifications' %}" class="icon-action-btn glow-red" title="Delete All Logs" onclick="return confirm('CRITICAL ACTION: This will permanently delete ALL operational log history. Are you sure?')">
+                    <i data-lucide="trash-2"></i>
+                </a>
+            </div>
+        </div>
         <div class="notif-list">
-            {% for ann in announcements %}
+            {% for n in admin_notifications %}
                 <div class="list-item">
                     <div class="item-info">
-                        <h4>{{ ann.title }} <span class="badge-type tag-{{ ann.alert_type }}">{{ ann.alert_type }}</span></h4>
-                        <p>{{ ann.message|truncatewords:20 }}</p>
-                        <small style="color: #94a3b8; font-weight: 600;">Broadcasted on {{ ann.created_at|date:"M d, Y H:i" }}</small>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 10px; height: 10px; border-radius: 50%; background: {% if n.type == 'complaint' %}#ef4444{% elif n.type == 'feedback' %}#10b981{% elif n.type == 'like' %}#ec4899{% else %}#38bdf8{% endif %};"></div>
+                            <h4 style="font-size: 1rem;">{{ n.get_type_display }}</h4>
+                        </div>
+                        <p style="margin-top: 5px;">{{ n.message }}</p>
+                        <small style="color: #94a3b8; font-weight: 600;">{{ n.created_at|date:"M d, Y H:i" }}</small>
                     </div>
-                    <form method="POST" style="margin: 0;">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="delete_announcement">
-                        <input type="hidden" name="id" value="{{ ann.id }}">
-                        <button type="submit" class="btn-delete">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        {% if not n.is_read %}
+                            <a href="{% url 'mark_single_admin_notification_read' n.id %}" class="btn-read" title="Mark as Read" style="background: #ecfdf5; color: #10b981; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                                <i data-lucide="check-check" style="width: 18px;"></i>
+                            </a>
+                        {% endif %}
+                        
+                        {% if n.link %}
+                            <a href="{{ n.link }}" class="nav-btn" style="padding: 8px 15px; font-size: 0.75rem; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 8px; font-weight: 700;">Resolve / View</a>
+                        {% endif %}
+                        <a href="{% url 'delete_admin_notification' n.id %}" class="btn-delete" title="Delete Log Permanently" onclick="return confirm('Are you sure you want to permanently delete this operational log?')">
                             <i data-lucide="trash-2" style="width: 18px;"></i>
-                        </button>
-                    </form>
+                        </a>
+                    </div>
                 </div>
             {% empty %}
                 <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                    <i data-lucide="info" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
-                    <p>No active system-wide announcements found.</p>
+                    <i data-lucide="shield-check" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
+                    <p>System clean. No operational alerts recorded.</p>
                 </div>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<script>
+    function markAllSeen() {
+        fetch("{% url 'mark_admin_notifications_read' %}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Visual feedback
+                    document.querySelectorAll('.btn-read').forEach(btn => btn.remove());
+                    // Reload to update badge and state
+                    location.reload();
+                }
+            });
+    }
+</script>
 {% endblock %}

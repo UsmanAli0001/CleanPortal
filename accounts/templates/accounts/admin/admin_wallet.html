@@ -263,7 +263,9 @@
                 <tr>
                     <th>Complaint ID</th>
                     <th>Date & Time</th>
-                    <th>Customer Email</th>
+                    <th>Citizen Name / Email</th>
+                    <th>Category / Area</th>
+                    <th>Priority</th>
                     <th>Payment Status</th>
                     <th style="text-align: right;">Amount Collected</th>
                 </tr>
@@ -276,7 +278,25 @@
                         {{ pay.date|date:"d M, Y" }}
                         <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 700;">{{ pay.date|date:"H:i" }}</div>
                     </td>
-                    <td style="color: #64748b; font-weight: 500;">{{ pay.complaint.email }}</td>
+                    <td style="color: #64748b; font-weight: 500;">
+                        <div style="font-weight: 800; color: #0f172a;">{{ pay.complaint.name }}</div>
+                        <div style="font-size: 0.75rem;">{{ pay.complaint.email }}</div>
+                    </td>
+                    <td style="color: #475569; font-weight: 600;">
+                        <span style="color: #3b82f6;">{{ pay.complaint.complaint_type }}</span>
+                        <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 700;">{{ pay.complaint.area }}</div>
+                    </td>
+                    <td>
+                        {% if pay.complaint.priority == 'Urgent' %}
+                        <span class="status-badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                            URGENT
+                        </span>
+                        {% else %}
+                        <span class="status-badge" style="background: rgba(100, 116, 139, 0.1); color: #64748b;">
+                            NORMAL
+                        </span>
+                        {% endif %}
+                    </td>
                     <td>
                         <span class="status-badge status-{{ pay.status|lower }}">
                             {{ pay.status }}
@@ -288,7 +308,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 60px; color: #94a3b8; font-weight: 600;">
+                    <td colspan="7" style="text-align: center; padding: 60px; color: #94a3b8; font-weight: 600;">
                         <i data-lucide="info" style="width: 40px; height: 40px; margin-bottom: 15px; opacity: 0.3;"></i>
                         <div>No transaction records found.</div>
                     </td>

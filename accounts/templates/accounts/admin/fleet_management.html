@@ -431,11 +431,19 @@
                         </td>
                         <td style="font-weight: 600; color: #1e3a8a;">
                             {{ v.get_vehicle_type_display }}
+                            {% if v.assigned_zone %}
+                            <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; margin-top: 2px;">
+                                <i data-lucide="tag" style="width: 10px; height: 10px; display: inline-block; vertical-align: middle;"></i> {{ v.assigned_zone }}
+                            </div>
+                            {% endif %}
                         </td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #475569; font-weight: 700;">
                                 <i data-lucide="calendar" style="width: 14px; height: 14px; color: var(--primary-blue);"></i>
                                 {{ v.assign_date|default:"-" }}
+                                {% if v.assign_time %}
+                                <span style="margin-left: 5px; color: #64748b; font-size: 0.8rem;">at {{ v.assign_time|time:"h:i A" }}</span>
+                                {% endif %}
                             </div>
                         </td>
                         <td style="font-size: 0.8rem; color: #64748b;">{{ v.estimating_time|default:"-" }}</td>
@@ -446,7 +454,10 @@
                                     data-id="{{ v.id }}" data-status="{{ v.status|escapejs }}"
                                     data-complaint="{{ v.current_complaint.id|default:'' }}"
                                     data-type="{{ v.vehicle_type|escapejs }}"
+                                    data-assigned-zone="{{ v.assigned_zone|escapejs }}"
+                                    data-approaching-time="{{ v.approaching_time|escapejs }}"
                                     data-assign-date="{{ v.assign_date|date:'Y-m-d' }}"
+                                    data-assign-time="{{ v.assign_time|time:'H:i' }}"
                                     data-estimating-time="{{ v.estimating_time|escapejs }}"
                                     onclick="openEditModal(this)" title="Update Status"><i data-lucide="edit-3"
                                         style="width: 14px; height: 14px;"></i></button>
@@ -479,10 +490,9 @@
         </div>
         <form action="{% url 'fleet_add_vehicle' %}" method="post">
             {% csrf_token %}
-            <div
-                style="background: #f8fafc; padding: 10px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div class="form-group" style="margin-bottom: 10px;">
+            <div style="background: #f8fafc; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; margin-bottom: 12px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 0.75rem;">Vehicle ID</label>
                         <input type="text" name="vehicle_id" class="form-input"
                             style="padding: 10px 12px; font-size: 0.85rem;" placeholder="GT-2001" required>
@@ -513,17 +523,22 @@
                         </select>
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
-                        <label class="form-label" style="font-size: 0.75rem;">Initial Zone</label>
+                        <label class="form-label" style="font-size: 0.75rem;">Complaint Type</label>
                         <select class="form-input" name="assigned_zone" style="padding: 10px 12px; font-size: 0.85rem;">
-                            <option value="">No Specific Zone</option>
-                            {% for area in gujrat_areas %}
-                            <option value="{{ area }}">{{ area }}</option>
+                            <option value="">No Specific Type</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.name }}">{{ cat.name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="form-group" style="margin-bottom: 10px;">
+                    <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 0.75rem;">Assign Date</label>
                         <input type="date" name="assign_date" class="form-input"
+                            style="padding: 10px 12px; font-size: 0.85rem;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 0.75rem;">Assign Time</label>
+                        <input type="time" name="assign_time" class="form-input"
                             style="padding: 10px 12px; font-size: 0.85rem;">
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
@@ -531,6 +546,11 @@
                         <input type="text" name="estimating_time" class="form-input"
                             style="padding: 10px 12px; font-size: 0.85rem;" placeholder="e.g. 2 Hours">
                     </div>
+                </div>
+                <div class="form-group" style="margin-top: 10px; margin-bottom: 0;">
+                    <label class="form-label" style="font-size: 0.75rem;">Approaching Time</label>
+                    <input type="text" name="approaching_time" id="add-approaching-time" class="form-input"
+                        style="padding: 10px 12px; font-size: 0.85rem;" placeholder="e.g. 10-20 mins">
                 </div>
             </div>
 
@@ -561,52 +581,70 @@
         </div>
         <form method="post" id="edit-form">
             {% csrf_token %}
-            <div class="form-group">
-                <label class="form-label">Vehicle Status</label>
-                <select class="form-input" name="status" id="e-status" required>
-                    <option value="Active">Active / On Duty</option>
-                    <option value="Idle">Idle / Waiting</option>
-                    <option value="In Transit">In Transit</option>
-                    <option value="Arrived">Arrived</option>
-                    <option value="Work in Progress">Work in Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Offline">Offline</option>
-                    <option value="Out of Service">Out of Service</option>
-                    <option value="Delayed">Delayed</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Vehicle Type</label>
-                <select class="form-input" name="vehicle_type" id="e-type" required>
-                    <option value="Garbage issue">Garbage truck</option>
-                    <option value="Drainage issue">Drain cleaner truck</option>
-                    <option value="Street light issue">Lift truck</option>
-                    <option value="Water issue">Water tanker</option>
-                    <option value="Street cleaning">Road cleaning truck</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Linked Complaint</label>
-                <select class="form-input" name="current_complaint" id="e-complaint">
-                    <option value="">None / Routine</option>
-                    {% for c in all_complaints %}
-                    <option value="{{ c.id }}">{{ c.complaint_id }} - {{ c.area }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div class="form-group">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Vehicle Status</label>
+                    <select class="form-input" name="status" id="e-status" required>
+                        <option value="Active">Active / On Duty</option>
+                        <option value="Idle">Idle / Waiting</option>
+                        <option value="In Transit">In Transit</option>
+                        <option value="Arrived">Arrived</option>
+                        <option value="Work in Progress">Work in Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Offline">Offline</option>
+                        <option value="Out of Service">Out of Service</option>
+                        <option value="Delayed">Delayed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Vehicle Type</label>
+                    <select class="form-input" name="vehicle_type" id="e-type" required>
+                        <option value="Garbage issue">Garbage truck</option>
+                        <option value="Drainage issue">Drain cleaner truck</option>
+                        <option value="Street light issue">Lift truck</option>
+                        <option value="Water issue">Water tanker</option>
+                        <option value="Street cleaning">Road cleaning truck</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Complaint Type</label>
+                    <select class="form-input" name="assigned_zone" id="e-assigned-zone">
+                        <option value="">No Specific Type</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.name }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Linked Complaint</label>
+                    <select class="form-input" name="current_complaint" id="e-complaint">
+                        <option value="">None / Routine</option>
+                        {% for c in all_complaints %}
+                        <option value="{{ c.id }}">{{ c.complaint_id }} - {{ c.area }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Assign Date</label>
                     <input type="date" name="assign_date" id="e-assign-date" class="form-input">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label">Assign Time</label>
+                    <input type="time" name="assign_time" id="e-assign-time" class="form-input">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label">Estimating Time</label>
                     <input type="text" name="estimating_time" id="e-estimating-time" class="form-input"
                         placeholder="e.g. 2 Hours">
                 </div>
+                <div class="form-group" style="margin-bottom: 0; grid-column: span 2;">
+                    <label class="form-label">Approaching Time</label>
+                    <input type="text" name="approaching_time" id="e-approaching-time" class="form-input"
+                        placeholder="e.g. 10-20 mins">
+                </div>
             </div>
-            <button type="submit" class="btn-primary">Update Deployment</button>
+            <button type="submit" class="btn-primary" style="padding: 12px;">Update Deployment</button>
         </form>
     </div>
 </div>
@@ -622,7 +660,10 @@
         const status = btn.getAttribute('data-status');
         const complaintId = btn.getAttribute('data-complaint');
         const type = btn.getAttribute('data-type');
+        const assignedZone = btn.getAttribute('data-assigned-zone');
+        const approachingTime = btn.getAttribute('data-approaching-time');
         const assignDate = btn.getAttribute('data-assign-date');
+        const assignTime = btn.getAttribute('data-assign-time');
         const estimatingTime = btn.getAttribute('data-estimating-time');
 
         const form = document.getElementById('edit-form');
@@ -631,12 +672,18 @@
         const statusEl = document.getElementById('e-status');
         const complaintEl = document.getElementById('e-complaint');
         const typeEl = document.getElementById('e-type');
+        const approachingTimeEl = document.getElementById('e-approaching-time');
         const assignDateEl = document.getElementById('e-assign-date');
+        const assignTimeEl = document.getElementById('e-assign-time');
         const estimatingTimeEl = document.getElementById('e-estimating-time');
 
         if (statusEl) statusEl.value = status;
         if (complaintEl) complaintEl.value = complaintId || "";
         if (typeEl) typeEl.value = type || "";
+        if (approachingTimeEl) approachingTimeEl.value = approachingTime || "";
+        if (assignTimeEl) assignTimeEl.value = assignTime || "";
+        const assignedZoneEl = document.getElementById('e-assigned-zone');
+        if (assignedZoneEl) assignedZoneEl.value = assignedZone || "";
         if (assignDateEl) assignDateEl.value = assignDate || "";
         if (estimatingTimeEl) estimatingTimeEl.value = estimatingTime || "";
 

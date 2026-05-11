@@ -4,17 +4,27 @@
 {% block title %}Manage Gallery Items | Admin{% endblock %}
 
 {% block admin_extra_css %}
-.gallery-table-img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
-.status-tag { padding: 4px 10px; border-radius: 50px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
+.gallery-table-img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; }
+.status-tag { padding: 2px 8px; border-radius: 50px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; }
 .tag-completed { background: #dcfce7; color: #166534; }
 .tag-resolved { background: #dbeafe; color: #1e40af; }
 .tag-progress { background: #fef3c7; color: #92400e; }
 
+.admin-table th { padding: 12px 15px !important; font-size: 0.65rem !important; letter-spacing: 0.5px !important; }
+.admin-table td { padding: 8px 15px !important; vertical-align: middle !important; }
+.admin-card { padding: 20px !important; }
+
+.btn-compact { padding: 2px 6px !important; border-radius: 5px !important; min-width: auto !important; }
+.btn-compact i { width: 12px !important; height: 12px !important; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 .toggle-switch {
     position: relative;
     display: inline-block;
-    width: 34px;
-    height: 20px;
+    width: 30px;
+    height: 18px;
 }
 .toggle-switch input { opacity: 0; width: 0; height: 0; }
 .slider {
@@ -28,14 +38,14 @@
 .slider:before {
     position: absolute;
     content: "";
-    height: 14px; width: 14px;
+    height: 12px; width: 12px;
     left: 3px; bottom: 3px;
     background-color: white;
     transition: .4s;
     border-radius: 50%;
 }
 input:checked + .slider { background-color: #2563eb; }
-input:checked + .slider:before { transform: translateX(14px); }
+input:checked + .slider:before { transform: translateX(12px); }
 {% endblock %}
 
 {% block admin_content %}
@@ -55,13 +65,14 @@ input:checked + .slider:before { transform: translateX(14px); }
 </div>
 
 <div class="admin-card">
-    <div style="overflow-x: auto;">
+    <div class="no-scrollbar" style="overflow-x: auto;">
         <table class="admin-table">
             <thead>
                 <tr>
                     <th>Image</th>
                     <th>Title & Area</th>
                     <th>Category</th>
+                    <th>Complaint ID</th>
                     <th>Status</th>
                     <th>Featured</th>
                     <th>Visible</th>
@@ -79,11 +90,20 @@ input:checked + .slider:before { transform: translateX(14px); }
                         </div>
                     </td>
                     <td>
-                        <div style="font-weight: 700; color: #1e293b;">{{ item.title }}</div>
-                        <div style="font-size: 0.75rem; color: #64748b;">{{ item.area }}</div>
+                        <div style="font-weight: 700; color: #1e293b; font-size: 0.85rem; line-height: 1.2;">{{ item.title }}</div>
+                        <div style="font-size: 0.7rem; color: #64748b;">{{ item.area }}</div>
                     </td>
                     <td>
                         <span style="font-size: 0.75rem; font-weight: 600; color: #475569;">{{ item.category.name }}</span>
+                    </td>
+                    <td>
+                        {% if item.complaint %}
+                            <a href="{% url 'update_complaint' item.complaint.id %}" style="font-size: 0.7rem; font-weight: 700; color: #3b82f6; background: #eff6ff; padding: 2px 8px; border-radius: 6px; text-decoration: none; border: 1px solid #dbeafe;">
+                                {{ item.complaint.complaint_id }}
+                            </a>
+                        {% else %}
+                            <span style="font-size: 0.7rem; color: #94a3b8;">—</span>
+                        {% endif %}
                     </td>
                     <td>
                         <span class="status-tag tag-{{ item.status|lower }}">{{ item.status }}</span>
@@ -101,17 +121,17 @@ input:checked + .slider:before { transform: translateX(14px); }
                         </label>
                     </td>
                     <td>
-                        <div style="font-size: 0.7rem; color: #64748b; display: flex; flex-direction: column;">
+                        <div style="font-size: 0.65rem; color: #64748b; display: flex; flex-direction: column; gap: 2px;">
                             <span><i data-lucide="heart" style="width: 10px; display: inline;"></i> {{ item.likes_count }}</span>
                             <span><i data-lucide="eye" style="width: 10px; display: inline;"></i> {{ item.views_count }}</span>
                         </div>
                     </td>
                     <td>
-                        <div style="display: flex; gap: 8px;">
-                            <a href="{% url 'admin_gallery_edit' item.pk %}" class="btn-manage" style="padding: 8px 12px; background: #f1f5f9; color: #1e293b !important;">
+                        <div style="display: flex; gap: 6px;">
+                            <a href="{% url 'admin_gallery_edit' item.pk %}" class="btn-manage btn-compact" style="background: #f1f5f9; color: #1e293b !important;">
                                 <i data-lucide="edit-2"></i>
                             </a>
-                            <a href="{% url 'admin_gallery_delete' item.pk %}" class="btn-manage" style="padding: 8px 12px; background: #fee2e2; color: #b91c1c !important;" onclick="return confirm('Delete this gallery item?')">
+                            <a href="{% url 'admin_gallery_delete' item.pk %}" class="btn-manage btn-compact" style="background: #fee2e2; color: #b91c1c !important;" onclick="return confirm('Delete this gallery item?')">
                                 <i data-lucide="trash-2"></i>
                             </a>
                         </div>
@@ -119,7 +139,7 @@ input:checked + .slider:before { transform: translateX(14px); }
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">No gallery items found. Create your first one!</td>
+                    <td colspan="9" style="text-align: center; padding: 40px; color: #94a3b8;">No gallery items found. Create your first one!</td>
                 </tr>
                 {% endfor %}
             </tbody>

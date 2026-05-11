@@ -293,29 +293,29 @@
 
     <!-- Toasts replaced alerts -->
 
-    <form id="regForm" method="POST" action="{% url 'register' %}">
+    <form id="regForm" method="POST" action="{% url 'register' %}" autocomplete="off">
         {% csrf_token %}
         <div class="form-row">
             <div class="form-group">
                 <label>First Name</label>
-                <input type="text" name="first_name" required placeholder="User">
+                <input type="text" name="first_name" required placeholder="User" autocomplete="off">
             </div>
             <div class="form-group">
                 <label>Last Name</label>
-                <input type="text" name="last_name" required placeholder="Name">
+                <input type="text" name="last_name" required placeholder="Name" autocomplete="off">
             </div>
         </div>
 
         <div class="form-group">
             <label>Email Address</label>
-            <input type="email" name="email" id="emailInput" required placeholder="name@example.com">
+            <input type="email" name="email" id="emailInput" required placeholder="name@example.com" autocomplete="off">
             <div id="emailError" class="error-msg">Email already exists</div>
         </div>
 
         <div class="form-group">
             <label>Password</label>
             <div class="input-wrapper">
-                <input type="password" name="password" id="pwInput" required placeholder="••••••••">
+                <input type="password" name="password" id="pwInput" required placeholder="••••••••" autocomplete="new-password">
                 <button type="button" class="pw-toggle" onclick="togglePw('pwInput')">👁️</button>
             </div>
             <div class="strength-meter"><div id="strengthBar" class="strength-bar"></div></div>
@@ -325,7 +325,7 @@
         <div class="form-group">
             <label>Confirm Password</label>
             <div class="input-wrapper">
-                <input type="password" name="confirm_password" id="confirmInput" required placeholder="••••••••">
+                <input type="password" name="confirm_password" id="confirmInput" required placeholder="••••••••" autocomplete="new-password">
                 <button type="button" class="pw-toggle" onclick="togglePw('confirmInput')">👁️</button>
             </div>
             <div id="matchError" class="error-msg">Passwords do not match</div>
@@ -469,6 +469,10 @@
         submitBtn.disabled = true;
         btnText.innerText = 'Registering Pak Portal...';
         spinner.style.display = 'block';
+    });
+
+    window.addEventListener('load', () => {
+        if (form) form.reset();
     });
 </script>
 

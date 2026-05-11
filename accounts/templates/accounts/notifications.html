@@ -23,9 +23,12 @@
     /* Mesh Background */
     .mesh-bg {
         position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
         z-index: -1;
-        background: 
+        background:
             radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
             radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
             radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
@@ -123,7 +126,8 @@
         box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3);
     }
 
-    .filter-btn.active i, .filter-btn.active .count {
+    .filter-btn.active i,
+    .filter-btn.active .count {
         color: white;
     }
 
@@ -171,14 +175,14 @@
         align-items: center;
         gap: 8px;
         transition: 0.3s;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
     }
 
     .action-btn:hover {
         border-color: var(--accent-indigo);
         color: var(--accent-indigo);
         transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
     }
 
     /* --- Notification Card --- */
@@ -199,8 +203,15 @@
     }
 
     @keyframes slideIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .alert-item:hover {
@@ -217,8 +228,10 @@
     .alert-item.unread::after {
         content: '';
         position: absolute;
-        top: 20px; right: 20px;
-        width: 10px; height: 10px;
+        top: 20px;
+        right: 20px;
+        width: 10px;
+        height: 10px;
         background: var(--accent-indigo);
         border-radius: 50%;
         box-shadow: 0 0 10px var(--accent-indigo);
@@ -240,13 +253,30 @@
     }
 
     /* Type Specific Colors */
-    .alert-item.info .alert-icon-box { background: #eff6ff; color: #3b82f6; }
-    .alert-item.success .alert-icon-box { background: #f0fdf4; color: #10b981; }
-    .alert-item.warning .alert-icon-box { background: #fffbeb; color: #f59e0b; }
-    .alert-item.urgent .alert-icon-box { background: #fef2f2; color: #ef4444; }
+    .alert-item.info .alert-icon-box {
+        background: #eff6ff;
+        color: #3b82f6;
+    }
 
-    .alert-content { flex: 1; }
-    
+    .alert-item.success .alert-icon-box {
+        background: #f0fdf4;
+        color: #10b981;
+    }
+
+    .alert-item.warning .alert-icon-box {
+        background: #fffbeb;
+        color: #f59e0b;
+    }
+
+    .alert-item.urgent .alert-icon-box {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+
+    .alert-content {
+        flex: 1;
+    }
+
     .category-chip {
         font-size: 0.65rem;
         font-weight: 900;
@@ -256,7 +286,7 @@
         margin-bottom: 8px;
         display: inline-block;
         letter-spacing: 1px;
-        background: rgba(0,0,0,0.03);
+        background: rgba(0, 0, 0, 0.03);
         color: var(--text-muted);
     }
 
@@ -280,7 +310,7 @@
         justify-content: space-between;
         align-items: center;
         margin-top: 15px;
-        border-top: 1px solid rgba(0,0,0,0.03);
+        border-top: 1px solid rgba(0, 0, 0, 0.03);
         padding-top: 12px;
     }
 
@@ -322,7 +352,8 @@
     }
 
     .empty-icon-wrapper {
-        width: 100px; height: 100px;
+        width: 100px;
+        height: 100px;
         background: rgba(99, 102, 241, 0.05);
         border-radius: 30px;
         display: flex;
@@ -334,12 +365,28 @@
     }
 
     @keyframes floating {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
     }
 
-    .empty-state h3 { font-size: 1.8rem; font-weight: 800; margin: 0 0 10px; color: #1e293b; }
-    .empty-state p { font-size: 1rem; color: var(--text-muted); }
+    .empty-state h3 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin: 0 0 10px;
+        color: #1e293b;
+    }
+
+    .empty-state p {
+        font-size: 1rem;
+        color: var(--text-muted);
+    }
 
     /* Skeleton Loading */
     .skeleton {
@@ -351,15 +398,77 @@
     }
 
     @keyframes loading {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
     }
 
     @media (max-width: 992px) {
-        .inbox-container { flex-direction: column; }
-        .inbox-sidebar { width: 100%; position: static; }
-        .sidebar-card { padding: 16px; }
-        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .inbox-container {
+            flex-direction: column;
+        }
+
+        .inbox-sidebar {
+            width: 100%;
+            position: static;
+        }
+
+        .sidebar-card {
+            padding: 16px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+    }
+
+    /* --- Cinematic Refresh Button --- */
+    .cinematic-refresh {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        padding: 0;
+        justify-content: center;
+        background: white;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .cinematic-refresh:hover {
+        background: var(--accent-indigo);
+        color: white;
+        transform: rotate(180deg) scale(1.1);
+        border-color: var(--accent-indigo);
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+    }
+
+    .cinematic-refresh:active {
+        transform: rotate(180deg) scale(0.95);
+    }
+
+    .cinematic-refresh.spinning i {
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
     }
 </style>
 {% endblock %}
@@ -395,9 +504,11 @@
             </div>
         </div>
 
-        <div class="sidebar-card" style="margin-top: 20px; background: linear-gradient(135deg, #1e40af, #6366f1); color: white; border: none;">
+        <div class="sidebar-card"
+            style="margin-top: 20px; background: linear-gradient(135deg, #1e40af, #6366f1); color: white; border: none;">
             <h4 style="margin: 0; font-size: 1rem; font-weight: 800;">Smart Summary</h4>
-            <p style="font-size: 0.8rem; margin-top: 8px; opacity: 0.8; line-height: 1.4;">You have <span id="summary-unread">0</span> new messages that require your attention.</p>
+            <p style="font-size: 0.8rem; margin-top: 8px; opacity: 0.8; line-height: 1.4;">You have <span
+                    id="summary-unread">0</span> new messages that require your attention.</p>
         </div>
     </aside>
 
@@ -405,11 +516,8 @@
         <header class="inbox-header">
             <h1 class="main-title">Unified Inbox</h1>
             <div class="header-actions">
-                <button class="action-btn" onclick="fetchAnnouncements()">
-                    <i data-lucide="refresh-cw"></i> Refresh
-                </button>
-                <button class="action-btn" title="Settings">
-                    <i data-lucide="settings"></i>
+                <button class="cinematic-refresh" onclick="fetchAnnouncements()" title="Refresh Inbox">
+                    <i data-lucide="refresh-cw"></i>
                 </button>
             </div>
         </header>
@@ -432,21 +540,27 @@
     const TYPE_LABELS = {
         'announcement': 'System Alert',
         'personal': 'Personal Message',
-        'status_update': 'Track Status'
+        'status_update': 'Track Status',
+        'admin': 'Admin Update'
     };
 
     const TYPE_ICONS = {
         'announcement': 'bell',
         'personal': 'mail',
-        'status_update': 'activity'
+        'status_update': 'activity',
+        'admin': 'shield'
     };
 
     function fetchAnnouncements() {
+        const btn = document.querySelector('.cinematic-refresh');
+        if (btn) btn.classList.add('spinning');
+
         const list = document.getElementById('alertList');
-        
+
         fetch("{% url 'get_announcements' %}")
             .then(res => res.json())
             .then(data => {
+                if (btn) btn.classList.remove('spinning');
                 if (data.status === 'success') {
                     ALL_NOTIFICATIONS = data.announcements;
                     updateCounts();
@@ -454,6 +568,7 @@
                 }
             })
             .catch(err => {
+                if (btn) btn.classList.remove('spinning');
                 list.innerHTML = `<div class="empty-state">
                     <p style="color: #ef4444; font-weight: bold;">Error connecting to server. Please try refreshing.</p>
                 </div>`;
@@ -465,7 +580,7 @@
             all: ALL_NOTIFICATIONS.length,
             announcement: ALL_NOTIFICATIONS.filter(a => a.type === 'announcement').length,
             personal: ALL_NOTIFICATIONS.filter(a => a.type === 'personal').length,
-            status_update: ALL_NOTIFICATIONS.filter(a => a.type === 'status_update').length,
+            status_update: ALL_NOTIFICATIONS.filter(a => a.type === 'status_update' || a.type === 'admin').length,
             unread: ALL_NOTIFICATIONS.filter(a => !a.is_read).length
         };
 
@@ -484,6 +599,8 @@
 
         if (CURRENT_FILTER === 'unread') {
             filtered = ALL_NOTIFICATIONS.filter(a => !a.is_read);
+        } else if (CURRENT_FILTER === 'status_update') {
+            filtered = ALL_NOTIFICATIONS.filter(a => a.type === 'status_update' || a.type === 'admin');
         } else if (CURRENT_FILTER !== 'all') {
             filtered = ALL_NOTIFICATIONS.filter(a => a.type === CURRENT_FILTER);
         }
@@ -534,7 +651,7 @@
 
     function markRead(id, type, event) {
         event.stopPropagation();
-        
+
         // Optimistic UI update
         const index = ALL_NOTIFICATIONS.findIndex(n => n.id === id && n.type === type);
         if (index !== -1) {
@@ -546,7 +663,7 @@
         fetch(`/api/announcements/read/${id}/?type=${type}`)
             .then(res => res.json())
             .then(data => {
-                if(data.status !== 'success') {
+                if (data.status !== 'success') {
                     // Revert if failed
                     ALL_NOTIFICATIONS[index].is_read = false;
                     renderByFilter();
