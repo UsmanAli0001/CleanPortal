@@ -380,7 +380,17 @@
     <div class="registry-card">
         <div class="card-header">
             <h3 class="card-title">Vehicle Registry</h3>
-            <div style="font-size: 0.8rem; color: #64748b;">Showing all {{ vehicles.count }} vehicles</div>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="search-box-wrapper" style="background: white; border: 1.5px solid #3b82f6; padding: 6px 15px; border-radius: 12px; display: flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); transition: all 0.3s ease;">
+                    <i data-lucide="search" style="color: #3b82f6; width: 16px; height: 16px;"></i>
+                    <input type="text" id="complaintSearch" placeholder="Search Assigned Complaint..." 
+                           onkeyup="filterFleet()" 
+                           onfocus="this.parentElement.style.boxShadow='0 0 20px rgba(59, 130, 246, 0.4)'; this.parentElement.style.borderColor='#2563eb';"
+                           onblur="this.parentElement.style.boxShadow='0 0 15px rgba(59, 130, 246, 0.15)'; this.parentElement.style.borderColor='#3b82f6';"
+                           style="border: none; outline: none; font-size: 0.8rem; width: 180px; font-family: 'Outfit', sans-serif; color: #1e293b; background: transparent;">
+                </div>
+                <div style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Showing all <span id="vehicleCount">{{ vehicles.count }}</span> vehicles</div>
+            </div>
         </div>
         <div class="table-container">
             <table class="vehicle-table">
@@ -698,6 +708,30 @@
         const addModal = document.getElementById('add-modal');
         if (event.target == editModal) closeEditModal();
         if (event.target == addModal) closeAddModal();
+    }
+
+    function filterFleet() {
+        const input = document.getElementById("complaintSearch");
+        const filter = input.value.toLowerCase();
+        const table = document.querySelector(".vehicle-table");
+        const tr = table.getElementsByTagName("tr");
+        let visibleCount = 0;
+
+        for (let i = 1; i < tr.length; i++) {
+            const td = tr[i].getElementsByTagName("td")[2]; // "Assigned Complaint & Area" column
+            if (td) {
+                const textContent = td.textContent || td.innerText;
+                if (textContent.toLowerCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                    visibleCount++;
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+        
+        const countSpan = document.getElementById("vehicleCount");
+        if (countSpan) countSpan.textContent = visibleCount;
     }
 
     document.addEventListener('DOMContentLoaded', () => {

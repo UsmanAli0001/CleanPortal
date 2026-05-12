@@ -209,6 +209,25 @@
     </div>
     
     <div style="display: flex; gap: 15px; align-items: center;">
+        <div class="search-container">
+            <i data-lucide="filter" style="color: #94a3b8; width: 18px;"></i>
+            <select id="statusFilter" class="search-input" onchange="filterComplaints()" style="width: 130px; cursor: pointer;">
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Verified">Verified</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </div>
+
+        <div class="search-container">
+            <i data-lucide="alert-circle" style="color: #94a3b8; width: 18px;"></i>
+            <select id="priorityFilter" class="search-input" onchange="filterComplaints()" style="width: 130px; cursor: pointer;">
+                <option value="">All Priorities</option>
+                <option value="Normal">Normal</option>
+                <option value="Urgent">Urgent</option>
+            </select>
+        </div>
 
         <div class="search-container">
             <i data-lucide="search" style="color: #94a3b8; width: 18px;"></i>
@@ -358,14 +377,36 @@
 {% block admin_extra_js %}
 <script>
     function filterComplaints() {
-        let input = document.getElementById("complaintSearch");
-        let filter = input.value.toLowerCase();
-        let table = document.getElementById("complaintsTable");
-        let tr = table.getElementsByClassName("complaint-row");
+        const searchInput = document.getElementById("complaintSearch");
+        const searchFilter = searchInput.value.toLowerCase();
+        
+        const statusInput = document.getElementById("statusFilter");
+        const statusFilter = statusInput.value.toLowerCase();
+        
+        const priorityInput = document.getElementById("priorityFilter");
+        const priorityFilter = priorityInput.value.toLowerCase();
+        
+        const table = document.getElementById("complaintsTable");
+        const tr = table.getElementsByClassName("complaint-row");
 
         for (let i = 0; i < tr.length; i++) {
-            let text = tr[i].textContent.toLowerCase();
-            if (text.includes(filter)) {
+            const rowText = tr[i].textContent.toLowerCase();
+            const statusTd = tr[i].getElementsByTagName("td")[2];
+            
+            // Get all badges in the status column
+            const badges = statusTd ? statusTd.querySelectorAll(".status-badge") : [];
+            
+            // Primary status is the first badge
+            const rowStatus = badges.length > 0 ? badges[0].textContent.trim().toLowerCase() : "";
+            
+            // Priority is the second badge (Normal/Urgent)
+            const rowPriority = badges.length > 1 ? badges[1].textContent.trim().toLowerCase() : "";
+            
+            const matchesSearch = rowText.includes(searchFilter);
+            const matchesStatus = statusFilter === "" || rowStatus === statusFilter;
+            const matchesPriority = priorityFilter === "" || rowPriority === priorityFilter;
+            
+            if (matchesSearch && matchesStatus && matchesPriority) {
                 tr[i].style.display = "";
             } else {
                 tr[i].style.display = "none";

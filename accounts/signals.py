@@ -14,6 +14,12 @@ from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+def notify_admin(type, message, link):
+    """Helper to create admin notifications while preventing unread duplicates."""
+    if not AdminNotification.objects.filter(type=type, message=message, is_read=False).exists():
+        return AdminNotification.objects.create(type=type, message=message, link=link)
+    return None
+
 def send_aesthetic_email(subject, recipient_email, user_name, message_title, message_content, action_url=None, action_text=None):
     """Helper to send a premium-styled HTML email."""
     html_content = f"""
@@ -111,24 +117,26 @@ def user_complaint_notification(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Complaint)
 def admin_complaint_notification(sender, instance, created, **kwargs):
-
     if created:
-        AdminNotification.objects.create(
+        notify_admin(
             type='complaint',
-            message=f"🚨 New Complaint submitted! ID: {instance.complaint_id} from {instance.area}. Priority: {instance.priority}.",
+            message=f"🚨 New Complaint submitted! Type: {instance.complaint_type}. ID: {instance.complaint_id} from {instance.area}. Priority: {instance.priority}.",
             link=reverse('complaints')
         )
     else:
-        AdminNotification.objects.create(
-            type='update',
-            message=f"🔄 Complaint Update: {instance.complaint_id} status changed to {instance.status}.",
-            link=reverse('complaints')
-        )
+        # Deduplicate by only notifying if the status has actually changed
+        old_status = getattr(instance, '_old_status', None)
+        if old_status and old_status != instance.status:
+            notify_admin(
+                type='update',
+                message=f"🔄 Complaint Update: {instance.complaint_id} status changed to {instance.status}.",
+                link=reverse('complaints')
+            )
 
 @receiver(post_save, sender=Feedback)
 def admin_feedback_notification(sender, instance, created, **kwargs):
     if created:
-        AdminNotification.objects.create(
+        notify_admin(
             type='feedback',
             message=f"⭐ New Citizen Review! {instance.rating} Stars received from {instance.user.username if instance.user else 'Anonymous'}.",
             link=reverse('admin_feedback')
@@ -137,7 +145,7 @@ def admin_feedback_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=GalleryLike)
 def admin_like_notification(sender, instance, created, **kwargs):
     if created:
-        AdminNotification.objects.create(
+        notify_admin(
             type='like',
             message=f"❤️ Gallery Engagement! A user liked the project: {instance.gallery_item.title}.",
             link=reverse('admin_gallery_list')
@@ -160,9 +168,15 @@ def capture_old_vehicle_fields(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Vehicle)
 def admin_vehicle_notification(sender, instance, created, **kwargs):
-
     action = "onboarded" if created else "status updated"
-    AdminNotification.objects.create(
+    
+    # Only notify on status change for updates to prevent duplicates
+    if not created:
+        old_status = getattr(instance, '_old_status', None)
+        if old_status == instance.status:
+            return
+
+    notify_admin(
         type='update',
         message=f"🚚 Fleet Update: Vehicle {instance.vehicle_id} {action} to: {instance.status}.",
         link=reverse('fleet_admin')
@@ -222,7 +236,7 @@ def admin_vehicle_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Staff)
 def admin_staff_notification(sender, instance, created, **kwargs):
     action = "onboarded" if created else "profile updated"
-    AdminNotification.objects.create(
+    notify_admin(
         type='update',
         message=f"👥 Workforce Update: Staff {instance.name} has been {action}.",
         link=reverse('staff')
@@ -231,7 +245,7 @@ def admin_staff_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Payment)
 def admin_payment_notification(sender, instance, created, **kwargs):
     if created:
-        AdminNotification.objects.create(
+        notify_admin(
             type='update',
             message=f"💳 Revenue Alert! New payment of Rs. {instance.amount} received for {instance.complaint.complaint_id}.",
             link=reverse('payment_admin')
@@ -240,7 +254,7 @@ def admin_payment_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=ContactMessage)
 def admin_contact_notification(sender, instance, created, **kwargs):
     if created:
-        AdminNotification.objects.create(
+        notify_admin(
             type='complaint',
             message=f"📧 New Inquiry! {instance.name} sent a message regarding {instance.category}.",
             link=reverse('admin_contact_messages')
@@ -271,7 +285,7 @@ def admin_contact_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=ServiceBooking)
 def admin_booking_notification(sender, instance, created, **kwargs):
     if created:
-        AdminNotification.objects.create(
+        notify_admin(
             type='update',
             message=f"📅 New Booking! {instance.service.name} scheduled by {instance.user.username}.",
             link=reverse('manage_bookings')
@@ -280,7 +294,7 @@ def admin_booking_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=GalleryItem)
 def admin_gallery_item_notification(sender, instance, created, **kwargs):
     action = "published" if created else "updated"
-    AdminNotification.objects.create(
+    notify_admin(
         type='update',
         message=f"Gallery item '{instance.title}' has been {action}.",
         link=reverse('admin_gallery_list')
@@ -289,7 +303,7 @@ def admin_gallery_item_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Zone)
 def admin_zone_notification(sender, instance, created, **kwargs):
     action = "created" if created else "updated"
-    AdminNotification.objects.create(
+    notify_admin(
         type='update',
         message=f"Zone '{instance.name}' has been {action}.",
         link=reverse('admin_zone_management')

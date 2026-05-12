@@ -38,7 +38,7 @@
         body {
             font-family: 'Outfit', sans-serif;
             background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-            url("{% static 'accounts/images/dashboard.png' %}");
+            url("{% static 'accounts/images/login.png' %}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -50,15 +50,15 @@
         }
 
         .auth-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
             width: 100%;
             max-width: 450px;
             padding: 45px;
-            border-radius: 28px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
             animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
@@ -97,10 +97,12 @@
             font-size: 1.6rem;
             font-weight: 800;
             letter-spacing: -0.5px;
+            color: #0f172a;
         }
 
         .brand h1 span {
-            color: var(--primary-blue);
+            color: #2563eb;
+            text-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
         }
 
         .brand p {
@@ -133,19 +135,20 @@
         input[type="text"] {
             width: 100%;
             padding: 14px 18px;
-            background: #f1f5f9;
-            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
             border-radius: 14px;
             font-family: inherit;
             font-size: 1rem;
+            color: #0f172a;
             transition: all 0.3s;
             outline: none;
         }
 
         input:focus {
-            border-color: var(--primary-blue);
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.1);
+            border-color: #2563eb;
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.1);
         }
 
         .pw-toggle {
@@ -156,8 +159,29 @@
             background: none;
             border: none;
             cursor: pointer;
-            color: var(--text-muted);
-            font-size: 1.1rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 5px;
+            border-radius: 8px;
+        }
+
+        .pw-toggle:hover {
+            color: #2563eb;
+            background: rgba(37, 99, 235, 0.1);
+            transform: translateY(-50%) scale(1.15);
+            filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.3));
+        }
+
+        .pw-toggle:active {
+            transform: translateY(-50%) scale(0.9);
+        }
+
+        .pw-toggle i {
+            width: 20px;
+            height: 20px;
         }
 
         .form-options {
@@ -187,7 +211,7 @@
         .forgot-link {
             font-size: 0.9rem;
             font-weight: 700;
-            color: var(--primary-blue);
+            color: #2563eb;
             text-decoration: none;
         }
 
@@ -248,8 +272,8 @@
         }
 
         .auth-footer a {
-            color: var(--primary-green);
-            font-weight: 700;
+            color: #16a34a;
+            font-weight: 800;
             text-decoration: none;
         }
 
@@ -478,7 +502,9 @@
                 <label>Password</label>
                 <div class="input-wrapper">
                     {{ form.password }}
-                    <button type="button" class="pw-toggle" onclick="togglePw()">👁️</button>
+                    <button type="button" class="pw-toggle" onclick="togglePw(this)">
+                        <i data-lucide="eye"></i>
+                    </button>
                 </div>
             </div>
 
@@ -555,9 +581,18 @@
         const btnText = document.querySelector('.btn-text');
         const spinner = document.querySelector('.spinner');
 
-        function togglePw() {
-            const pwInput = document.querySelector('input[type="password"]') || document.querySelector('input[name="password"]');
-            pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+        function togglePw(btn) {
+            const pwInput = document.querySelector('input[type="password"]') || document.querySelector('input[name="password"]') || document.getElementById('password');
+            const icon = btn.querySelector('i');
+
+            if (pwInput.type === 'password') {
+                pwInput.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                pwInput.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
         }
 
         form.addEventListener('submit', () => {
