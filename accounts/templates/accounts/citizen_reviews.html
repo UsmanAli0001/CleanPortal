@@ -331,10 +331,14 @@
             
             <div class="user-block">
                 <div class="avatar-circle">
-                    {{ review.user.username|slice:":1"|upper|default:"A" }}
+                    {% if review.user.first_name %}
+                        {{ review.user.first_name|slice:":1"|upper }}
+                    {% else %}
+                        {{ review.user.username|slice:":1"|upper|default:"A" }}
+                    {% endif %}
                 </div>
                 <div class="user-meta">
-                    <h4>{{ review.user.username|default:"Anonymous" }}</h4>
+                    <h4>{{ review.user.get_full_name|default:review.user.username|default:"Anonymous" }}</h4>
                     <span>{{ review.created_at|date:"F d, Y, P" }}</span>
                 </div>
             </div>

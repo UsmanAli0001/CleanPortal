@@ -194,96 +194,8 @@ line-height: 1.6;
 flex-grow: 1;
 }
 
-/* Cinematic Admin Intro Overlay */
-#admin-intro-overlay {
-position: fixed;
-inset: 0;
-z-index: 99999;
-background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
-display: none;
-align-items: center;
-justify-content: center;
-overflow: hidden;
-}
-
-.intro-content {
-position: relative;
-z-index: 10;
-text-align: center;
-pointer-events: none;
-}
-
-.intro-title {
-font-size: clamp(2rem, 6vw, 4.5rem);
-font-weight: 950;
-color: white;
-letter-spacing: 0.25em;
-text-transform: uppercase;
-margin: 0;
-opacity: 0;
-transform: translateY(30px);
-animation: revealTitle 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.8s forwards,
-textGlow 3s ease-in-out infinite alternate 2s;
-text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.intro-title span {
-color: #3b82f6;
-text-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
-}
-
-.intro-subtitle {
-color: #94a3b8;
-font-size: 1rem;
-font-weight: 600;
-letter-spacing: 0.5em;
-text-transform: uppercase;
-margin-top: 15px;
-opacity: 0;
-animation: fadeIn 1s ease-out 1.5s forwards;
-}
-
-@keyframes textGlow {
-from {
-text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0px rgba(59, 130, 246, 0);
-}
-to {
-text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.4);
-}
-}
-
-@keyframes revealTitle {
-to {
-opacity: 1;
-transform: translateY(0);
-}
-}
-
-@keyframes fadeIn {
-to {
-opacity: 1;
-}
-}
-
-.intro-fade-out {
-animation: fadeOutOverlay 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes fadeOutOverlay {
-to {
-opacity: 0;
-visibility: hidden;
-pointer-events: none;
-}
-}
 {% endblock %}
 {% block admin_content %}
-<div id="admin-intro-overlay">
-    <div class="intro-content">
-        <h1 class="intro-title">CLEAN PAK <span>PORTAL</span></h1>
-        <div class="intro-subtitle">Administrative Control Center</div>
-    </div>
-</div>
 <div class="bg-dashboard"></div>
 <div class="page-header">
     <div>
@@ -490,31 +402,5 @@ pointer-events: none;
 </div>
 {% endblock %}
 
-{% block admin_extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const overlay = document.getElementById('admin-intro-overlay');
-
-        // 1. Initial Login Intro
-        const justLoggedIn = sessionStorage.getItem('justLoggedIn') === 'true';
-        const isFromLogin = document.referrer.includes('/login/') || window.location.search.includes('login=success');
-
-        if ((justLoggedIn || isFromLogin) && !sessionStorage.getItem('adminIntroPlayed')) {
-            overlay.style.display = 'flex';
-            sessionStorage.setItem('adminIntroPlayed', 'true');
-            sessionStorage.removeItem('justLoggedIn');
-
-            document.body.style.overflow = 'hidden';
-
-            setTimeout(() => {
-                overlay.classList.add('intro-fade-out');
-                document.body.style.overflow = '';
-
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                }, 1000);
-            }, 3500);
-        }
-    });
-</script>
-{% endblock %}
+{% block admin_extra_js %}{% endblock %}
+

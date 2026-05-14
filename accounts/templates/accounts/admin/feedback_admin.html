@@ -273,10 +273,14 @@
         <div class="feedback-header">
             <div class="user-info">
                 <div class="user-avatar">
-                    {{ f.user.username|slice:":1"|upper }}
+                    {% if f.user.first_name %}
+                        {{ f.user.first_name|slice:":1"|upper }}
+                    {% else %}
+                        {{ f.user.username|slice:":1"|upper }}
+                    {% endif %}
                 </div>
                 <div class="user-details">
-                    <h4>{{ f.user.username }}</h4>
+                    <h4>{{ f.user.get_full_name|default:f.user.username }}</h4>
                     <span>{{ f.created_at|date:"F d, Y, P" }}</span>
                 </div>
             </div>

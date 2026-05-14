@@ -27,22 +27,31 @@
 
     .search-container {
         display: flex;
-        gap: 15px;
-        background: var(--admin-glass);
-        padding: 10px 20px;
-        border-radius: 12px;
-        border: 1px solid var(--admin-glass-border);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        align-items: center;
+        gap: 12px;
+        background: #ffffff;
+        padding: 8px 18px;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(37, 99, 235, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .search-container:hover, .search-container:focus-within {
+        border-color: #3b82f6;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.15), 0 8px 25px rgba(37, 99, 235, 0.1);
+        transform: translateY(-1px);
     }
 
     .search-input {
         border: none;
         background: transparent;
         font-family: 'Outfit', sans-serif;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+        font-weight: 600;
         outline: none;
-        width: 200px;
-        color: var(--text-dark);
+        width: 100%;
+        color: #1e293b;
     }
 
     /* Badge Styles */
@@ -145,10 +154,11 @@
     }
 
     .manage-input:focus {
-        border-color: var(--primary-blue);
+        border-color: #3b82f6;
         background: white;
         outline: none;
-        box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.05);
+        box-shadow: 0 0 12px rgba(59, 130, 246, 0.2), 0 0 0 4px rgba(37, 99, 235, 0.08);
+        transform: translateY(-1px);
     }
 
     .file-label {

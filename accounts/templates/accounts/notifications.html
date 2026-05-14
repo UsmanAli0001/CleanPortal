@@ -7,7 +7,7 @@
 <style>
     /* --- Premium Dashboard Core --- */
     :root {
-        --inbox-sidebar-width: 280px;
+        --inbox-sidebar-width: 250px;
         --glass-border: rgba(255, 255, 255, 0.4);
         --glass-bg: rgba(255, 255, 255, 0.7);
         --accent-indigo: #6366f1;
@@ -37,12 +37,12 @@
     }
 
     .inbox-container {
-        max-width: 1200px;
-        margin: 40px auto;
+        max-width: 1000px;
+        margin: 20px auto;
         padding: 0 20px;
-        min-height: 85vh;
+        min-height: 80vh;
         display: flex;
-        gap: 30px;
+        gap: 20px;
     }
 
     /* --- Sidebar Styling --- */
@@ -59,8 +59,8 @@
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid var(--glass-border);
-        border-radius: 24px;
-        padding: 24px;
+        border-radius: 20px;
+        padding: 20px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
     }
 
@@ -80,14 +80,14 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 12px 16px;
-        margin-bottom: 8px;
-        border-radius: 14px;
+        padding: 10px 14px;
+        margin-bottom: 6px;
+        border-radius: 12px;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         color: #475569;
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         background: transparent;
         border: none;
         width: 100%;
@@ -151,10 +151,10 @@
     }
 
     .main-title {
-        font-size: 2rem;
+        font-size: 1.6rem;
         font-weight: 800;
         color: #0f172a;
-        letter-spacing: -1px;
+        letter-spacing: -0.5px;
     }
 
     .header-actions {
@@ -191,10 +191,10 @@
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 20px;
+        border-radius: 16px;
+        padding: 16px;
         display: flex;
-        gap: 20px;
+        gap: 16px;
         position: relative;
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
@@ -238,9 +238,9 @@
     }
 
     .alert-icon-box {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -291,17 +291,17 @@
     }
 
     .alert-content h4 {
-        margin: 0 0 6px;
-        font-size: 1.15rem;
+        margin: 0 0 4px;
+        font-size: 1.05rem;
         font-weight: 800;
         color: #0f172a;
     }
 
     .alert-content p {
         margin: 0;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         color: #475569;
-        line-height: 1.6;
+        line-height: 1.5;
         opacity: 0.9;
     }
 
@@ -516,6 +516,9 @@
         <header class="inbox-header">
             <h1 class="main-title">Unified Inbox</h1>
             <div class="header-actions">
+                <button class="action-btn" onclick="clearAll()" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.2);" title="Clear All Notifications">
+                    <i data-lucide="trash-2"></i> Clear All
+                </button>
                 <button class="cinematic-refresh" onclick="fetchAnnouncements()" title="Refresh Inbox">
                     <i data-lucide="refresh-cw"></i>
                 </button>
@@ -635,11 +638,18 @@
                             <span class="alert-time">
                                 <i data-lucide="clock"></i> ${ann.created_at}
                             </span>
-                            ${!ann.is_read ? `
-                                <button onclick="markRead(${ann.id}, '${ann.type}', event)" class="mark-read-btn">
-                                    Mark Seen
-                                </button>
-                            ` : ''}
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                ${!ann.is_read ? `
+                                    <button onclick="markRead(${ann.id}, '${ann.type}', event)" class="mark-read-btn">
+                                        Mark Seen
+                                    </button>
+                                ` : ''}
+                                ${ann.type === 'personal' ? `
+                                    <button onclick="deleteSingle(${ann.id}, event)" class="mark-read-btn" style="border-color: rgba(239, 68, 68, 0.3); color: #ef4444; padding: 6px 10px;" title="Delete Notification">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -647,6 +657,33 @@
         }).join('');
 
         lucide.createIcons();
+    }
+
+    function deleteSingle(id, event) {
+        if (event) event.stopPropagation();
+        
+        // Optimistic UI update
+        const originalData = [...ALL_NOTIFICATIONS];
+        ALL_NOTIFICATIONS = ALL_NOTIFICATIONS.filter(n => !(n.id === id && n.type === 'personal'));
+        renderByFilter();
+        updateCounts();
+
+        fetch(`/api/announcements/delete/${id}/`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== 'success') {
+                    ALL_NOTIFICATIONS = originalData;
+                    renderByFilter();
+                    updateCounts();
+                    alert('Failed to delete notification.');
+                }
+            })
+            .catch(err => {
+                ALL_NOTIFICATIONS = originalData;
+                renderByFilter();
+                updateCounts();
+                alert('Network error.');
+            });
     }
 
     function markRead(id, type, event) {
@@ -669,6 +706,32 @@
                     renderByFilter();
                     updateCounts();
                 }
+            });
+    }
+
+    function clearAll() {
+        if (!confirm('Are you sure you want to clear all notifications?')) return;
+
+        const originalData = [...ALL_NOTIFICATIONS];
+        ALL_NOTIFICATIONS = [];
+        renderByFilter();
+        updateCounts();
+
+        fetch("{% url 'delete_all_notifications' %}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== 'success') {
+                    ALL_NOTIFICATIONS = originalData;
+                    renderByFilter();
+                    updateCounts();
+                    alert('Failed to clear notifications. Please try again.');
+                }
+            })
+            .catch(err => {
+                ALL_NOTIFICATIONS = originalData;
+                renderByFilter();
+                updateCounts();
+                alert('Network error. Please check your connection.');
             });
     }
 

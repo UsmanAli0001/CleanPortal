@@ -5,26 +5,31 @@
 
 {% block admin_extra_css %}
 <style>
-    .notif-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .notif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
+    .notif-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .notif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
     
     .form-card {
-        background: white; border-radius: 20px; padding: 30px;
+        background: white; border-radius: 20px; padding: 25px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
+        display: flex; flex-direction: column; height: 100%;
     }
-    .form-card h3 { margin-top: 0; color: var(--primary-blue); display: flex; align-items: center; gap: 10px; margin-bottom: 25px; }
+    .form-card h3 { margin-top: 0; color: var(--primary-blue); display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 1.1rem; }
 
-    .form-group { margin-bottom: 20px; }
-    .form-group label { display: block; font-weight: 700; font-size: 0.85rem; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+    .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
+    .form-row .form-group { flex: 1; margin-bottom: 0; }
+    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
     .form-control {
-        width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid #e2e8f0;
-        font-family: inherit; font-size: 1rem; box-sizing: border-box;
+        width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #e2e8f0;
+        font-family: inherit; font-size: 0.9rem; box-sizing: border-box;
     }
     .form-control:focus { outline: none; border-color: var(--primary-blue); }
     
     .btn-send {
-        background: var(--primary-blue); color: white; border: none; padding: 15px; width: 100%;
-        border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+        background: var(--primary-blue); color: white; border: none; padding: 12px; width: 100%;
+        border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+        margin-top: auto; font-size: 0.9rem;
     }
     .btn-send:hover { box-shadow: 0 10px 20px rgba(30, 60, 114, 0.2); }
 
@@ -92,32 +97,34 @@
         <!-- New System Broadcast -->
         <div class="form-card">
             <h3><i data-lucide="megaphone" style="color: #6366f1;"></i> System Broadcast</h3>
-            <form method="POST">
+            <form method="POST" style="flex: 1; display: flex; flex-direction: column;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="send_broadcast">
                 
-                <div class="form-group">
-                    <label>Alert Type</label>
-                    <select name="alert_type" class="form-control">
-                        <option value="info">Information (Blue)</option>
-                        <option value="success">Success (Green)</option>
-                        <option value="warning">Warning (Yellow)</option>
-                        <option value="urgent">Urgent (Red)</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Headline</label>
-                    <input type="text" name="title" class="form-control" placeholder="e.g. Scheduled Maintenance" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Alert Type</label>
+                        <select name="alert_type" class="form-control">
+                            <option value="info">Info (Blue)</option>
+                            <option value="success">Success (Green)</option>
+                            <option value="warning">Warning (Yellow)</option>
+                            <option value="urgent">Urgent (Red)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Headline</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. Maintenance" required>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label>Detailed Message</label>
-                    <textarea name="message" class="form-control" rows="4" placeholder="Briefly describe the alert..." required></textarea>
+                    <textarea name="message" class="form-control" rows="3" placeholder="Briefly describe the alert..." required></textarea>
                 </div>
                 
                 <button type="submit" class="btn-send" style="background: #6366f1;">
-                    <i data-lucide="send"></i> Broadcast to All
+                    <i data-lucide="send"></i> Broadcast All
                 </button>
             </form>
         </div>
@@ -125,42 +132,44 @@
         <!-- Personal Notification -->
         <div class="form-card">
             <h3><i data-lucide="user-plus" style="color: #0ea5e9;"></i> Personal Notification</h3>
-            <form method="POST">
+            <form method="POST" style="flex: 1; display: flex; flex-direction: column;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="send_personal">
                 
-                <div class="form-group">
-                    <label>Target Citizen</label>
-                    <select name="user_id" class="form-control" required>
-                        <option value="">Select a user...</option>
-                        {% for u in users %}
-                            <option value="{{ u.id }}">{{ u.username }} ({{ u.email }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Target Citizen</label>
+                        <select name="user_id" class="form-control" required>
+                            <option value="">Select...</option>
+                            {% for u in users %}
+                                <option value="{{ u.id }}">{{ u.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label>Alert Type</label>
-                    <select name="alert_type" class="form-control">
-                        <option value="info">Information</option>
-                        <option value="success">Status Successful</option>
-                        <option value="warning">Action Required</option>
-                        <option value="urgent">Urgent Update</option>
-                    </select>
+                    <div class="form-group">
+                        <label>Alert Type</label>
+                        <select name="alert_type" class="form-control">
+                            <option value="info">Info</option>
+                            <option value="success">Success</option>
+                            <option value="warning">Warning</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="form-group">
                     <label>Message Title</label>
-                    <input type="text" name="title" class="form-control" placeholder="e.g. Feedback on Complaint #1234" required>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. Complaint #1234" required>
                 </div>
                 
                 <div class="form-group">
                     <label>Personal Message</label>
-                    <textarea name="message" class="form-control" rows="4" placeholder="Your direct message to the user..." required></textarea>
+                    <textarea name="message" class="form-control" rows="3" placeholder="Direct message..." required></textarea>
                 </div>
                 
                 <button type="submit" class="btn-send" style="background: #0ea5e9;">
-                    <i data-lucide="mail"></i> Send Private Message
+                    <i data-lucide="mail"></i> Send Private
                 </button>
             </form>
         </div>

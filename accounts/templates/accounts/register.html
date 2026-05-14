@@ -524,7 +524,7 @@
 
         <!-- Toasts replaced alerts -->
 
-        <form id="regForm" method="POST" action="{% url 'register' %}" autocomplete="off">
+        <form id="regForm" method="POST" action="{% url 'register' %}" autocomplete="on">
             {% csrf_token %}
             <div class="form-row">
                 <div class="form-group">
@@ -540,7 +540,7 @@
             <div class="form-group">
                 <label>Email Address</label>
                 <input type="email" name="email" id="emailInput" required placeholder="name@example.com"
-                    autocomplete="off">
+                    autocomplete="email">
                 <div id="emailError" class="error-msg">Email already exists</div>
             </div>
 
@@ -558,7 +558,8 @@
                 </div>
                 <div id="strengthText"
                     style="font-size: 0.75rem; margin-top: 5px; font-weight: 700; color: var(--text-muted);">Strength:
-                    <span>None</span></div>
+                    <span>None</span>
+                </div>
             </div>
 
             <div class="form-group">

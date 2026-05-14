@@ -7,7 +7,7 @@ from .views import (
     schedule_public_view, admin_schedule_manage, maintenance_view, emergency_view, download_reports_view,
     submit_feedback, zone_management_view, vehicle_tracking_view,
     stripe_checkout, stripe_success, stripe_cancel,
-    get_announcements, mark_announcement_read, mark_all_user_notifications_read,
+    get_announcements, mark_announcement_read, mark_all_user_notifications_read, delete_all_user_notifications, delete_notification,
     get_zones, detect_zone,
     # Fleet Management
     api_vehicles_list, api_vehicle_history,
@@ -56,6 +56,8 @@ urlpatterns = [
     path('api/announcements/', get_announcements, name='get_announcements'),
     path('api/announcements/read/<int:pk>/', mark_announcement_read, name='mark_announcement_read'),
     path('api/announcements/read-all/', mark_all_user_notifications_read, name='mark_all_read'),
+    path('api/announcements/delete/<int:pk>/', delete_notification, name='delete_notification'),
+    path('api/announcements/delete-all/', delete_all_user_notifications, name='delete_all_notifications'),
 
     # Zones API
     path('api/zones/', get_zones, name='get_zones'),

@@ -341,6 +341,7 @@ body {
                 <h3 class="chart-title" style="margin:0"><i data-lucide="bar-chart-3"></i> Area Breakdown</h3>
                 <div class="chart-filter-container">
                     <select onchange="updateChart('areaChart', this.value)">
+                        <option value="all" selected>All</option>
                         <option value="weekly">Weekly</option>
                         <option value="monthly">Monthly</option>
                         <option value="yearly">Yearly</option>
@@ -357,6 +358,7 @@ body {
                 <h3 class="chart-title" style="margin:0"><i data-lucide="pie-chart" style="color:#8b5cf6"></i> Service Categories</h3>
                 <div class="chart-filter-container">
                     <select onchange="updateChart('typeChart', this.value)">
+                        <option value="all" selected>All</option>
                         <option value="weekly">Weekly</option>
                         <option value="monthly">Monthly</option>
                         <option value="yearly">Yearly</option>
@@ -377,6 +379,7 @@ body {
                 <h3 class="chart-title" style="margin:0"><i data-lucide="trending-up" style="color:#10b981"></i> Submission Trends</h3>
                 <div class="chart-filter-container">
                     <select onchange="updateChart('trendChart', this.value)">
+                        <option value="all" selected>All</option>
                         <option value="weekly">Weekly</option>
                         <option value="monthly">Monthly</option>
                         <option value="yearly">Yearly</option>
@@ -393,6 +396,7 @@ body {
                 <h3 class="chart-title" style="margin:0"><i data-lucide="activity" style="color:#ef4444"></i> Operational Status</h3>
                 <div class="chart-filter-container">
                     <select onchange="updateChart('statusChart', this.value)">
+                        <option value="all" selected>All</option>
                         <option value="weekly">Weekly</option>
                         <option value="monthly">Monthly</option>
                         <option value="yearly">Yearly</option>
@@ -456,7 +460,7 @@ body {
 
     // --- INITIALIZE CHARTS ---
     document.addEventListener('DOMContentLoaded', () => {
-        const weekly = allChartData.weekly;
+        const initialData = allChartData.all;
 
         // 1. Area Chart (Bar)
         const areaCtx = document.getElementById('areaChart').getContext('2d');
@@ -468,10 +472,10 @@ body {
             type: 'bar',
             plugins: [shadowPlugin],
             data: {
-                labels: weekly.areas,
+                labels: initialData.areas,
                 datasets: [{
                     label: 'Complaints',
-                    data: weekly.area_complaints,
+                    data: initialData.area_complaints,
                     backgroundColor: areaGradient,
                     hoverBackgroundColor: '#4f46e5',
                     borderRadius: 12,
@@ -493,9 +497,9 @@ body {
         chartInstances.typeChart = new Chart(typeCtx, {
             type: 'doughnut',
             data: {
-                labels: weekly.types,
+                labels: initialData.types,
                 datasets: [{
-                    data: weekly.type_counts,
+                    data: initialData.type_counts,
                     backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'],
                     borderWidth: 0, hoverOffset: 15, spacing: 8
                 }]
@@ -507,17 +511,17 @@ body {
                 }
             }
         });
-        document.getElementById('typeTotal').innerText = weekly.total_in_period;
+        document.getElementById('typeTotal').innerText = initialData.total_in_period;
 
         // 3. Trend Chart (Line)
         const trendCtx = document.getElementById('trendChart').getContext('2d');
         chartInstances.trendChart = new Chart(trendCtx, {
             type: 'line',
             data: {
-                labels: weekly.trend_labels,
+                labels: initialData.trend_labels,
                 datasets: [{
                     label: 'New Reports',
-                    data: weekly.trend_counts,
+                    data: initialData.trend_counts,
                     borderColor: '#6366f1',
                     backgroundColor: getTrendGradient(trendCtx),
                     fill: true, tension: 0.45, pointRadius: 5, pointBackgroundColor: '#fff', pointBorderWidth: 2.5, pointBorderColor: '#6366f1'
@@ -538,9 +542,9 @@ body {
         chartInstances.statusChart = new Chart(statusCtx, {
             type: 'polarArea',
             data: {
-                labels: weekly.status_labels,
+                labels: initialData.status_labels,
                 datasets: [{
-                    data: weekly.status_data,
+                    data: initialData.status_data,
                     backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'],
                     borderWidth: 2, borderColor: '#ffffff'
                 }]

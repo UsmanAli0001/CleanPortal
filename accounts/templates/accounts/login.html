@@ -488,7 +488,7 @@
 
         <!-- Toasts replaced alerts -->
 
-        <form id="loginForm" method="POST" action="{% url 'login' %}" autocomplete="off">
+        <form id="loginForm" method="POST" action="{% url 'login' %}" autocomplete="on">
             {% csrf_token %}
 
             <div class="form-group">

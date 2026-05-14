@@ -963,7 +963,7 @@
                     {% endif %}
                 </div>
                 <div class="t-meta">
-                    <div class="t-name">{% if fb.user.get_full_name %}{{ fb.user.get_full_name }}{% else %}{{ fb.user.username }}{% endif %}</div>
+                    <div class="t-name">{{ fb.user.get_full_name|default:fb.user.username }}</div>
                     <div class="t-date">{{ fb.created_at|date:"M d, Y, g:i a" }}</div>
                 </div>
             </div>

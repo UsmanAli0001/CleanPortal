@@ -175,8 +175,14 @@ class Complaint(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.complaint_id:
-            last = Complaint.objects.count()
-            self.complaint_id = "GRT-2026-" + str(last + 1).zfill(4)
+            # Find the first available numeric ID to fill gaps in the sequence
+            n = 1
+            while True:
+                candidate_id = f"GRT-2026-{str(n).zfill(4)}"
+                if not Complaint.objects.filter(complaint_id=candidate_id).exists():
+                    self.complaint_id = candidate_id
+                    break
+                n += 1
         super().save(*args, **kwargs)
 
 @receiver(post_save, sender=Complaint)

@@ -117,7 +117,7 @@ Supervisor Names:
                             <h1>Clean Pak Portal</h1>
                         </div>
                         <div class="content">
-                            <div class="welcome-title">Welcome, {user.first_name}! 🎉</div>
+                            <div class="welcome-title">Assalam o Alaikum, {user.first_name}! 🎉</div>
                             <p>Your account has been successfully created at <span class="brand-bold">Clean Pak Portal</span>.</p>
                             <p>We’re excited to have you join our digital community dedicated to creating a cleaner and smarter environment.</p>
                             <p>You can now submit complaints, track progress in real-time, and stay connected with every update through our smart portal system.</p>
@@ -151,17 +151,20 @@ Supervisor Names:
                 </html>
                 """
 
+                print(f"DEBUG: Attempting to send welcome email to: {user.email}")
                 send_mail(
                     subject,
                     text_content,
-                    settings.EMAIL_HOST_USER,
+                    settings.DEFAULT_FROM_EMAIL,
                     [user.email],
                     fail_silently=False,
                     html_message=html_content
                 )
+                print(f"SUCCESS: Welcome email sent to {user.email}")
                 messages.success(request, f"Registration successful! Welcome to the portal.")
                 request.session['show_welcome_modal'] = True
             except Exception as e:
+                print(f"ERROR: Failed to send welcome email to {user.email}: {str(e)}")
                 messages.warning(request, f"Registration successful! However, there was an issue sending the welcome email: {str(e)}")
 
             return redirect('login')
@@ -828,9 +831,18 @@ def admin_gallery_view(request):
     
     today = timezone.now().date()
     
-    def get_gallery_trend(days_count=None, months_count=None):
-        if months_count:
-            start_date = today - timedelta(days=months_count * 30)
+    def get_gallery_trend(days_count=None, months_count=None, is_all=False):
+        if is_all:
+            first_item = GalleryItem.objects.order_by('created_at').first()
+            if first_item:
+                # Use local time for consistent date logic
+                start_date = timezone.localtime(first_item.created_at).date()
+                num_months = (today.year - start_date.year) * 12 + (today.month - start_date.month) + 1
+            else:
+                num_months = 1
+            is_yearly = True
+        elif months_count:
+            num_months = months_count
             is_yearly = True
         else:
             start_date = today - timedelta(days=days_count)
@@ -841,17 +853,26 @@ def admin_gallery_view(request):
         likes = []
         
         if is_yearly:
-            for i in range(11, -1, -1):
-                # Monthly labels for last 12 months
-                # We use a simple way to get the month/year for the last 12 months
-                first = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
-                m = first.month
-                y = first.year
-                label = calendar.month_name[m][:3] + " " + str(y)[2:]
+            # Dynamic month loop (handles 12 months or 'All' months)
+            for i in range(num_months - 1, -1, -1):
+                # Calculate year and month correctly
+                year = today.year
+                month = today.month - i
+                while month <= 0:
+                    month += 12
+                    year -= 1
+                
+                # Label: Jan, Feb, Mar ...
+                label = calendar.month_name[month][:3]
+                
+                # If more than 12 months (All), append year for clarity
+                if num_months > 12:
+                    label += f" {str(year)[2:]}"
+                
                 labels.append(label)
                 
-                uploads.append(GalleryItem.objects.filter(created_at__year=y, created_at__month=m).count())
-                likes.append(GalleryLike.objects.filter(created_at__year=y, created_at__month=m).count())
+                uploads.append(GalleryItem.objects.filter(created_at__year=year, created_at__month=month).count())
+                likes.append(GalleryLike.objects.filter(created_at__year=year, created_at__month=month).count())
         else:
             for i in range(days_count - 1, -1, -1):
                 d = today - timedelta(days=i)
@@ -869,7 +890,8 @@ def admin_gallery_view(request):
     trend_data = {
         'weekly': get_gallery_trend(days_count=7),
         'monthly': get_gallery_trend(days_count=30),
-        'yearly': get_gallery_trend(months_count=12)
+        'yearly': get_gallery_trend(months_count=12),
+        'all': get_gallery_trend(is_all=True)
     }
 
     most_liked = GalleryItem.objects.order_by('-likes_count')[:5]
@@ -1031,18 +1053,23 @@ def reports_view(request):
     resolved_complaints = Complaint.objects.filter(status='Completed').count()
     pending_complaints = Complaint.objects.filter(status='Pending').count()
     in_progress = Complaint.objects.filter(status__in=['Verified', 'In Progress']).count()
+    now = timezone.now()
+    today = timezone.localtime(now).date()
 
-    today = timezone.now().date()
-
-    def get_report_period_data(days_count=None, months_count=None):
-        if months_count:
+    def get_report_period_data(days_count=None, months_count=None, is_all=False):
+        if is_all:
+            period_qs = Complaint.objects.all()
+            is_yearly = True
+            first_complaint = Complaint.objects.order_by('created_at').first()
+            start_date = first_complaint.created_at.date() if first_complaint else today
+        elif months_count:
             start_date = today - timedelta(days=months_count * 30)
             is_yearly = True
+            period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
         else:
             start_date = today - timedelta(days=days_count)
             is_yearly = False
-
-        period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
+            period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
 
         # 1. Area breakdown
         area_counts = period_qs.values('area').annotate(count=Count('id'))
@@ -1065,12 +1092,27 @@ def reports_view(request):
         # 4. Trend Data
         labels = []
         counts = []
-        if is_yearly:
+        if is_all:
+            # For all time, we show by month but covering the whole range
+            first_c = Complaint.objects.order_by('created_at').first()
+            if first_c:
+                curr = first_c.created_at.replace(day=1).date()
+                while curr <= today:
+                    label = calendar.month_name[curr.month] # January, February, etc.
+                    labels.append(label)
+                    counts.append(period_qs.filter(created_at__year=curr.year, created_at__month=curr.month).count())
+                    # Move to next month
+                    if curr.month == 12: curr = curr.replace(year=curr.year+1, month=1)
+                    else: curr = curr.replace(month=curr.month+1)
+            else:
+                labels = ["No Data"]
+                counts = [0]
+        elif is_yearly:
             for i in range(11, -1, -1):
                 first = (today.replace(day=1) - timedelta(days=i*30)).replace(day=1)
                 m = first.month
                 y = first.year
-                label = calendar.month_name[m][:3] + " " + str(y)[2:]
+                label = calendar.month_name[m] # January, February, etc.
                 labels.append(label)
                 counts.append(period_qs.filter(created_at__year=y, created_at__month=m).count())
         else:
@@ -1092,6 +1134,7 @@ def reports_view(request):
         }
 
     chart_data = {
+        'all': get_report_period_data(is_all=True),
         'weekly': get_report_period_data(days_count=7),
         'monthly': get_report_period_data(days_count=30),
         'yearly': get_report_period_data(months_count=12)
@@ -1119,17 +1162,31 @@ def admin_city_reports_view(request):
         messages.error(request, "Access Denied: Administrative permissions required.")
         return redirect('dashboard')
 
-    today = timezone.now().date()
+    now = timezone.now()
+    today = timezone.localtime(now).date()
 
-    def get_period_data(days_count=None, months_count=None):
-        if months_count:
+    def get_period_data(days_count=None, months_count=None, is_all=False):
+        if is_all:
+            period_qs = Complaint.objects.all()
+            is_yearly = True
+            first_complaint = Complaint.objects.order_by('created_at').first()
+            if first_complaint:
+                start_date = first_complaint.created_at.date()
+                # Calculate total months from start to now
+                num_months = (today.year - start_date.year) * 12 + (today.month - start_date.month) + 1
+            else:
+                start_date = today
+                num_months = 1
+        elif months_count:
             start_date = today - timedelta(days=months_count * 30)
             is_yearly = True
+            period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
+            num_months = months_count
         else:
             start_date = today - timedelta(days=days_count)
             is_yearly = False
-
-        period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
+            period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
+            num_months = days_count
         
         # 1. Category Breakdown
         type_qs = period_qs.values('complaint_type').annotate(count=Count('id')).order_by('-count')
@@ -1144,19 +1201,31 @@ def admin_city_reports_view(request):
         trips = []
         
         if is_yearly:
-            # Last 12 Months
-            for i in range(11, -1, -1):
-                first = today.replace(day=1) - timedelta(days=i*30) # Rough month
-                m = first.month
-                y = first.year
-                label = calendar.month_name[m][:3] + " " + str(y)[2:]
+            # Dynamic month loop
+            for i in range(num_months - 1, -1, -1):
+                # Calculate year and month correctly
+                year = today.year
+                month = today.month - i
+                while month <= 0:
+                    month += 12
+                    year -= 1
+                
+                # Label: "January" or "Jan 2026" if All/Yearly
+                label = calendar.month_name[month][:3]
+                if num_months > 12:
+                    label += f" {str(year)[2:]}"
+                elif is_all or months_count == 12:
+                    # Optional: include year for clarity even if exactly 12 months? 
+                    # User requested Jan, Feb, March.
+                    label = calendar.month_name[month] # Full month name
+                
                 labels.append(label)
                 
-                m_qs = period_qs.filter(created_at__year=y, created_at__month=m)
+                m_qs = period_qs.filter(created_at__year=year, created_at__month=month)
                 submissions.append(m_qs.count())
                 
                 # Resolution
-                comp_tl = ComplaintTimeline.objects.filter(status='Completed', created_at__year=y, created_at__month=m)
+                comp_tl = ComplaintTimeline.objects.filter(status='Completed', created_at__year=year, created_at__month=month)
                 total_days = 0
                 count = 0
                 for tl in comp_tl:
@@ -1166,12 +1235,12 @@ def admin_city_reports_view(request):
                 resolutions.append(round(total_days / count, 1) if count > 0 else 0)
                 
                 # Activity
-                signups = User.objects.filter(date_joined__year=y, date_joined__month=m).count()
+                signups = User.objects.filter(date_joined__year=year, date_joined__month=month).count()
                 submitters = m_qs.values('user').distinct().count()
                 activities.append(signups + submitters)
                 
-                # Activity (Vehicle Working - Based on Assign Date)
-                working = Vehicle.objects.filter(assign_date__year=y, assign_date__month=m).count()
+                # Activity (Vehicle Working)
+                working = Vehicle.objects.filter(assign_date__year=year, assign_date__month=month).count()
                 trips.append(working)
         else:
             # Last N Days
@@ -1249,10 +1318,11 @@ def admin_city_reports_view(request):
             'total_in_period': period_qs.count()
         }
 
-    # Pre-calculate all three sets
+    # Pre-calculate all sets including All time
     weekly_data = get_period_data(days_count=7)
     monthly_data = get_period_data(days_count=30)
     yearly_data = get_period_data(months_count=12)
+    all_time_data = get_period_data(is_all=True)
 
     # Global Stats
     total_complaints = Complaint.objects.count()
@@ -1267,7 +1337,8 @@ def admin_city_reports_view(request):
         'chart_data': json.dumps({
             'weekly': weekly_data,
             'monthly': monthly_data,
-            'yearly': yearly_data
+            'yearly': yearly_data,
+            'all': all_time_data
         }),
         'total_complaints': total_complaints,
         'pending_complaints': pending_complaints,
@@ -1275,8 +1346,8 @@ def admin_city_reports_view(request):
         'sla_violations': sla_violations,
         'total_zones': len(GUJRAT_AREAS),
         'is_admin_view': True,
-        # Fallback for initial load (weekly)
-        'initial_weekly': weekly_data
+        # Fallback for initial load (All time)
+        'initial_all': all_time_data
     }
     return render(request, 'accounts/admin/city_reports_admin.html', context)
 
@@ -1944,6 +2015,29 @@ def mark_all_user_notifications_read(request):
         AdminNotification.objects.filter(is_read=False).update(is_read=True)
         
     return JsonResponse({'status': 'success'})
+
+@login_required(login_url='login')
+def delete_all_user_notifications(request):
+    """Deletes all personal notifications for the user and marks announcements as read."""
+    # 1. Delete personal notifications
+    Notification.objects.filter(user=request.user).delete()
+    
+    # 2. Mark announcements as read (using AnnouncementRead mapping)
+    active_announcements = Announcement.objects.filter(is_active=True)
+    for ann in active_announcements:
+        AnnouncementRead.objects.get_or_create(user=request.user, announcement=ann)
+        
+    return JsonResponse({'status': 'success'})
+
+@login_required(login_url='login')
+def delete_notification(request, pk):
+    """Deletes a specific personal notification."""
+    try:
+        notif = Notification.objects.get(pk=pk, user=request.user)
+        notif.delete()
+        return JsonResponse({'status': 'success'})
+    except Notification.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Notification not found.'}, status=404)
 
 # --- ZONE MANAGEMENT API ---
 

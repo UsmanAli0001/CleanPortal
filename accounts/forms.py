@@ -6,7 +6,7 @@ class LoginForm(forms.Form):
         'placeholder': 'Enter your email',
         'class': 'form-input',
         'required': 'required',
-        'autocomplete': 'off'
+        'autocomplete': 'email'
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'placeholder': 'Enter your password',
@@ -23,19 +23,19 @@ class RegistrationForm(forms.ModelForm):
         'placeholder': 'First Name',
         'class': 'form-input',
         'required': 'required',
-        'autocomplete': 'off'
+        'autocomplete': 'on'
     }))
     last_name = forms.CharField(widget=forms.TextInput(attrs={
         'placeholder': 'Last Name',
         'class': 'form-input',
         'required': 'required',
-        'autocomplete': 'off'
+        'autocomplete': 'on'
     }))
     email = forms.EmailField(widget=forms.EmailInput(attrs={
         'placeholder': 'Email Address',
         'class': 'form-input',
         'required': 'required',
-        'autocomplete': 'off'
+        'autocomplete': 'email'
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'placeholder': 'Password',

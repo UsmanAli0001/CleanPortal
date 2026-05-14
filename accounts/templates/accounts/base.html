@@ -292,7 +292,7 @@
         }
 
         .footer-logo span {
-            color: var(--accent-green);
+            color: #38bdf8;
         }
 
         .copyright {
@@ -923,13 +923,25 @@
                     <div class="badge" id="globalAlertBadge">0</div>
                 </div>
                 <div class="nav-dropdown">
-                    <div class="nav-dropdown-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="nav-dropdown-header"
+                        style="display: flex; justify-content: space-between; align-items: center;">
                         <span>System Alerts</span>
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <button onclick="markAllNavRead(event)" title="Mark all as read" style="background: none; border: none; cursor: pointer; color: #10b981; display: flex; align-items: center; transition: 0.3s;" onmouseover="this.style.filter='drop-shadow(0 0 5px #10b981)'" onmouseout="this.style.filter='none'">
+                            <button onclick="clearAllNavNotifications(event)" title="Clear all notifications"
+                                style="background: none; border: none; cursor: pointer; color: #ef4444; display: flex; align-items: center; transition: 0.3s; margin-right: 2px;"
+                                onmouseover="this.style.filter='drop-shadow(0 0 5px #ef4444)'"
+                                onmouseout="this.style.filter='none'">
+                                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                            </button>
+                            <button onclick="markAllNavRead(event)" title="Mark all as read"
+                                style="background: none; border: none; cursor: pointer; color: #10b981; display: flex; align-items: center; transition: 0.3s;"
+                                onmouseover="this.style.filter='drop-shadow(0 0 5px #10b981)'"
+                                onmouseout="this.style.filter='none'">
                                 <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
                             </button>
-                            <a href="{% url 'notifications' %}" style="font-size: 0.75rem; font-weight: 700; color: #6366f1; text-decoration: none;">View Inbox</a>
+                            <a href="{% url 'notifications' %}"
+                                style="font-size: 0.75rem; font-weight: 700; color: #6366f1; text-decoration: none;">View
+                                Inbox</a>
                         </div>
                     </div>
                     <div class="nav-dropdown-body" id="globalNavDropdownList">
@@ -1045,6 +1057,40 @@
                 .then(data => {
                     if (data.status === 'success') {
                         fetchGlobalNotifications();
+                    }
+                });
+        }
+
+        function clearAllNavNotifications(event) {
+            if (event) event.stopPropagation();
+            if (!confirm('Clear all notifications?')) return;
+
+            fetch("{% url 'delete_all_notifications' %}")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        fetchGlobalNotifications();
+                        if (typeof ALL_NOTIFICATIONS !== 'undefined') {
+                            // If we are on the notifications page, refresh its list too
+                            fetchAnnouncements();
+                        }
+                    }
+                });
+        }
+
+        function deleteNavSingle(id, event) {
+            if (event) event.stopPropagation();
+            fetch(`/api/announcements/delete/${id}/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        fetchGlobalNotifications();
+                        if (typeof ALL_NOTIFICATIONS !== 'undefined') {
+                            // If we are on the notifications page, remove it from there too
+                            ALL_NOTIFICATIONS = ALL_NOTIFICATIONS.filter(n => !(n.id === id && n.type === 'personal'));
+                            renderByFilter();
+                            updateCounts();
+                        }
                     }
                 });
         }
@@ -1187,13 +1233,15 @@
                                         if (ann.type === 'status_update') icon = 'activity';
 
                                         return `
-                                    <a href="{% url 'notifications' %}" class="nav-dropdown-item ${ann.is_read ? '' : 'unread'} ${ann.alert_type || 'info'}">
-                                        <div class="icon"><i data-lucide="${icon}" style="width: 14px; height: 14px;"></i></div>
-                                        <div>
-                                            <h4>${ann.title}</h4>
-                                            <p>${ann.message.substring(0, 45)}${ann.message.length > 45 ? '...' : ''}</p>
-                                        </div>
-                                    </a>
+                                    <div style="position: relative;">
+                                        <a href="{% url 'notifications' %}" class="nav-dropdown-item ${ann.is_read ? '' : 'unread'} ${ann.alert_type || 'info'}">
+                                            <div class="icon"><i data-lucide="${icon}" style="width: 14px; height: 14px;"></i></div>
+                                            <div>
+                                                <h4>${ann.title}</h4>
+                                                <p>${ann.message.substring(0, 45)}${ann.message.length > 45 ? '...' : ''}</p>
+                                            </div>
+                                        </a>
+                                    </div>
                                     `;
                                     }).join('') + `<a href="{% url 'notifications' %}" style="display: block; text-align: center; padding: 12px; font-size: 0.85rem; color: #6366f1; text-decoration: none; font-weight: 700; background: #f8fafc; border-top: 1px solid #f1f5f9; transition: 0.2s;">View All Notifications</a>`;
                                 }
