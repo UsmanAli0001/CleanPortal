@@ -1,4 +1,6 @@
 from django.db.models.signals import post_save, pre_save
+import threading
+import time
 from django.dispatch import receiver
 from .models import (
     Complaint, Feedback, GalleryLike, Vehicle, AdminNotification, Staff,
@@ -6,6 +8,7 @@ from .models import (
     ComplaintTimeline, Announcement
 )
 from allauth.account.signals import user_signed_up
+from allauth.account.models import EmailAddress
 
 from django.urls import reverse
 from django.core.mail import send_mail
@@ -14,79 +17,115 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 def notify_admin(type, message, link):
-    """Helper to create admin notifications while preventing unread duplicates."""
-    if not AdminNotification.objects.filter(type=type, message=message, is_read=False).exists():
-        return AdminNotification.objects.create(type=type, message=message, link=link)
-    return None
+    """Helper to create admin notifications and email specific recipients."""
+    # Create the record for the dashboard
+    notif = AdminNotification.objects.create(type=type, message=message, link=link)
+    
+    # Define specific recipients (Supervisors)
+    special_recipients = [
+        "daku84525@gmail.com", "neendiyanchurail@gmail.com", "nida0786495@gmail.com",
+        "pookiee7717@gmail.com", "quiettears124713@gmail.com", "u0736874@gmail.com",
+        "ua837300@gmail.com", "ua934825@gmail.com", "ua993073@gmail.com"
+    ]
+    
+    # Filter out the 'admin side email' (system sender) if it's in the staff list
+    system_email = getattr(settings, 'EMAIL_HOST_USER', '')
+    staff_emails = list(User.objects.filter(is_staff=True, is_active=True).exclude(email=system_email).values_list('email', flat=True))
+    
+    # Combine and deduplicate
+    all_recipients = list(set(filter(None, staff_emails + special_recipients)))
+
+    # Skip email for update alerts to prevent spamming staff/supervisors
+    if type == 'update':
+        return notif
+
+    for recipient_email in all_recipients:
+        target_user = User.objects.filter(email=recipient_email).first()
+        user_name = (target_user.first_name or target_user.username) if target_user else recipient_email.split('@')[0]
+        
+        send_aesthetic_email(
+            subject=f"Admin Alert: {type.replace('_', ' ').title()}",
+            recipient_email=recipient_email,
+            user_name=user_name,
+            message_title=f"System Alert - {type.upper()}",
+            message_content=message,
+            action_url=link,
+            action_text="View Details"
+        )
+    return notif
 
 def send_aesthetic_email(subject, recipient_email, user_name, message_title, message_content, action_url=None, action_text=None):
-    """Helper to send a premium-styled HTML email."""
-    # Ensure absolute URL for action button
-    final_action_url = action_url
-    if action_url and action_url.startswith('/'):
-        site_url = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000').rstrip('/')
-        final_action_url = f"{site_url}{action_url}"
+    """Helper to send a premium-styled HTML email in a background thread."""
+    def _send():
+        # Ensure absolute URL for action button
+        final_action_url = action_url
+        if action_url and action_url.startswith('/'):
+            site_url = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000').rstrip('/')
+            final_action_url = f"{site_url}{action_url}"
 
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            .email-container {{ font-family: 'Outfit', 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; }}
-            .header {{ background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: white; padding: 40px 20px; text-align: center; }}
-            .header h1 {{ margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -1px; }}
-            .content {{ padding: 40px; background-color: #ffffff; }}
-            .welcome-title {{ font-size: 22px; color: #1e3a8a; font-weight: 800; margin-bottom: 20px; }}
-            .info-box {{ background-color: #f8fafc; border-radius: 20px; padding: 25px; margin: 30px 0; border: 1px solid #e2e8f0; }}
-            .info-header {{ font-size: 16px; font-weight: 800; color: #3b82f6; margin-bottom: 10px; display: block; text-transform: uppercase; }}
-            .footer {{ background-color: #f1f5f9; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0; }}
-            .brand-bold {{ color: #1d4ed8; font-weight: 900; }}
-            .btn {{ display: inline-block; padding: 14px 30px; background: #1d4ed8; color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; margin-top: 20px; }}
-        </style>
-    </head>
-    <body>
-        <div class="email-container">
-            <div class="header">
-                <h1>Clean Pak Portal</h1>
-            </div>
-            <div class="content">
-                <div class="welcome-title">Assalam o Alaikum, {user_name}!</div>
-                <p>There is a new update regarding your interaction with <span class="brand-bold">Clean Pak Portal</span>.</p>
-                
-                <div class="info-box">
-                    <span class="info-header">{message_title}</span>
-                    <p style="margin: 0; font-size: 15px; color: #475569;">{message_content}</p>
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                .email-container {{ font-family: 'Outfit', 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; color: #1e293b; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 24px; overflow: hidden; }}
+                .header {{ background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: white; padding: 40px 20px; text-align: center; }}
+                .header h1 {{ margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -1px; }}
+                .content {{ padding: 40px; background-color: #ffffff; }}
+                .welcome-title {{ font-size: 22px; color: #1e3a8a; font-weight: 800; margin-bottom: 20px; }}
+                .info-box {{ background-color: #f8fafc; border-radius: 20px; padding: 25px; margin: 30px 0; border: 1px solid #e2e8f0; }}
+                .info-header {{ font-size: 16px; font-weight: 800; color: #3b82f6; margin-bottom: 10px; display: block; text-transform: uppercase; }}
+                .footer {{ background-color: #f1f5f9; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0; }}
+                .brand-bold {{ color: #1d4ed8; font-weight: 900; }}
+                .btn {{ display: inline-block; padding: 14px 30px; background: #1d4ed8; color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; margin-top: 20px; }}
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="header">
+                    <h1>Clean Pak Portal</h1>
                 </div>
+                <div class="content">
+                    <div class="welcome-title">Assalam o Alaikum, {user_name}!</div>
+                    <p>There is a new update regarding your interaction with <span class="brand-bold">Clean Pak Portal</span>.</p>
+                    
+                    <div class="info-box">
+                        <span class="info-header">{message_title}</span>
+                        <p style="margin: 0; font-size: 15px; color: #475569;">{message_content}</p>
+                    </div>
 
-                <p>Thank you for helping us build a cleaner and smarter community.</p>
-                
-                {f'<div style="text-align: center;"><a href="{final_action_url}" class="btn">{action_text}</a></div>' if final_action_url else ''}
-                
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eff6ff;">
-                    <p><b>Best Regards,</b><br><span class="brand-bold">Clean Pak Portal Team</span></p>
+                    <p>Thank you for helping us build a cleaner and smarter community.</p>
+                    
+                    {f'<div style="text-align: center;"><a href="{final_action_url}" class="btn">{action_text}</a></div>' if final_action_url else ''}
+                    
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eff6ff;">
+                        <p><b>Best Regards,</b><br><span class="brand-bold">Clean Pak Portal Team</span></p>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>&copy; 2026 <b>Clean Pak Portal</b>. All rights reserved.</p>
                 </div>
             </div>
-            <div class="footer">
-                <p>&copy; 2026 <b>Clean Pak Portal</b>. All rights reserved.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
-    print(f"DEBUG: Attempting to send email to {recipient_email} using {settings.DEFAULT_FROM_EMAIL}")
-    try:
-        send_mail(
-            subject,
-            message_content, # Plain text fallback
-            settings.DEFAULT_FROM_EMAIL,
-            [recipient_email],
-            fail_silently=False,
-            html_message=html_content
-        )
-        print(f"SUCCESS: Email sent to {recipient_email}")
-    except Exception as e:
-        print(f"ERROR: SMTP delivery failed for {recipient_email}: {str(e)}")
+        </body>
+        </html>
+        """
+        
+        print(f"DEBUG: Attempting to send email to {recipient_email} using {settings.DEFAULT_FROM_EMAIL}")
+        try:
+            send_mail(
+                subject,
+                message_content, # Plain text fallback
+                settings.DEFAULT_FROM_EMAIL,
+                [recipient_email],
+                fail_silently=False,
+                html_message=html_content
+            )
+            print(f"SUCCESS: Email sent to {recipient_email}")
+        except Exception as e:
+            print(f"ERROR: SMTP delivery failed for {recipient_email}: {str(e)}")
+
+    # Dispatch in a separate thread to prevent blocking the UI
+    threading.Thread(target=_send).start()
 
 @receiver(pre_save, sender=Complaint)
 def capture_old_complaint_fields(sender, instance, **kwargs):
@@ -97,20 +136,29 @@ def capture_old_complaint_fields(sender, instance, **kwargs):
             instance._old_assigned_to = old_obj.assigned_to
             instance._old_priority = old_obj.priority
             instance._old_area = old_obj.area
+            instance._old_complaint_type = old_obj.complaint_type
+            instance._old_description = old_obj.description
             instance._old_proof_image = old_obj.proof_image.name if old_obj.proof_image else None
             instance._old_after_image = old_obj.after_image.name if old_obj.after_image else None
+            instance._old_payment_status = old_obj.payment_status
         else:
             instance._old_status = None
             instance._old_assigned_to = None
             instance._old_priority = None
             instance._old_area = None
+            instance._old_complaint_type = None
+            instance._old_description = None
             instance._old_proof_image = None
             instance._old_after_image = None
+            instance._old_payment_status = False
     except Complaint.DoesNotExist:
         instance._old_status = None
         instance._old_assigned_to = None
         instance._old_priority = None
         instance._old_area = None
+        instance._old_complaint_type = None
+        instance._old_description = None
+        instance._old_payment_status = False
 
 
 @receiver(post_save, sender=Complaint)
@@ -118,66 +166,92 @@ def user_complaint_notification(sender, instance, created, **kwargs):
     recipient = instance.user or User.objects.filter(email=instance.email).first()
     
     if created:
-        print(f"DEBUG: Complaint Creation Signal fired for {instance.complaint_id}")
-        # Email notification for creation
-        send_aesthetic_email(
-            subject=f"Complaint Received: {instance.complaint_id}",
-            recipient_email=instance.email,
-            user_name=instance.name,
-            message_title="Submission Confirmed",
-            message_content=f"Your complaint {instance.complaint_id} ({instance.complaint_type}) in {instance.area} has been successfully recorded. Our team will verify it shortly. You can track the progress using your ID: {instance.complaint_id}.",
-            action_url=reverse('track'),
-            action_text="Track Progress"
-        )
+        if instance.payment_status:
+            print(f"DEBUG: Complaint Creation Signal fired for {instance.complaint_id} (Paid)")
+            # Email notification for creation
+            send_aesthetic_email(
+                subject=f"Complaint Received: {instance.complaint_id}",
+                recipient_email=instance.email,
+                user_name=instance.name,
+                message_title="Submission Confirmed",
+                message_content=f"Your complaint {instance.complaint_id} ({instance.complaint_type}) in {instance.area} has been successfully recorded and payment verified. Our team will verify it shortly. You can track the progress using your ID: {instance.complaint_id}.",
+                action_url=reverse('track'),
+                action_text="Track Progress"
+            )
+        else:
+            print(f"DEBUG: Complaint Creation Signal fired for {instance.complaint_id} (Unpaid - Skipping Notification)")
     else:
         print(f"DEBUG: Complaint Update Signal fired for {instance.complaint_id}")
         old_status = getattr(instance, '_old_status', None)
         old_assigned_to = getattr(instance, '_old_assigned_to', None)
+        old_payment_status = getattr(instance, '_old_payment_status', False)
+
+        # CASE 0: Payment just verified
+        if not old_payment_status and instance.payment_status:
+            print(f"DEBUG: Payment verified for {instance.complaint_id}. Sending initial notification.")
+            send_aesthetic_email(
+                subject=f"Complaint Received: {instance.complaint_id}",
+                recipient_email=instance.email,
+                user_name=instance.name,
+                message_title="Submission Confirmed",
+                message_content=f"Your complaint {instance.complaint_id} ({instance.complaint_type}) in {instance.area} has been successfully recorded and payment verified. Our team will verify it shortly. You can track the progress using your ID: {instance.complaint_id}.",
+                action_url=reverse('track'),
+                action_text="Track Progress"
+            )
 
         # CASE 1: Status Change
         if old_status != instance.status:
             print(f"DEBUG: Detected status change from {old_status} to {instance.status}")
-            # In-app notification
+            msg_title = f"Complaint Status Update: {instance.complaint_id}"
+            msg_content = f"Your complaint {instance.complaint_id} in {instance.area} has been updated to: {instance.status}."
+            
+            # 1. In-app notification (for registered users)
             if recipient:
                 notif = Notification(
                     user=recipient,
-                    title=f"Complaint Status Update: {instance.complaint_id}",
-                    message=f"Your complaint {instance.complaint_id} in {instance.area} has been updated to: {instance.status}.",
-                    alert_type='success' if instance.status == 'Completed' else 'info'
+                    title=msg_title,
+                    message=msg_content,
+                    alert_type='success' if instance.status == 'Completed' else 'info',
+                    link=reverse('track')
                 )
                 notif._no_email = True
                 notif.save()
             
-            # Email notification
+            # 2. Direct Email (for everyone, including guests)
             send_aesthetic_email(
-                subject=f"Update on Complaint {instance.complaint_id}",
+                subject=msg_title,
                 recipient_email=instance.email,
                 user_name=instance.name,
-                message_title=f"Status: {instance.status}",
-                message_content=f"The status of your complaint {instance.complaint_id} ({instance.complaint_type}) in {instance.area} has been updated to {instance.status}.",
+                message_title="Progress Update",
+                message_content=msg_content,
                 action_url=reverse('track'),
-                action_text="View Status"
+                action_text="Track Progress"
             )
         
         # CASE 2: Staff Assignment Change
         if old_assigned_to != instance.assigned_to and instance.assigned_to:
+            msg_title = f"Staff Assigned: {instance.complaint_id}"
+            msg_content = f"A staff member ({instance.assigned_to.name}) has been assigned to handle your complaint {instance.complaint_id}."
+            
             if recipient:
                 notif = Notification(
                     user=recipient,
-                    title=f"Staff Assigned: {instance.complaint_id}",
-                    message=f"A staff member ({instance.assigned_to.name}) has been assigned to handle your complaint {instance.complaint_id}.",
-                    alert_type='info'
+                    title=msg_title,
+                    message=msg_content,
+                    alert_type='info',
+                    link=reverse('track')
                 )
                 notif._no_email = True
                 notif.save()
             
-            # Email notification
             send_aesthetic_email(
-                subject=f"Team Assigned for Complaint {instance.complaint_id}",
+                subject=msg_title,
                 recipient_email=instance.email,
                 user_name=instance.name,
-                message_title="Technician Dispatched",
-                message_content=f"Our team member {instance.assigned_to.name} ({instance.assigned_to.role}) has been assigned to your complaint {instance.complaint_id} in {instance.area}. They will be arriving shortly to resolve the issue."
+                message_title="Team Assigned",
+                message_content=msg_content,
+                action_url=reverse('track'),
+                action_text="Track Progress"
             )
 
         # CASE 3: Proof of work / Completion Images uploaded
@@ -192,13 +266,14 @@ def user_complaint_notification(sender, instance, created, **kwargs):
                     user=recipient,
                     title=msg_title,
                     message=msg_content,
-                    alert_type='success'
+                    alert_type='success',
+                    link=reverse('track')
                 )
                 notif._no_email = True
                 notif.save()
 
             send_aesthetic_email(
-                subject=f"Proof of Resolution: {instance.complaint_id}",
+                subject=f"Resolution Proof: {instance.complaint_id}",
                 recipient_email=instance.email,
                 user_name=instance.name,
                 message_title=msg_title,
@@ -207,30 +282,44 @@ def user_complaint_notification(sender, instance, created, **kwargs):
                 action_text="View Proof"
             )
 
-        # CASE 4: General Detail Update (Priority/Area)
+        # CASE 4: General Detail Update (Priority/Area/Type/Description)
         elif (getattr(instance, '_old_priority', None) != instance.priority or 
-              getattr(instance, '_old_area', None) != instance.area):
+              getattr(instance, '_old_area', None) != instance.area or
+              getattr(instance, '_old_complaint_type', None) != instance.complaint_type or
+              getattr(instance, '_old_description', None) != instance.description):
+            
             # Only send if status/staff didn't already trigger an email
             send_aesthetic_email(
                 subject=f"Update on Complaint {instance.complaint_id}",
                 recipient_email=instance.email,
                 user_name=instance.name,
                 message_title="Administrative Update",
-                message_content=f"An administrator has updated the details of your complaint {instance.complaint_id}. The priority is now set to '{instance.priority}' and the area is confirmed as '{instance.area}'."
+                message_content=f"An administrator has updated the details of your complaint {instance.complaint_id}. The records now reflect the following: Type: {instance.complaint_type}, Area: {instance.area}, Priority: {instance.priority}."
             )
 
 
 @receiver(post_save, sender=Complaint)
 def admin_complaint_notification(sender, instance, created, **kwargs):
     if created:
-        notify_admin(
-            type='complaint',
-            message=f"🚨 New Complaint submitted! Type: {instance.complaint_type}. ID: {instance.complaint_id} from {instance.area}. Priority: {instance.priority}.",
-            link=reverse('complaints')
-        )
+        if instance.payment_status:
+            notify_admin(
+                type='complaint',
+                message=f"🚨 New Complaint submitted! Type: {instance.complaint_type}. ID: {instance.complaint_id} from {instance.area}. Priority: {instance.priority}.",
+                link=reverse('complaints')
+            )
     else:
         # Deduplicate by only notifying if the status has actually changed
         old_status = getattr(instance, '_old_status', None)
+        old_payment_status = getattr(instance, '_old_payment_status', False)
+
+        # Notify admin if payment just became successful
+        if not old_payment_status and instance.payment_status:
+            notify_admin(
+                type='complaint',
+                message=f"🚨 New Complaint (Paid)! Type: {instance.complaint_type}. ID: {instance.complaint_id} from {instance.area}.",
+                link=reverse('complaints')
+            )
+
         if old_status and old_status != instance.status:
             notify_admin(
                 type='update',
@@ -295,58 +384,68 @@ def admin_vehicle_notification(sender, instance, created, **kwargs):
 
         # CASE 1: Newly assigned to a complaint
         if old_complaint != complaint:
+            msg_title = f"Vehicle Assigned: {instance.vehicle_id}"
+            msg_content = f"Great news! A waste management vehicle ({instance.vehicle_id}) has been assigned to resolve your complaint {complaint.complaint_id}."
+            
             if recipient:
                 notif = Notification(
                     user=recipient,
-                    title=f"Vehicle Assigned: {instance.vehicle_id}",
-                    message=f"Great news! A waste management vehicle ({instance.vehicle_id}) has been assigned to resolve your complaint {complaint.complaint_id}.",
-                    alert_type='success'
+                    title=msg_title,
+                    message=msg_content,
+                    alert_type='success',
+                    link=reverse('track')
                 )
                 notif._no_email = True
                 notif.save()
-
-                # Record assignment in Timeline
-                ComplaintTimeline.objects.create(
-                    complaint=complaint,
-                    status="Vehicle Assigned",
-                    description=f"A specialized waste management vehicle ({instance.vehicle_id}) has been dispatched to your location."
-                )
             
-            # Email notification for Assignment
             send_aesthetic_email(
-                subject=f"Vehicle Assigned for Complaint {complaint.complaint_id}",
+                subject=msg_title,
                 recipient_email=complaint.email,
                 user_name=complaint.name,
                 message_title="Fleet Dispatched",
-                message_content=f"Great news! A specialized waste management vehicle ({instance.vehicle_id}) has been assigned to resolve your complaint {complaint.complaint_id} in {complaint.area}. Our team is now on the move to address the issue."
+                message_content=msg_content,
+                action_url=reverse('track'),
+                action_text="Track Vehicle"
+            )
+
+            # --- TIMELINE LOGGING ---
+            ComplaintTimeline.objects.create(
+                complaint=complaint,
+                status="Fleet Assigned",
+                description=f"Vehicle {instance.vehicle_id} has been assigned to your complaint."
             )
 
         # CASE 2: Status changed for the already assigned complaint
         elif old_status and old_status != instance.status:
+            msg_title = f"Fleet Update: {instance.vehicle_id}"
+            msg_content = f"The vehicle assigned to your complaint {complaint.complaint_id} is now {instance.status}."
+            
             if recipient:
                 notif = Notification(
                     user=recipient,
-                    title=f"Fleet Update: {instance.vehicle_id}",
-                    message=f"The vehicle assigned to your complaint {complaint.complaint_id} is now {instance.status}.",
-                    alert_type='info'
+                    title=msg_title,
+                    message=msg_content,
+                    alert_type='info',
+                    link=reverse('track')
                 )
                 notif._no_email = True
                 notif.save()
-
-                # Update Complaint Timeline
-                ComplaintTimeline.objects.create(
-                    complaint=complaint,
-                    status="Fleet Activity",
-                    description=f"Vehicle {instance.vehicle_id} status updated to: {instance.status}."
-                )
             
-            # Email notification for Status Update
             send_aesthetic_email(
-                subject=f"Fleet Update for Complaint {complaint.complaint_id}",
+                subject=msg_title,
                 recipient_email=complaint.email,
                 user_name=complaint.name,
-                message_title=f"Vehicle Status: {instance.status}",
-                message_content=f"The waste management vehicle ({instance.vehicle_id}) assigned to your complaint {complaint.complaint_id} is now {instance.status}."
+                message_title="Fleet Movement",
+                message_content=msg_content,
+                action_url=reverse('track'),
+                action_text="View Status"
+            )
+
+            # --- TIMELINE LOGGING ---
+            ComplaintTimeline.objects.create(
+                complaint=complaint,
+                status="Fleet Update",
+                description=f"The assigned vehicle {instance.vehicle_id} is now {instance.status}."
             )
 
 
@@ -360,10 +459,19 @@ def admin_staff_notification(sender, instance, created, **kwargs):
         link=reverse('staff')
     )
 
+@receiver(pre_save, sender=Payment)
+def capture_old_payment_fields(sender, instance, **kwargs):
+    if instance.pk:
+        try:
+            old_obj = Payment.objects.get(pk=instance.pk)
+            instance._old_status = old_obj.status
+        except Payment.DoesNotExist:
+            instance._old_status = None
+
 @receiver(post_save, sender=Payment)
 def user_payment_notification(sender, instance, created, **kwargs):
+    complaint = instance.complaint
     if created:
-        complaint = instance.complaint
         # notify admin
         notify_admin(
             type='update',
@@ -380,6 +488,18 @@ def user_payment_notification(sender, instance, created, **kwargs):
             action_url=reverse('track'),
             action_text="Track Order"
         )
+    else:
+        old_status = getattr(instance, '_old_status', None)
+        if old_status != instance.status:
+            send_aesthetic_email(
+                subject=f"Payment Status Update: {complaint.complaint_id}",
+                recipient_email=complaint.email,
+                user_name=complaint.name,
+                message_title=f"Payment {instance.status}",
+                message_content=f"The status of your payment for complaint {complaint.complaint_id} has been updated to: {instance.status}.",
+                action_url=reverse('track'),
+                action_text="View Details"
+            )
 
 @receiver(post_save, sender=ContactMessage)
 def admin_contact_notification(sender, instance, created, **kwargs):
@@ -404,18 +524,21 @@ def admin_contact_notification(sender, instance, created, **kwargs):
                 user=recipient,
                 title="New Reply to your Inquiry",
                 message=f"An administrator has replied to your inquiry about '{instance.category}'.",
-                alert_type='info'
+                alert_type='info',
+                link=reverse('admin_contact_messages')
             )
             notif._no_email = True
             notif.save()
         
-        # Email notification
+        # Always send email directly to inquiry email
         send_aesthetic_email(
             subject=f"Reply to your inquiry: {instance.category}",
             recipient_email=instance.email,
             user_name=instance.name,
-            message_title="Administrator Response",
-            message_content=f"Regarding your query: \"{instance.message}\"\n\nResponse:\n{instance.reply}"
+            message_title="Administrator Reply",
+            message_content=f"An administrator has replied to your message: \n\n {instance.reply}",
+            action_url=reverse('home'),
+            action_text="Visit Portal"
         )
 
 @receiver(pre_save, sender=ServiceBooking)
@@ -426,12 +549,18 @@ def capture_old_booking_fields(sender, instance, **kwargs):
             old_obj = ServiceBooking.objects.get(pk=instance.pk)
             instance._old_status = old_obj.status
             instance._old_assigned_staff = old_obj.assigned_staff
+            instance._old_scheduled_date = old_obj.scheduled_date
+            instance._old_address = old_obj.address
         else:
             instance._old_status = None
             instance._old_assigned_staff = None
+            instance._old_scheduled_date = None
+            instance._old_address = None
     except ServiceBooking.DoesNotExist:
         instance._old_status = None
         instance._old_assigned_staff = None
+        instance._old_scheduled_date = None
+        instance._old_address = None
 
 @receiver(post_save, sender=ServiceBooking)
 def user_booking_notification(sender, instance, created, **kwargs):
@@ -467,19 +596,12 @@ def user_booking_notification(sender, instance, created, **kwargs):
                     user=recipient,
                     title=f"Booking Update: {instance.service.name}",
                     message=f"Your booking for {instance.service.name} on {instance.scheduled_date} has been updated to: {instance.status}.",
-                    alert_type='info'
+                    alert_type='info',
+                    link=reverse('dashboard')
                 )
-                notif._no_email = True
                 notif.save()
             
-            # Email notification
-            send_aesthetic_email(
-                subject=f"Update on Service Booking: {instance.service.name}",
-                recipient_email=recipient.email,
-                user_name=recipient.first_name or recipient.username,
-                message_title=f"Booking Status: {instance.status}",
-                message_content=f"Your scheduled service for {instance.service.name} on {instance.scheduled_date} has been updated to '{instance.status}' by our administration."
-            )
+            
 
         # CASE 2: Staff Assignment
         if old_staff != instance.assigned_staff and instance.assigned_staff:
@@ -488,18 +610,23 @@ def user_booking_notification(sender, instance, created, **kwargs):
                     user=recipient,
                     title=f"Team Assigned: {instance.service.name}",
                     message=f"Technician {instance.assigned_staff.name} has been assigned to your service booking for {instance.service.name}.",
-                    alert_type='success'
+                    alert_type='success',
+                    link=reverse('dashboard')
                 )
-                notif._no_email = True
                 notif.save()
             
-            # Email notification
+            
+
+        # CASE 3: Date or Address Change
+        elif getattr(instance, '_old_scheduled_date', None) != instance.scheduled_date or \
+             getattr(instance, '_old_address', None) != instance.address:
+            
             send_aesthetic_email(
-                subject=f"Technician Assigned for your Service",
+                subject=f"Booking Detail Update: {instance.service.name}",
                 recipient_email=recipient.email,
                 user_name=recipient.first_name or recipient.username,
-                message_title="Team Member Dispatched",
-                message_content=f"Our professional technician, {instance.assigned_staff.name}, has been assigned to fulfill your booking for {instance.service.name} on {instance.scheduled_date}. They will reach your address shortly."
+                message_title="Schedule/Location Updated",
+                message_content=f"An administrator has updated your booking for {instance.service.name}. The new details are: Date: {instance.scheduled_date}, Address: {instance.address}."
             )
 
 @receiver(pre_save, sender=GalleryItem)
@@ -531,30 +658,37 @@ def gallery_item_notifications(sender, instance, created, **kwargs):
         complaint = instance.complaint
         recipient = complaint.user or User.objects.filter(email=complaint.email).first()
         
-        # Determine if we should notify the user (always on create/update if linked)
+        msg_title = f"Gallery Update: {complaint.complaint_id}"
+        msg_content = f"The transformation showcase for your complaint {complaint.complaint_id} in {complaint.area} has been {action} in our public gallery. We are proud to share this positive impact with the community!"
+        
+        # 1. In-app notification (for registered users)
         if recipient:
-            msg_title = f"Gallery Update: {complaint.complaint_id}"
-            msg_content = f"The transformation showcase for your complaint {complaint.complaint_id} in {complaint.area} has been {action} in our public gallery. We are proud to share this positive impact with the community!"
-            
             notif = Notification(
                 user=recipient,
                 title=msg_title,
                 message=msg_content,
-                alert_type='success'
+                alert_type='success',
+                link=reverse('impact_gallery')
             )
+            # We don't set _no_email=True here because we want the direct email below to be the primary one,
+            # and mirroring might happen if we save it normally.
+            # Actually, user_direct_notification signal would mirror this to email.
+            # To avoid duplicates, I will set _no_email=True on the Notification object and send the email manually.
             notif._no_email = True
             notif.save()
+        
+        # 2. Direct Email (for everyone, including guests)
+        send_aesthetic_email(
+            subject=msg_title,
+            recipient_email=complaint.email,
+            user_name=complaint.name,
+            message_title="Public Transformation Showcase",
+            message_content=msg_content,
+            action_url=reverse('impact_gallery'),
+            action_text="View Gallery"
+        )
             
-            # Email notification
-            send_aesthetic_email(
-                subject=f"Gallery Update for {complaint.complaint_id}",
-                recipient_email=complaint.email,
-                user_name=complaint.name,
-                message_title="Transformation Showcase",
-                message_content=msg_content,
-                action_url=reverse('impact_gallery'),
-                action_text="View Gallery"
-            )
+            
 
 @receiver(post_save, sender=Zone)
 def admin_zone_notification(sender, instance, created, **kwargs):
@@ -584,34 +718,83 @@ def user_announcement_notification(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Notification)
 def user_direct_notification(sender, instance, created, **kwargs):
-    """Ensures manual notifications sent by admins also go to email."""
-    if created and instance.user and instance.user.email:
-        # If the notification has _no_email flag, skip it (used by automated signals)
-        if getattr(instance, '_no_email', False):
-            print(f"DEBUG: Skipping email for automated notification: {instance.title}")
-            return
+    """Mirror all Unified Inbox messages to email."""
+    if created and instance.user and instance.user.email and not getattr(instance, '_no_email', False):
+        print(f"DEBUG: Mirroring Inbox message to: {instance.user.email}")
+        
+        # Use the provided link or fallback to notifications page
+        action_url = instance.link or reverse('notifications')
+        action_text = "View Update" if instance.link else "View All"
 
-        print(f"DEBUG: Processing personal message email for: {instance.user.email}")
         send_aesthetic_email(
-            subject=f"New Notification: {instance.title}",
+            subject=f"New Portal Message: {instance.title}",
             recipient_email=instance.user.email,
             user_name=instance.user.first_name or instance.user.username,
             message_title=instance.title,
             message_content=instance.message,
-            action_url=reverse('notifications'),
-            action_text="View All"
+            action_url=action_url,
+            action_text=action_text
+        )
+
+@receiver(post_save, sender=User)
+def user_account_signals(sender, instance, created, **kwargs):
+    """
+    Handles Administrative updates to the user's primary account.
+    (Welcome email is handled manually in register_view to avoid duplication).
+    """
+    if not created:
+        # 2. ACCOUNT UPDATE EMAIL (When admin changes something)
+        # We skip if this was just a login (last_login change)
+        update_fields = kwargs.get('update_fields')
+        if update_fields and 'last_login' in update_fields and len(update_fields) == 1:
+            return
+
+        print(f"DEBUG: Sending account update notification to: {instance.email}")
+        # Only send if it's likely an admin update or profile change
+        # Note: In-app notification for the user
+        notif, created_notif = Notification.objects.get_or_create(
+            user=instance,
+            title="Account Security Update",
+            message="Your account profile or security settings have been updated by an administrator.",
+            alert_type='info',
+            is_read=False
+        )
+        if created_notif:
+            notif._no_email = True # Avoid duplicate from direct_notification signal
+            notif.save()
+
+        if instance.email:
+            send_aesthetic_email(
+                subject="Account Update Notification",
+                recipient_email=instance.email,
+                user_name=instance.first_name or instance.username,
+                message_title="Security & Profile Update",
+                message_content="This is to inform you that your account details at Clean Pak Portal have been updated. If you did not authorize this change, please contact our support team immediately.",
+                action_url=reverse('dashboard'),
+                action_text="Check Account"
+            )
+
+@receiver(post_save, sender=User)
+def ensure_allauth_email(sender, instance, created, **kwargs):
+    """
+    Ensures that every user has a corresponding EmailAddress record in allauth.
+    This is critical for password resets to work for users created via custom views.
+    """
+    if instance.email:
+        EmailAddress.objects.get_or_create(
+            user=instance,
+            email__iexact=instance.email,
+            defaults={
+                'email': instance.email,
+                'primary': True,
+                'verified': True
+            }
         )
 
 @receiver(user_signed_up)
 def allauth_welcome_email(request, user, **kwargs):
-    """Sends a premium welcome email when a user signs up via Google or Social providers."""
-    if user.email:
-        send_aesthetic_email(
-            subject="Welcome to Clean Pak Portal",
-            recipient_email=user.email,
-            user_name=user.first_name or user.username,
-            message_title="Registration Successful! 🎉",
-            message_content="Welcome to Clean Pak Portal! Your account has been successfully created. You can now submit complaints, track progress in real-time, and help us build a cleaner community.",
-            action_url=reverse('dashboard'),
-            action_text="Get Started"
-        )
+    """
+    Since we now handle welcome emails via post_save signal, 
+    we just log this event for Allauth registrations.
+    """
+    print(f"DEBUG: Allauth signup detected for {user.username}. Email will be handled by User post_save signal.")

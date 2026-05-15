@@ -223,6 +223,7 @@ class Notification(models.Model):
     message = models.TextField()
     alert_type = models.CharField(max_length=20, choices=ALERT_TYPES, default='info')
     is_read = models.BooleanField(default=False)
+    link = models.CharField(max_length=255, blank=True, null=True, help_text="Actionable link for the notification")
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

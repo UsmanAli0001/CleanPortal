@@ -14,8 +14,10 @@
         --badge-progress-text: #854d0e;
         --badge-completed-bg: #f0fdf4;
         --badge-completed-text: #15803d;
-        --badge-urgent-bg: #fef2f2;
-        --badge-urgent-text: #b91c1c;
+        --badge-urgent-bg: #fee2e2;
+        --badge-urgent-text: #ff0000;
+        --badge-normal-bg: #dbeafe;
+        --badge-normal-text: #0000ff;
     }
 
     .page-header {
@@ -71,7 +73,36 @@
     .badge-verified { background: var(--badge-verified-bg); color: var(--badge-verified-text); }
     .badge-progress { background: var(--badge-progress-bg); color: var(--badge-progress-text); }
     .badge-completed { background: var(--badge-completed-bg); color: var(--badge-completed-text); }
-    .badge-urgent { background: var(--badge-urgent-bg); color: var(--badge-urgent-text); border: 1px solid rgba(185, 28, 28, 0.1); }
+    .badge-urgent { 
+        background: var(--badge-urgent-bg); 
+        color: var(--badge-urgent-text); 
+        border: 1px solid rgba(255, 0, 0, 0.3);
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.25);
+        text-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
+        font-weight: 800;
+        animation: priority-pulse 2s infinite;
+    }
+    .badge-normal { 
+        background: var(--badge-normal-bg); 
+        color: var(--badge-normal-text); 
+        border: 1px solid rgba(0, 0, 255, 0.3);
+        box-shadow: 0 0 15px rgba(0, 0, 255, 0.2);
+        text-shadow: 0 0 8px rgba(0, 0, 255, 0.3);
+        font-weight: 800;
+        animation: priority-pulse-blue 3s infinite;
+    }
+
+    @keyframes priority-pulse {
+        0% { box-shadow: 0 0 8px rgba(255, 0, 0, 0.2); }
+        50% { box-shadow: 0 0 18px rgba(255, 0, 0, 0.4); }
+        100% { box-shadow: 0 0 8px rgba(255, 0, 0, 0.2); }
+    }
+
+    @keyframes priority-pulse-blue {
+        0% { box-shadow: 0 0 8px rgba(0, 0, 255, 0.15); }
+        50% { box-shadow: 0 0 18px rgba(0, 0, 255, 0.35); }
+        100% { box-shadow: 0 0 8px rgba(0, 0, 255, 0.15); }
+    }
     .badge-paid { background: #f0fdf4; color: #16a34a; border: 1px solid rgba(22, 163, 74, 0.2); }
 
     /* Complaint Rows */
@@ -296,7 +327,7 @@
                             {{c.status}}
                         </span>
                         <div style="display: flex; gap: 5px;">
-                            <span class="status-badge badge-{% if c.priority == 'Urgent' %}urgent{% else %}pending{% endif %}">
+                            <span class="status-badge badge-{{ c.priority|lower }}">
                                 {{ c.priority }}
                             </span>
                             {% if c.payment_status %}

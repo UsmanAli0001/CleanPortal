@@ -194,6 +194,39 @@
         border-radius: 6px;
         font-size: 0.75rem;
     }
+
+    /* Filter UI Styles */
+    .filter-group {
+        display: flex;
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 12px;
+        gap: 4px;
+        margin-left: auto;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #64748b;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .filter-btn:hover {
+        color: #0f172a;
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    .filter-btn.active {
+        background: white;
+        color: #3b82f6;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
 {% endblock %}
 
 {% block admin_content %}
@@ -248,13 +281,22 @@
 </div>
 
 <div class="ledger-card">
-    <div class="ledger-header">
-        <h3 style="margin: 0; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 10px;">
-            <i data-lucide="globe" style="color: #3b82f6;"></i> Global Transaction Records
-        </h3>
-        <span
-            style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Live
-            Ledger: All Registered Payments</span>
+    <div class="ledger-header" style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+            <h3 style="margin: 0; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="globe" style="color: #3b82f6;"></i> Global Transaction Records
+            </h3>
+            <span
+                style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Live
+                Ledger: All Registered Payments</span>
+        </div>
+        
+        <div class="filter-group">
+            <a href="?period=all" class="filter-btn {% if current_period == 'all' %}active{% endif %}">All</a>
+            <a href="?period=weekly" class="filter-btn {% if current_period == 'weekly' %}active{% endif %}">Weekly</a>
+            <a href="?period=monthly" class="filter-btn {% if current_period == 'monthly' %}active{% endif %}">Monthly</a>
+            <a href="?period=yearly" class="filter-btn {% if current_period == 'yearly' %}active{% endif %}">Yearly</a>
+        </div>
     </div>
 
     <div style="overflow-x: auto;">

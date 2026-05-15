@@ -5,7 +5,8 @@ from .models import (
     Payment, Announcement, RouteAlert, Feedback,
 
     CleaningSchedule, AnnouncementRead, Zone,
-    Vehicle, VehicleLocation, ComplaintPricingConfig
+    Vehicle, VehicleLocation, ComplaintPricingConfig,
+    AdminNotification, Notification
 )
 
 @admin.register(Zone)
@@ -33,8 +34,8 @@ class AnnouncementReadAdmin(admin.ModelAdmin):
 
 @admin.register(Complaint)
 class ComplaintAdmin(admin.ModelAdmin):
-    list_display = ('complaint_id', 'complaint_type', 'area', 'status', 'created_at')
-    list_filter = ('status', 'area', 'priority')
+    list_display = ('complaint_id', 'complaint_type', 'area', 'status', 'payment_status', 'created_at')
+    list_filter = ('status', 'area', 'priority', 'payment_status')
     search_fields = ('complaint_id', 'name', 'description')
 
 admin.site.register(ComplaintTimeline)
@@ -74,3 +75,15 @@ class VehicleLocationAdmin(admin.ModelAdmin):
 class ComplaintPricingConfigAdmin(admin.ModelAdmin):
     list_display = ('distance_range', 'base_price', 'urgent_price', 'is_active')
     list_editable = ('base_price', 'urgent_price', 'is_active')
+
+@admin.register(AdminNotification)
+class AdminNotificationAdmin(admin.ModelAdmin):
+    list_display = ('type', 'message', 'is_read', 'created_at')
+    list_filter = ('type', 'is_read', 'created_at')
+    search_fields = ('message',)
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'title', 'alert_type', 'is_read', 'timestamp')
+    list_filter = ('alert_type', 'is_read', 'timestamp')
+    search_fields = ('user__username', 'title', 'message')

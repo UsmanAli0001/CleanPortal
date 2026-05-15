@@ -229,7 +229,8 @@ def dashboard_view(request):
     # Pass dynamic stats to dashboard if needed
     user_complaints = Complaint.objects.filter(
         Q(user=request.user) | 
-        (Q(user__isnull=True) & (Q(email__iexact=request.user.email) | Q(email__iexact=request.user.username)))
+        (Q(user__isnull=True) & (Q(email__iexact=request.user.email) | Q(email__iexact=request.user.username))),
+        payment_status=True
     )
     total_complaints = user_complaints.count()
     resolved_issues = user_complaints.filter(status='Completed').count()
@@ -237,8 +238,8 @@ def dashboard_view(request):
     pending_reports = user_complaints.filter(status='Pending').count()
 
     # Global stats for City Analytics card
-    global_total = Complaint.objects.count()
-    global_resolved = Complaint.objects.filter(status='Completed').count()
+    global_total = Complaint.objects.filter(payment_status=True).count()
+    global_resolved = Complaint.objects.filter(status='Completed', payment_status=True).count()
 
 
     # Fetch active special pricing adjustment
@@ -259,7 +260,8 @@ def dashboard_view(request):
         Q(user=request.user) | (Q(user__isnull=True) & (Q(email__iexact=request.user.email) | Q(email__iexact=request.user.username))),
         status='Completed', 
         image__isnull=False, 
-        after_image__isnull=False
+        after_image__isnull=False,
+        payment_status=True
     ).exclude(image='').exclude(after_image='').order_by('-created_at')[:6]
 
 
@@ -299,7 +301,7 @@ def dashboard_view(request):
         holiday_stats = {
             'resolved_today': ComplaintTimeline.objects.filter(status='Completed', created_at__date=today).count(),
             'active_teams': Staff.objects.count(),
-            'pending_requests': Complaint.objects.filter(status='Pending').count(),
+            'pending_requests': Complaint.objects.filter(status='Pending', payment_status=True).count(),
             'is_paid': upcoming_holiday.is_pricing_active and upcoming_holiday.price_multiplier != 1.0,
             'fee_info': f"Rs. {int(500 * upcoming_holiday.price_multiplier)}" if (upcoming_holiday.is_pricing_active and upcoming_holiday.price_multiplier != 1.0) else "Free",
         }
@@ -331,14 +333,16 @@ def impact_gallery_view(request):
         Q(user=request.user) | (Q(user__isnull=True) & (Q(email__iexact=request.user.email) | Q(email__iexact=request.user.username))),
         status='Completed', 
         image__isnull=False, 
-        after_image__isnull=False
+        after_image__isnull=False,
+        payment_status=True
     ).exclude(image='').exclude(after_image='').order_by('-created_at')
     
 @login_required(login_url='login')
 def complaint_history_view(request):
     complaints = Complaint.objects.filter(
-        Q(user=request.user) | 
-        (Q(user__isnull=True) & (Q(email__iexact=request.user.email) | Q(email__iexact=request.user.username)))
+        (Q(user=request.user) | 
+        (Q(user__isnull=True) & (Q(email__iexact=request.user.email) | Q(email__iexact=request.user.username)))),
+        payment_status=True
     ).order_by('-created_at')
 
     
@@ -361,7 +365,7 @@ def admin_complaint_history_view(request):
         messages.error(request, "Access Denied: Administrative permissions required.")
         return redirect('dashboard')
         
-    complaints = Complaint.objects.all().order_by('-created_at')
+    complaints = Complaint.objects.filter(payment_status=True).order_by('-created_at')
     
     context = {
         'complaints': complaints,
@@ -645,16 +649,22 @@ def track_complaint(request):
             dedup_timeline = []
             seen = {}
             for t in raw_timeline:
-                if t.status not in seen:
-                    seen[t.status] = {
+                # Define statuses that should ALWAYS be shown as separate events (e.g., Fleet movements)
+                is_fleet_update = t.status in ['Fleet Update', 'Fleet Assigned']
+                
+                if is_fleet_update or t.status not in seen:
+                    entry = {
                         'status': t.status,
                         'description': t.description,
                         'created_at': t.created_at
                     }
-                    dedup_timeline.append(seen[t.status])
+                    dedup_timeline.append(entry)
+                    if not is_fleet_update:
+                        seen[t.status] = entry
                 else:
+                    # For standard statuses, merge descriptions if they differ to keep history compact but detailed
                     if t.description not in seen[t.status]['description']:
-                        seen[t.status]['description'] = seen[t.status]['description'] + " " + t.description
+                        seen[t.status]['description'] = seen[t.status]['description'] + " | " + t.description
             
             timeline = dedup_timeline
 
@@ -1049,27 +1059,27 @@ def reports_view(request):
     import calendar
 
     # Overview stats (All-time)
-    total_complaints = Complaint.objects.count()
-    resolved_complaints = Complaint.objects.filter(status='Completed').count()
-    pending_complaints = Complaint.objects.filter(status='Pending').count()
-    in_progress = Complaint.objects.filter(status__in=['Verified', 'In Progress']).count()
+    total_complaints = Complaint.objects.filter(payment_status=True).count()
+    resolved_complaints = Complaint.objects.filter(status='Completed', payment_status=True).count()
+    pending_complaints = Complaint.objects.filter(status='Pending', payment_status=True).count()
+    in_progress = Complaint.objects.filter(status__in=['Verified', 'In Progress'], payment_status=True).count()
     now = timezone.now()
     today = timezone.localtime(now).date()
 
     def get_report_period_data(days_count=None, months_count=None, is_all=False):
         if is_all:
-            period_qs = Complaint.objects.all()
+            period_qs = Complaint.objects.filter(payment_status=True)
             is_yearly = True
-            first_complaint = Complaint.objects.order_by('created_at').first()
+            first_complaint = period_qs.order_by('created_at').first()
             start_date = first_complaint.created_at.date() if first_complaint else today
         elif months_count:
             start_date = today - timedelta(days=months_count * 30)
             is_yearly = True
-            period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
+            period_qs = Complaint.objects.filter(created_at__date__gte=start_date, payment_status=True)
         else:
             start_date = today - timedelta(days=days_count)
             is_yearly = False
-            period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
+            period_qs = Complaint.objects.filter(created_at__date__gte=start_date, payment_status=True)
 
         # 1. Area breakdown
         area_counts = period_qs.values('area').annotate(count=Count('id'))
@@ -1167,9 +1177,9 @@ def admin_city_reports_view(request):
 
     def get_period_data(days_count=None, months_count=None, is_all=False):
         if is_all:
-            period_qs = Complaint.objects.all()
+            period_qs = Complaint.objects.filter(payment_status=True)
             is_yearly = True
-            first_complaint = Complaint.objects.order_by('created_at').first()
+            first_complaint = period_qs.order_by('created_at').first()
             if first_complaint:
                 start_date = first_complaint.created_at.date()
                 # Calculate total months from start to now
@@ -1180,12 +1190,12 @@ def admin_city_reports_view(request):
         elif months_count:
             start_date = today - timedelta(days=months_count * 30)
             is_yearly = True
-            period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
+            period_qs = Complaint.objects.filter(created_at__date__gte=start_date, payment_status=True)
             num_months = months_count
         else:
             start_date = today - timedelta(days=days_count)
             is_yearly = False
-            period_qs = Complaint.objects.filter(created_at__date__gte=start_date)
+            period_qs = Complaint.objects.filter(created_at__date__gte=start_date, payment_status=True)
             num_months = days_count
         
         # 1. Category Breakdown
@@ -1325,13 +1335,13 @@ def admin_city_reports_view(request):
     all_time_data = get_period_data(is_all=True)
 
     # Global Stats
-    total_complaints = Complaint.objects.count()
-    pending_complaints = Complaint.objects.filter(status='Pending').count()
+    total_complaints = Complaint.objects.filter(payment_status=True).count()
+    pending_complaints = Complaint.objects.filter(status='Pending', payment_status=True).count()
     active_vehicles = Vehicle.objects.filter(is_active=True).count()
     
     # SLA Monitoring
     sla_threshold = timezone.now() - timedelta(hours=3)
-    sla_violations = Complaint.objects.filter(priority='Urgent', created_at__lt=sla_threshold).exclude(status='Completed')
+    sla_violations = Complaint.objects.filter(priority='Urgent', created_at__lt=sla_threshold, payment_status=True).exclude(status='Completed')
 
     context = {
         'chart_data': json.dumps({
@@ -1511,10 +1521,10 @@ def admin_dashboard(request):
     recent_payments = Payment.objects.all().order_by('-date')[:5]
 
     context = {
-        'total': Complaint.objects.count(),
-        'pending': Complaint.objects.filter(status="Pending").count(),
-        'progress': Complaint.objects.filter(status="In Progress").count(),
-        'completed': Complaint.objects.filter(status="Completed").count(),
+        'total': Complaint.objects.filter(payment_status=True).count(),
+        'pending': Complaint.objects.filter(status="Pending", payment_status=True).count(),
+        'progress': Complaint.objects.filter(status="In Progress", payment_status=True).count(),
+        'completed': Complaint.objects.filter(status="Completed", payment_status=True).count(),
         'staff': field_staff_count,
         'admins': admin_count,
         'payments_count': Payment.objects.count(),
@@ -1549,7 +1559,18 @@ def admin_wallet_view(request):
     yearly_rev = Payment.objects.filter(date__gte=now-timedelta(days=365), status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
     total_rev = Payment.objects.filter(status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
     
-    recent_payments = Payment.objects.select_related('complaint').all().order_by('-date')[:100]
+    # Period Filtering for Ledger
+    period = request.GET.get('period', 'all')
+    recent_payments = Payment.objects.select_related('complaint').all()
+    
+    if period == 'weekly':
+        recent_payments = recent_payments.filter(date__gte=now-timedelta(days=7))
+    elif period == 'monthly':
+        recent_payments = recent_payments.filter(date__gte=now-timedelta(days=30))
+    elif period == 'yearly':
+        recent_payments = recent_payments.filter(date__gte=now-timedelta(days=365))
+        
+    recent_payments = recent_payments.order_by('-date')[:100]
     
     context = {
         'weekly_revenue': weekly_rev,
@@ -1557,6 +1578,7 @@ def admin_wallet_view(request):
         'yearly_revenue': yearly_rev,
         'total_revenue': total_rev,
         'recent_payments': recent_payments,
+        'current_period': period,
     }
     return render(request, 'accounts/admin/admin_wallet.html', context)
 
@@ -1684,7 +1706,7 @@ def complaints(request):
     if not request.user.is_staff:
         messages.error(request, "Access Denied: Administrative permissions required.")
         return redirect('dashboard')
-    data = Complaint.objects.all().order_by('id')
+    data = Complaint.objects.filter(payment_status=True).order_by('id')
     staff = Staff.objects.all()
 
     return render(request, 'accounts/admin/complaints.html', {
@@ -1874,7 +1896,7 @@ def vehicle_tracking_view(request):
     
     if cid:
         try:
-            complaint = Complaint.objects.get(complaint_id__iexact=cid)
+            complaint = Complaint.objects.get(complaint_id__iexact=cid, payment_status=True)
             # Try finding vehicle directly linked or via assigned staff
             vehicle = Vehicle.objects.filter(current_complaint=complaint).first()
             if not vehicle and complaint.assigned_to:
@@ -2252,7 +2274,7 @@ def fleet_admin_view(request):
         'total_count': vehicles.count(),
         'v_types': v_types,
         'supervisors': supervisors,
-        'all_complaints': Complaint.objects.all().order_by('-created_at'),
+        'all_complaints': Complaint.objects.filter(payment_status=True).order_by('-created_at'),
         'is_supervisor': is_supervisor,
         'assigned_zone_obj': assigned_zone_obj,
         'all_users': User.objects.all(),
@@ -2315,7 +2337,7 @@ def fleet_add_vehicle(request):
                 driver_name=driver.name if driver else request.POST['driver_name'].strip(),
                 driver_phone=driver.phone if driver else request.POST.get('driver_phone', '').strip(),
                 assigned_driver=driver,
-                current_complaint=Complaint.objects.get(id=request.POST.get('current_complaint')) if request.POST.get('current_complaint') else None,
+                current_complaint=Complaint.objects.filter(id=request.POST.get('current_complaint'), payment_status=True).first() if request.POST.get('current_complaint') else None,
                 assigned_zone=request.POST.get('assigned_zone', '').strip(),
                 status=request.POST.get('status', 'Idle'),
                 plate_number=request.POST.get('plate_number', '').strip(),
@@ -2372,7 +2394,7 @@ def fleet_edit_vehicle(request, pk):
             curr_comp = request.POST.get('current_complaint')
             if curr_comp:
                 try:
-                    vehicle.current_complaint = Complaint.objects.get(id=curr_comp)
+                    vehicle.current_complaint = Complaint.objects.filter(id=curr_comp, payment_status=True).first()
                 except:
                     vehicle.current_complaint = None
             elif 'current_complaint' in request.POST:
