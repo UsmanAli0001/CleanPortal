@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{% static 'accounts/css/responsive.css' %}">
     <style>
         :root {
             --primary-blue: #1a1f3c;
@@ -309,15 +310,130 @@
             font-size: 0.85rem;
         }
 
-        @media (max-width: 768px) {
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 1002;
+        }
+
+        .mobile-menu-btn i {
+            width: 28px;
+            height: 28px;
+        }
+
+        .nav-menu-wrapper {
+            display: contents;
+        }
+
+        @media (max-width: 992px) {
             .navbar {
                 padding: 15px 20px;
+                grid-template-columns: 1fr auto;
             }
 
-            .nav-links {
-                display: none;
-                /* In a real app we'd have a mobile menu */
+            .mobile-menu-btn {
+                display: block;
+                grid-column: 2;
             }
+
+            .nav-menu-wrapper {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 300px;
+                height: 100vh;
+                background: linear-gradient(135deg, #0f172a, #1e40af);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 80px 20px 30px;
+                transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+                z-index: 1001;
+                display: flex;
+                gap: 30px;
+            }
+
+            .nav-menu-wrapper.active {
+                right: 0;
+            }
+
+            .nav-center {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+                gap: 15px;
+            }
+
+            .nav-center a {
+                width: 100%;
+                padding: 12px 15px;
+                font-size: 1.1rem;
+            }
+
+            .nav-right {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+                gap: 20px;
+            }
+
+            .services-dropdown {
+                position: static;
+                transform: none;
+                opacity: 1;
+                visibility: visible;
+                box-shadow: none;
+                background: rgba(255, 255, 255, 0.05);
+                border: none;
+                margin-top: 10px;
+                width: 100%;
+                display: none;
+            }
+            
+            .services-menu-container:hover .services-dropdown {
+                display: block;
+                transform: none;
+            }
+
+            .service-dd-item {
+                color: #f8fafc !important;
+            }
+            
+            .service-dd-item:hover {
+                background: rgba(255, 255, 255, 0.1) !important;
+            }
+            
+            .service-dd-item span.desc {
+                color: #cbd5e1;
+            }
+
+            /* Add a backdrop for the mobile menu */
+            .mobile-menu-backdrop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(4px);
+                z-index: 1000;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+
+            .mobile-menu-backdrop.active {
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            /* Responsive Utilities */
+            body { overflow-x: hidden; }
+            html { overflow-x: hidden; }
         }
 
         /* --- Global Button Micro-animations --- */
@@ -904,6 +1020,9 @@
             PAKISTAN: SMART WASTE MANAGEMENT IN PROGRESS...</p>
     </div>
 
+    <!-- Mobile Menu Backdrop -->
+    <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+
     <nav class="navbar">
         <div class="nav-left">
             <a href="{% url 'dashboard' %}" class="navbar-brand">
@@ -911,56 +1030,62 @@
             </a>
         </div>
 
-        <div class="nav-center">
-            {% block nav_links %}
-            <a href="{% url 'home' %}">Home</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Menu">
+            <i data-lucide="menu"></i>
+        </button>
 
-            <a href="{% url 'services' %}">Services</a>
+        <div class="nav-menu-wrapper" id="navMenuWrapper">
+            <div class="nav-center">
+                {% block nav_links %}
+                <a href="{% url 'home' %}">Home</a>
 
-            <a href="{% url 'about' %}">About Us</a>
-            <a href="{% url 'contact' %}">Contact Us</a>
-            <a href="{% url 'dashboard' %}">Dashboard</a>
-            {% endblock %}
-        </div>
+                <a href="{% url 'services' %}">Services</a>
 
-        <div class="nav-right">
-            {% if user.is_authenticated %}
-            {% block notification_bell %}
-            <div class="nav-bell-container">
-                <div class="nav-bell">
-                    <i data-lucide="bell"></i>
-                    <div class="badge" id="globalAlertBadge">0</div>
-                </div>
-                <div class="nav-dropdown">
-                    <div class="nav-dropdown-header"
-                        style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>System Alerts</span>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <button onclick="clearAllNavNotifications(event)" title="Clear all notifications"
-                                style="background: none; border: none; cursor: pointer; color: #ef4444; display: flex; align-items: center; transition: 0.3s; margin-right: 2px;"
-                                onmouseover="this.style.filter='drop-shadow(0 0 5px #ef4444)'"
-                                onmouseout="this.style.filter='none'">
-                                <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
-                            </button>
-                            <button onclick="markAllNavRead(event)" title="Mark all as read"
-                                style="background: none; border: none; cursor: pointer; color: #10b981; display: flex; align-items: center; transition: 0.3s;"
-                                onmouseover="this.style.filter='drop-shadow(0 0 5px #10b981)'"
-                                onmouseout="this.style.filter='none'">
-                                <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
-                            </button>
-                            <a href="{% url 'notifications' %}"
-                                style="font-size: 0.75rem; font-weight: 700; color: #6366f1; text-decoration: none;">View
-                                Inbox</a>
+                <a href="{% url 'about' %}">About Us</a>
+                <a href="{% url 'contact' %}">Contact Us</a>
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                {% endblock %}
+            </div>
+
+            <div class="nav-right">
+                {% if user.is_authenticated %}
+                {% block notification_bell %}
+                <div class="nav-bell-container">
+                    <div class="nav-bell">
+                        <i data-lucide="bell"></i>
+                        <div class="badge" id="globalAlertBadge">0</div>
+                    </div>
+                    <div class="nav-dropdown">
+                        <div class="nav-dropdown-header"
+                            style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>System Alerts</span>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <button onclick="clearAllNavNotifications(event)" title="Clear all notifications"
+                                    style="background: none; border: none; cursor: pointer; color: #ef4444; display: flex; align-items: center; transition: 0.3s; margin-right: 2px;"
+                                    onmouseover="this.style.filter='drop-shadow(0 0 5px #ef4444)'"
+                                    onmouseout="this.style.filter='none'">
+                                    <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                                </button>
+                                <button onclick="markAllNavRead(event)" title="Mark all as read"
+                                    style="background: none; border: none; cursor: pointer; color: #10b981; display: flex; align-items: center; transition: 0.3s;"
+                                    onmouseover="this.style.filter='drop-shadow(0 0 5px #10b981)'"
+                                    onmouseout="this.style.filter='none'">
+                                    <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
+                                </button>
+                                <a href="{% url 'notifications' %}"
+                                    style="font-size: 0.75rem; font-weight: 700; color: #6366f1; text-decoration: none;">View
+                                    Inbox</a>
+                            </div>
+                        </div>
+                        <div class="nav-dropdown-body" id="globalNavDropdownList">
+                            <!-- Notifications populated dynamically -->
                         </div>
                     </div>
-                    <div class="nav-dropdown-body" id="globalNavDropdownList">
-                        <!-- Notifications populated dynamically -->
-                    </div>
                 </div>
+                {% endblock %}
+                <a href="{% url 'logout' %}" class="nav-btn">Log Out</a>
+                {% endif %}
             </div>
-            {% endblock %}
-            <a href="{% url 'logout' %}" class="nav-btn">Log Out</a>
-            {% endif %}
         </div>
     </nav>
 
@@ -1004,13 +1129,37 @@
 
             if (sessionStorage.getItem('hasSeenSplash')) {
                 preloader.style.display = 'none';
-                return;
+            } else {
+                setTimeout(() => {
+                    preloader.classList.add('preloader-hidden');
+                    sessionStorage.setItem('hasSeenSplash', 'true');
+                }, 2800);
             }
 
-            setTimeout(() => {
-                preloader.classList.add('preloader-hidden');
-                sessionStorage.setItem('hasSeenSplash', 'true');
-            }, 2800);
+            // Mobile Menu Logic
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const navWrapper = document.getElementById('navMenuWrapper');
+            const backdrop = document.getElementById('mobileMenuBackdrop');
+            const menuIcon = mobileBtn.querySelector('i');
+
+            function toggleMenu() {
+                navWrapper.classList.toggle('active');
+                backdrop.classList.toggle('active');
+                
+                if (navWrapper.classList.contains('active')) {
+                    menuIcon.setAttribute('data-lucide', 'x');
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                } else {
+                    menuIcon.setAttribute('data-lucide', 'menu');
+                    document.body.style.overflow = '';
+                }
+                lucide.createIcons();
+            }
+
+            if (mobileBtn && navWrapper && backdrop) {
+                mobileBtn.addEventListener('click', toggleMenu);
+                backdrop.addEventListener('click', toggleMenu);
+            }
         });
 
         // Global Navbar Notification Fetcher
