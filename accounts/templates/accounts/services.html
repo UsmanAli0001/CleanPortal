@@ -26,14 +26,37 @@
     /* ====== HERO SECTION ====== */
     .hero-v3 {
         position: relative;
-        padding: 100px 5% 80px;
+        padding: 60px 5% 230px;
         background: url('/static/accounts/images/hero_gujrat.png');
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
         text-align: center;
         overflow: hidden;
-        color: white;
+        color: rgb(255, 255, 255);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 50vh;
+    }
+
+    @keyframes slowZoom {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .hero-v3::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: inherit;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        z-index: -2;
+        animation: slowZoom 20s ease-in-out infinite;
     }
 
     @keyframes gradientBG {
@@ -49,7 +72,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(-45deg, rgba(30, 64, 175, 0.9), rgba(10, 29, 71, 0.7), rgba(14, 48, 102, 0.7), rgba(2, 22, 78, 0.9));
+        background: linear-gradient(-45deg, rgba(30, 64, 175, 0.4), rgba(10, 29, 71, 0.3), rgba(14, 48, 102, 0.3), rgba(2, 22, 78, 0.5));
         background-size: 400% 400%;
         animation: gradientBG 15s ease infinite;
         z-index: 0;
@@ -57,51 +80,83 @@
 
     .hero-v3 .container {
         position: relative;
-        z-index: 1;
+        z-index: 2;
         max-width: 1000px;
         margin: 0 auto;
     }
 
     .badge-premium {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        padding: 8px 18px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 6px 16px;
         border-radius: 100px;
-        font-size: 0.8rem;
-        font-weight: 700;
+        font-size: 0.7rem;
+        font-weight: 800;
         color: white;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         margin-bottom: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        position: relative;
+        z-index: 2;
     }
 
     .hero-v3 h1 {
-        font-size: clamp(2.8rem, 6vw, 4.2rem);
-        font-weight: 800;
-        line-height: 1;
-        letter-spacing: -0.04em;
-        margin-bottom: 20px;
-        color: white;
+        font-size: clamp(3.5rem, 8vw, 5.5rem);
+        font-weight: 900;
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+        margin-bottom: 24px;
+        color: rgb(255, 255, 255);
+        text-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
     .hero-v3 h1 span {
-        background: linear-gradient(to right, #ffffff, #93c5fd);
+        background: linear-gradient(to right, #0827b1, #0b7c01);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 900;
+        filter: drop-shadow(0 0 20px rgba(96, 165, 250, 0.3));
     }
 
     .hero-v3 p {
-        font-size: 1.2rem;
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 700px;
+        font-size: 1.4rem;
+        color: rgba(255, 255, 255, 0.95);
+        max-width: 800px;
         margin: 0 auto;
-        line-height: 1.6;
+        line-height: 1.5;
         font-weight: 500;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .scroll-indicator {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        color: white;
+        opacity: 0.8;
+        animation: pulseIndicator 2s infinite;
+        z-index: 2;
+    }
+
+    @keyframes pulseIndicator {
+        0%, 100% { transform: translate(-50%, 0); opacity: 0.6; }
+        50% { transform: translate(-50%, 10px); opacity: 1; }
+    }
+
+    .scroll-indicator span {
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
     }
 
     /* ====== HUB GRID ====== */
@@ -234,11 +289,12 @@
 <!-- PREMIUM HERO SECTION -->
 <section class="hero-v3">
     <div class="container">
-        <div class="badge-premium">
-            <i data-lucide="sparkles"></i> SMART CITY INITIATIVE
-        </div>
         <h1>Our Digital <span>Ecosystem.</span></h1>
         <p>A unified portal designed to streamline municipal operations and enhance citizen engagement through cutting-edge technology and transparent processes.</p>
+    </div>
+    <div class="scroll-indicator">
+        <span>Explore Hub</span>
+        <i data-lucide="chevron-down"></i>
     </div>
 </section>
 

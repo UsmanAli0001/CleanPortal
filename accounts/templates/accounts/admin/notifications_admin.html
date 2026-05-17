@@ -5,78 +5,215 @@
 
 {% block admin_extra_css %}
 <style>
-    .notif-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-    .notif-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-    
+    .notif-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .notif-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
     .form-card {
-        background: white; border-radius: 20px; padding: 25px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
-        display: flex; flex-direction: column; height: 100%;
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
-    .form-card h3 { margin-top: 0; color: var(--primary-blue); display: flex; align-items: center; gap: 10px; margin-bottom: 20px; font-size: 1.1rem; }
 
-    .form-row { display: flex; gap: 15px; margin-bottom: 15px; }
-    .form-row .form-group { flex: 1; margin-bottom: 0; }
-    
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-weight: 700; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px; }
+    .form-card h3 {
+        margin-top: 0;
+        color: var(--primary-blue);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        font-size: 1.1rem;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 700;
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
     .form-control {
-        width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #e2e8f0;
-        font-family: inherit; font-size: 0.9rem; box-sizing: border-box;
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        font-family: inherit;
+        font-size: 0.9rem;
+        box-sizing: border-box;
     }
-    .form-control:focus { outline: none; border-color: var(--primary-blue); }
-    
-    .btn-send {
-        background: var(--primary-blue); color: white; border: none; padding: 12px; width: 100%;
-        border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-        margin-top: auto; font-size: 0.9rem;
-    }
-    .btn-send:hover { box-shadow: 0 10px 20px rgba(30, 60, 114, 0.2); }
 
-    .notif-list-card { background: white; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    .notif-list-card h3 { color: var(--text-dark); margin-top: 0; margin-bottom: 25px; }
-    
-    .list-item {
-        padding: 20px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-blue);
     }
-    .list-item:hover { background: #f8fafc; }
-    .list-item:last-child { border-bottom: none; }
-    
-    .item-info h4 { margin: 0 0 5px; font-size: 1.1rem; color: #0f172a; }
-    .item-info p { margin: 0; font-size: 0.9rem; color: #64748b; }
-    .badge-type { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; margin-left: 10px; }
-    
-    .btn-delete { background: #fee2e2; color: #ef4444; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .btn-delete:hover { background: #ef4444; color: white; }
-    
-    .btn-read:hover { background: #10b981 !important; color: white !important; }
+
+    .btn-send {
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 12px;
+        width: 100%;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: auto;
+        font-size: 0.9rem;
+    }
+
+    .btn-send:hover {
+        box-shadow: 0 10px 20px rgba(30, 60, 114, 0.2);
+    }
+
+    .notif-list-card {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .notif-list-card h3 {
+        color: var(--text-dark);
+        margin-top: 0;
+        margin-bottom: 25px;
+    }
+
+    .list-item {
+        padding: 20px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .list-item:hover {
+        background: #f8fafc;
+    }
+
+    .list-item:last-child {
+        border-bottom: none;
+    }
+
+    .item-info h4 {
+        margin: 0 0 5px;
+        font-size: 1.1rem;
+        color: #0f172a;
+    }
+
+    .item-info p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+
+    .badge-type {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 6px;
+        margin-left: 10px;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #ef4444;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-delete:hover {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-read:hover {
+        background: #10b981 !important;
+        color: white !important;
+    }
 
     /* Glowing Action Icons */
     .icon-action-btn {
-        width: 42px; height: 42px; border-radius: 12px;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: none; text-decoration: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        text-decoration: none;
     }
-    
-    .icon-action-btn i { width: 20px; height: 20px; }
+
+    .icon-action-btn i {
+        width: 20px;
+        height: 20px;
+    }
 
     .glow-green {
-        background: #f0fdf4; color: #10b981;
+        background: #f0fdf4;
+        color: #10b981;
         box-shadow: 0 0 0px rgba(16, 185, 129, 0);
     }
+
     .glow-green:hover {
-        background: #10b981; color: white;
+        background: #10b981;
+        color: white;
         box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
         transform: translateY(-3px);
     }
 
     .glow-red {
-        background: #fef2f2; color: #ef4444;
+        background: #fef2f2;
+        color: #ef4444;
         box-shadow: 0 0 0px rgba(239, 68, 68, 0);
     }
+
     .glow-red:hover {
-        background: #ef4444; color: white;
+        background: #ef4444;
+        color: white;
         box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
         transform: translateY(-3px);
     }
@@ -85,7 +222,8 @@
 
 {% block admin_content %}
 <div class="notif-container">
-    <div class="page-header" style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="page-header"
+        style="margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;">
         <div>
             <h1>Inbox Management</h1>
             <p>Communicate directly with citizens or broadcast global alerts.</p>
@@ -100,7 +238,7 @@
             <form method="POST" style="flex: 1; display: flex; flex-direction: column;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="send_broadcast">
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Alert Type</label>
@@ -111,18 +249,19 @@
                             <option value="urgent">Urgent (Red)</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label>Headline</label>
                         <input type="text" name="title" class="form-control" placeholder="e.g. Maintenance" required>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Detailed Message</label>
-                    <textarea name="message" class="form-control" rows="3" placeholder="Briefly describe the alert..." required></textarea>
+                    <textarea name="message" class="form-control" rows="3" placeholder="Briefly describe the alert..."
+                        required></textarea>
                 </div>
-                
+
                 <button type="submit" class="btn-send" style="background: #6366f1;">
                     <i data-lucide="send"></i> Broadcast All
                 </button>
@@ -135,14 +274,14 @@
             <form method="POST" style="flex: 1; display: flex; flex-direction: column;">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="send_personal">
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Target Citizen</label>
                         <select name="user_id" class="form-control" required>
                             <option value="">Select...</option>
                             {% for u in users %}
-                                <option value="{{ u.id }}">{{ u.username }}</option>
+                            <option value="{{ u.id }}">{{ u.username }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -157,17 +296,18 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Message Title</label>
                     <input type="text" name="title" class="form-control" placeholder="e.g. Complaint #1234" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Personal Message</label>
-                    <textarea name="message" class="form-control" rows="3" placeholder="Direct message..." required></textarea>
+                    <textarea name="message" class="form-control" rows="3" placeholder="Direct message..."
+                        required></textarea>
                 </div>
-                
+
                 <button type="submit" class="btn-send" style="background: #0ea5e9;">
                     <i data-lucide="mail"></i> Send Private
                 </button>
@@ -178,29 +318,83 @@
     <!-- Active Global Announcements -->
     <div class="notif-grid" style="margin-top: 40px; grid-template-columns: 1fr;">
         <div class="notif-list-card">
-            <h3><i data-lucide="list"></i> Active Announcements</h3>
-            <div class="notif-list">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;"><i data-lucide="list"></i> Active
+                    Announcements</h3>
+                <form method="POST" style="margin: 0;"
+                    onsubmit="return confirm('CRITICAL ACTION: This will permanently delete ALL active announcements. Are you sure?')">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_all_announcements">
+                    <button type="submit" class="icon-action-btn glow-red" title="Delete All Announcements">
+                        <i data-lucide="trash-2"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="notif-list" style="display: grid; gap: 20px;">
                 {% for ann in announcements %}
-                    <div class="list-item">
-                        <div class="item-info">
-                            <h4>{{ ann.title }} <span class="badge-type tag-{{ ann.alert_type }}">{{ ann.alert_type }}</span></h4>
-                            <p>{{ ann.message|truncatewords:20 }}</p>
-                            <small style="color: #94a3b8; font-weight: 600;">Broadcasted on {{ ann.created_at|date:"M d, Y H:i" }}</small>
+                <div class="list-item" style="background: white; border-radius: 20px; padding: 25px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s; display: flex; gap: 20px; align-items: flex-start; position: relative; overflow: hidden;">
+                    <!-- Aesthetic Accent Bar -->
+                    <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: {% if ann.priority == 'critical' %}#ef4444{% elif ann.priority == 'high' %}#f97316{% elif ann.priority == 'medium' %}#eab308{% else %}#10b981{% endif %};"></div>
+                    
+                    <!-- Icon Box -->
+                    <div style="width: 50px; height: 50px; border-radius: 14px; background: {% if ann.priority == 'critical' %}#fef2f2{% elif ann.priority == 'high' %}#fff7ed{% elif ann.priority == 'medium' %}#fefce8{% else %}#f0fdf4{% endif %}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="{% if ann.priority == 'critical' %}shield-alert{% elif ann.priority == 'high' %}alert-circle{% elif ann.priority == 'medium' %}info{% else %}check-circle{% endif %}" 
+                           style="width: 24px; height: 24px; color: {% if ann.priority == 'critical' %}#ef4444{% elif ann.priority == 'high' %}#f97316{% elif ann.priority == 'medium' %}#eab308{% else %}#10b981{% endif %};"></i>
+                    </div>
+
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <div>
+                                <h4 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;">{{ ann.title }}</h4>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                                    <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 3px 10px; border-radius: 50px; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0;">
+                                        {{ ann.get_priority_display|default:"General Alert" }}
+                                    </span>
+                                    {% if ann.status %}
+                                    <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; padding: 3px 10px; border-radius: 50px; background: {% if ann.status == 'active' %}#f0fdf4{% elif ann.status == 'resolved' %}#eff6ff{% else %}#fefce8{% endif %}; color: {% if ann.status == 'active' %}#15803d{% elif ann.status == 'resolved' %}#1d4ed8{% else %}#a16207{% endif %}; border: 1px solid rgba(0,0,0,0.05);">
+                                        {{ ann.status }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <form method="POST" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete_announcement">
+                                <input type="hidden" name="id" value="{{ ann.id }}">
+                                <button type="submit" class="icon-action-btn glow-red" style="width: 38px; height: 38px; border-radius: 10px;">
+                                    <i data-lucide="trash-2" style="width: 18px;"></i>
+                                </button>
+                            </form>
                         </div>
-                        <form method="POST" style="margin: 0;">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="delete_announcement">
-                            <input type="hidden" name="id" value="{{ ann.id }}">
-                            <button type="submit" class="btn-delete">
-                                <i data-lucide="trash-2" style="width: 18px;"></i>
-                            </button>
-                        </form>
+
+                        <p style="margin: 10px 0 15px; color: #475569; line-height: 1.6; font-size: 0.95rem;">{{ ann.message }}</p>
+                        
+                        {% if ann.start_date or ann.supervisor_name %}
+                        <div style="display: flex; flex-wrap: wrap; gap: 20px; padding-top: 15px; border-top: 1px solid #f1f5f9; font-size: 0.8rem; color: #94a3b8; font-weight: 600;">
+                            {% if ann.start_date %}
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="calendar" style="width: 14px;"></i> {{ ann.start_date|date:"d M, H:i" }}
+                            </div>
+                            {% endif %}
+                            {% if ann.supervisor_name %}
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="user" style="width: 14px;"></i> {{ ann.supervisor_name }}
+                            </div>
+                            {% endif %}
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <i data-lucide="eye" style="width: 14px;"></i> {{ ann.get_visibility_duration_display|default:"Permanent" }}
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
+                </div>
                 {% empty %}
-                    <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                        <i data-lucide="info" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
-                        <p>No active system-wide announcements found.</p>
-                    </div>
+                <div style="text-align: center; padding: 60px 40px; background: #f8fafc; border-radius: 24px; border: 2px dashed #e2e8f0; color: #94a3b8;">
+                    <i data-lucide="megaphone-off" style="width: 48px; height: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                    <p style="font-weight: 700; font-size: 1.1rem; margin: 0;">No active broadcasts</p>
+                    <p style="font-size: 0.9rem; margin-top: 5px;">Use the form above to send city-wide alerts.</p>
+                </div>
                 {% endfor %}
             </div>
         </div>
@@ -209,49 +403,60 @@
     <div class="notif-list-card" style="margin-top: 40px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
             <div style="flex: 1;">
-                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;"><i data-lucide="history" style="color: #38bdf8;"></i> Operational Control Logs</h3>
-                <p style="color: #64748b; font-size: 0.9rem; margin-top: 5px; margin-bottom: 0;">Real-time log of complaints, feedback, likes, and administrative updates.</p>
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;"><i data-lucide="history"
+                        style="color: #38bdf8;"></i> Operational Control Logs</h3>
+                <p style="color: #64748b; font-size: 0.9rem; margin-top: 5px; margin-bottom: 0;">Real-time log of
+                    complaints, feedback, likes, and administrative updates.</p>
             </div>
             <div style="display: flex; gap: 15px;">
                 <button onclick="markAllSeen()" class="icon-action-btn glow-green" title="Mark All as Seen">
                     <i data-lucide="check-check"></i>
                 </button>
-                <a href="{% url 'delete_all_admin_notifications' %}" class="icon-action-btn glow-red" title="Delete All Logs" onclick="return confirm('CRITICAL ACTION: This will permanently delete ALL operational log history. Are you sure?')">
+                <a href="{% url 'delete_all_admin_notifications' %}" class="icon-action-btn glow-red"
+                    title="Delete All Logs"
+                    onclick="return confirm('CRITICAL ACTION: This will permanently delete ALL operational log history. Are you sure?')">
                     <i data-lucide="trash-2"></i>
                 </a>
             </div>
         </div>
         <div class="notif-list">
             {% for n in admin_notifications %}
-                <div class="list-item">
-                    <div class="item-info">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 10px; height: 10px; border-radius: 50%; background: {% if n.type == 'complaint' %}#ef4444{% elif n.type == 'feedback' %}#10b981{% elif n.type == 'like' %}#ec4899{% else %}#38bdf8{% endif %};"></div>
-                            <h4 style="font-size: 1rem;">{{ n.get_type_display }}</h4>
+            <div class="list-item">
+                <div class="item-info">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div
+                            style="width: 10px; height: 10px; border-radius: 50%; background: {% if n.type == 'complaint' %}#ef4444{% elif n.type == 'feedback' %}#10b981{% elif n.type == 'like' %}#ec4899{% else %}#38bdf8{% endif %};">
                         </div>
-                        <p style="margin-top: 5px;">{{ n.message }}</p>
-                        <small style="color: #94a3b8; font-weight: 600;">{{ n.created_at|date:"M d, Y H:i" }}</small>
+                        <h4 style="font-size: 1rem;">{{ n.get_type_display }}</h4>
                     </div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        {% if not n.is_read %}
-                            <a href="{% url 'mark_single_admin_notification_read' n.id %}" class="btn-read" title="Mark as Read" style="background: #ecfdf5; color: #10b981; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
-                                <i data-lucide="check-check" style="width: 18px;"></i>
-                            </a>
-                        {% endif %}
-                        
-                        {% if n.link %}
-                            <a href="{{ n.link }}" class="nav-btn" style="padding: 8px 15px; font-size: 0.75rem; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 8px; font-weight: 700;">Resolve / View</a>
-                        {% endif %}
-                        <a href="{% url 'delete_admin_notification' n.id %}" class="btn-delete" title="Delete Log Permanently" onclick="return confirm('Are you sure you want to permanently delete this operational log?')">
-                            <i data-lucide="trash-2" style="width: 18px;"></i>
-                        </a>
-                    </div>
+                    <p style="margin-top: 5px;">{{ n.message }}</p>
+                    <small style="color: #94a3b8; font-weight: 600;">{{ n.created_at|date:"M d, Y H:i" }}</small>
                 </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    {% if not n.is_read %}
+                    <a href="{% url 'mark_single_admin_notification_read' n.id %}" class="btn-read" title="Mark as Read"
+                        style="background: #ecfdf5; color: #10b981; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                        <i data-lucide="check-check" style="width: 18px;"></i>
+                    </a>
+                    {% endif %}
+
+                    {% if n.link %}
+                    <a href="{{ n.link }}" class="nav-btn"
+                        style="padding: 8px 15px; font-size: 0.75rem; background: #f1f5f9; color: #475569; text-decoration: none; border-radius: 8px; font-weight: 700;">Resolve
+                        / View</a>
+                    {% endif %}
+                    <a href="{% url 'delete_admin_notification' n.id %}" class="btn-delete"
+                        title="Delete Log Permanently"
+                        onclick="return confirm('Are you sure you want to permanently delete this operational log?')">
+                        <i data-lucide="trash-2" style="width: 18px;"></i>
+                    </a>
+                </div>
+            </div>
             {% empty %}
-                <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                    <i data-lucide="shield-check" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
-                    <p>System clean. No operational alerts recorded.</p>
-                </div>
+            <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                <i data-lucide="shield-check" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
+                <p>System clean. No operational alerts recorded.</p>
+            </div>
             {% endfor %}
         </div>
     </div>

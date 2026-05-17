@@ -222,6 +222,25 @@
         box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
     }
 
+    .btn-edit-icon {
+        background: #3b82f6 !important;
+        color: white !important;
+        padding: 8px 10px !important;
+        border-radius: 6px !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease !important;
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+
+    .btn-edit-icon:hover {
+        background: #2563eb !important;
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+    }
+
     .empty-state {
         text-align: center;
         padding: 60px 40px;
@@ -390,6 +409,10 @@
                             <button type="submit" class="btn-manage btn-update" style="flex: 1; margin-top: 0;">
                                 <i data-lucide="refresh-cw" style="width: 14px;"></i> Update Record
                             </button>
+                            <label class="btn-edit-icon" title="Edit Proof Image">
+                                <i data-lucide="edit" style="width: 16px;"></i>
+                                <input type="file" name="after_image" accept="image/*" style="display: none;">
+                            </label>
                             <a href="javascript:void(0)" class="btn-delete-icon" 
                                title="Delete Permanently"
                                onclick="deleteComplaint(this, '{{ c.id }}', '{{ c.complaint_id }}')">

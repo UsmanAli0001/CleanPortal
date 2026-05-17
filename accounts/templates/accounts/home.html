@@ -19,8 +19,15 @@
     .hero-video-bg {
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, rgba(7, 13, 28, 0.75) 0%, rgba(10, 20, 50, 0.6) 50%, rgba(7, 13, 28, 0.75) 100%),
-        url("{% static 'accounts/images/smart_hero.png' %}") center/cover no-repeat;
+        background: linear-gradient(rgba(7, 13, 28, 0.4) 0%, rgba(7, 13, 28, 0.1) 50%, rgba(7, 13, 28, 0.4) 100%),
+        url("{% static 'accounts/images/home.png' %}") center/cover no-repeat;
+        animation: heroBgZoom 60s linear infinite alternate;
+        z-index: 1;
+    }
+
+    @keyframes heroBgZoom {
+        from { transform: scale(1); }
+        to { transform: scale(1.1); }
     }
 
     /* Animated orbs */
@@ -37,7 +44,7 @@
         background: #1a56db;
         top: -250px;
         left: -200px;
-        opacity: 0.15;
+        opacity: 0.05; /* Even more subtle */
         animation-delay: 0s
     }
 
@@ -47,7 +54,7 @@
         background: #16a34a;
         bottom: -200px;
         right: -150px;
-        opacity: 0.15;
+        opacity: 0.05; /* Even more subtle */
         animation-delay: -5s
     }
 
@@ -57,7 +64,7 @@
         background: #7c3aed;
         top: 50%;
         left: 55%;
-        opacity: 0.12;
+        opacity: 0.04; /* Even more subtle */
         animation-delay: -10s
     }
 
@@ -101,92 +108,112 @@
         }
     }
 
-    /* Grid lines */
+    /* Grid lines - Removed for 'neat' look */
     .hero-grid {
-        position: absolute;
-        inset: 0;
-        background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-        background-size: 60px 60px;
+        display: none;
     }
 
     .hero-inner {
         position: relative;
         z-index: 10;
         text-align: center;
-        padding: 30px 20px;
+        padding: 20px 20px 60px;
+        margin-top: -200px; /* Moved slightly more above */
         max-width: 900px;
+        background: none;
+        backdrop-filter: none;
+        border: none;
+        animation: heroFadeInScale 1.2s cubic-bezier(0.23, 1, 0.32, 1) both;
+    }
+
+    @keyframes heroFadeInScale {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
     }
 
     .hero-badge {
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        background: rgba(26, 86, 219, 0.15);
-        border: 1px solid rgba(26, 86, 219, 0.35);
-        color: #60a5fa;
-        padding: 10px 22px;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #93c5fd;
+        padding: 10px 24px;
         border-radius: 100px;
         font-size: 0.82rem;
         font-weight: 700;
         letter-spacing: 1.5px;
         text-transform: uppercase;
         margin-bottom: 28px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         animation: fadeIn 1s ease 0.2s both;
     }
 
     .hero-badge .dot {
-        width: 8px;
-        height: 8px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
-        background: #4ade80;
+        background: #16a34a;
+        box-shadow: 0 0 15px rgba(22, 163, 74, 0.8);
         animation: blink 1.5s ease-in-out infinite;
     }
 
     @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+    }
 
-        0%,
-        100% {
-            opacity: 1;
+    @keyframes titleGlow {
+        from {
+            filter: drop-shadow(0 0 3px rgba(5, 148, 65, 0.2)) drop-shadow(0 0 3px rgba(9, 36, 189, 0.2));
         }
+        to {
+            filter: drop-shadow(0 0 10px rgba(5, 148, 65, 0.4)) drop-shadow(0 0 10px rgba(9, 36, 189, 0.4));
+        }
+    }
 
-        50% {
-            opacity: 0.3;
-        }
+    @keyframes heroFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    @keyframes shimmer {
+        0% { left: -150%; }
+        100% { left: 150%; }
     }
 
     .hero-h1 {
-        font-size: clamp(2.5rem, 6vw, 4rem);
+        font-size: clamp(2.2rem, 7vw, 4rem);
         font-weight: 900;
-        color: #fff;
-        margin: 0 0 20px;
-        line-height: 1.1;
-        letter-spacing: -1.5px;
-        animation: fadeIn 1s ease 0.4s both;
-    }
-
-    .hero-h1 .hl {
-        background: linear-gradient(135deg, #4ade80, #60a5fa);
+        background: linear-gradient(135deg, #059441, #051a8f); /* Green-to-Blue */
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        margin: 0 0 40px;
+        line-height: 1.1;
+        letter-spacing: -2px;
+        filter: drop-shadow(0 0 5px rgba(5, 148, 65, 0.2)) drop-shadow(0 0 5px rgba(5, 26, 143, 0.2));
+        animation: titleGlow 5s ease-in-out infinite alternate;
+        will-change: transform, filter;
     }
 
     .hero-sub {
-        font-size: 1.15rem;
-        color: rgba(255, 255, 255, 0.55);
-        max-width: 600px;
-        margin: 0 auto 40px;
-        line-height: 1.75;
-        animation: fadeIn 1s ease 0.6s both;
+        font-size: 1.25rem;
+        color: #22c55e; /* Vibrant Green */
+        max-width: 750px;
+        margin: 0 auto 45px;
+        line-height: 1.7;
+        font-weight: 600;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
 
     .hero-actions {
         display: flex;
-        gap: 18px;
+        gap: 20px;
         justify-content: center;
         flex-wrap: wrap;
-        animation: fadeIn 1s ease 0.8s both;
     }
 
     .btn-hero {
@@ -195,10 +222,23 @@
         font-weight: 700;
         font-size: 1rem;
         text-decoration: none;
-        transition: all 0.3s;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         font-family: 'Outfit', sans-serif;
         border: none;
         cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -150%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        animation: shimmer 4s infinite;
     }
 
     .btn-hero.green {
@@ -213,14 +253,18 @@
     }
 
     .btn-hero.glass {
-        background: rgba(255, 255, 255, 0.08);
+        background: rgba(59, 130, 246, 0.15); /* Transparent Blue */
         color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        backdrop-filter: blur(10px);
+        border: 1px solid rgba(59, 130, 246, 0.35);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: all 0.4s;
     }
 
     .btn-hero.glass:hover {
-        background: rgba(255, 255, 255, 0.14);
+        background: rgba(59, 130, 246, 0.25);
+        border-color: rgba(59, 130, 246, 0.6);
+        box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
         transform: translateY(-3px);
     }
 
@@ -802,24 +846,15 @@
     <div class="particles" id="particles"></div>
 
     <div class="hero-inner">
-        <div class="hero-badge">
-            <div class="dot"></div>
-            Live Municipal System — Gujrat, Pakistan
-        </div>
         <h1 class="hero-h1">
-            Gujrat Deserves a<br>
-            <span class="hl">Cleaner Tomorrow</span>
+            Gujrat Deserves a Cleaner Tomorrow
         </h1>
-        <p class="hero-sub">
-            Clean Pak Portal is a state-of-the-art municipal management system. We combine real-time GPS tracking,
-            instant citizen reporting, and deep analytical monitoring to ensure our cities stay clean, green, and smart.
-        </p>
         <div class="hero-actions">
             {% if user.is_authenticated %}
-            <a href="{% url 'register_complaint' %}" class="btn-hero green">🚨 Report an Issue</a>
-            <a href="{% url 'dashboard' %}" class="btn-hero glass">📊 Open Dashboard</a>
+            <a href="{% url 'register_complaint' %}" class="btn-hero green"> Report an Issue</a>
+            <a href="{% url 'dashboard' %}" class="btn-hero glass"> Open Dashboard</a>
             {% else %}
-            <a href="{% url 'register' %}" class="btn-hero green">🚀 Get Started Free</a>
+            <a href="{% url 'register' %}" class="btn-hero green"> Get Started Free</a>
             <a href="{% url 'about' %}" class="btn-hero glass">Learn How it Works</a>
             {% endif %}
         </div>
@@ -850,7 +885,7 @@
 <!-- FEATURES -->
 <section class="features-section">
     <div class="sec-header">
-        <div class="sec-pill">✨ Platform Features</div>
+        <div class="sec-pill"> Platform Features</div>
         <h2 class="sec-h2">Everything You Need,<br>In One Place</h2>
         <p class="sec-sub">Clean Pak Portal brings municipal services into the digital era — fast, transparent, and
             citizen-first.</p>

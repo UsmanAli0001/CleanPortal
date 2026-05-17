@@ -448,17 +448,44 @@
     .cinematic-refresh:hover {
         background: var(--accent-indigo);
         color: white;
-        transform: rotate(180deg) scale(1.1);
+        transform: scale(1.1);
         border-color: var(--accent-indigo);
         box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
     }
 
     .cinematic-refresh:active {
-        transform: rotate(180deg) scale(0.95);
+        transform: scale(0.95);
     }
 
     .cinematic-refresh.spinning i {
         animation: spin 0.8s linear infinite;
+    }
+
+    /* Glowing Action Icons */
+    .glow-red {
+        border-color: rgba(239, 68, 68, 0.4) !important;
+        color: #ef4444 !important;
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+    }
+
+    .glow-red:hover {
+        background: #ef4444 !important;
+        color: white !important;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.4) !important;
+        border-color: #ef4444 !important;
+    }
+
+    .glow-green {
+        border-color: rgba(16, 185, 129, 0.4) !important;
+        color: #10b981 !important;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
+    }
+
+    .glow-green:hover {
+        background: #10b981 !important;
+        color: white !important;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.4) !important;
+        border-color: #10b981 !important;
     }
 
     @keyframes spin {
@@ -516,8 +543,11 @@
         <header class="inbox-header">
             <h1 class="main-title">Unified Inbox</h1>
             <div class="header-actions">
-                <button class="action-btn" onclick="clearAll()" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.2);" title="Clear All Notifications">
-                    <i data-lucide="trash-2"></i> Clear All
+                <button class="cinematic-refresh glow-green" onclick="markAllRead()" title="Mark All as Read">
+                    <i data-lucide="check-check"></i>
+                </button>
+                <button class="cinematic-refresh glow-red" onclick="clearAll()" title="Clear All Notifications">
+                    <i data-lucide="trash-2"></i>
                 </button>
                 <button class="cinematic-refresh" onclick="fetchAnnouncements()" title="Refresh Inbox">
                     <i data-lucide="refresh-cw"></i>
@@ -661,7 +691,7 @@
 
     function deleteSingle(id, event) {
         if (event) event.stopPropagation();
-        
+
         // Optimistic UI update
         const originalData = [...ALL_NOTIFICATIONS];
         ALL_NOTIFICATIONS = ALL_NOTIFICATIONS.filter(n => !(n.id === id && n.type === 'personal'));
@@ -710,7 +740,6 @@
     }
 
     function clearAll() {
-        if (!confirm('Are you sure you want to clear all notifications?')) return;
 
         const originalData = [...ALL_NOTIFICATIONS];
         ALL_NOTIFICATIONS = [];
@@ -732,6 +761,26 @@
                 renderByFilter();
                 updateCounts();
                 alert('Network error. Please check your connection.');
+            });
+    }
+
+    function markAllRead() {
+
+        // Optimistic UI update
+        ALL_NOTIFICATIONS.forEach(n => n.is_read = true);
+        renderByFilter();
+        updateCounts();
+
+        fetch("{% url 'mark_all_read' %}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== 'success') {
+                    fetchAnnouncements(); // Re-sync if failed
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                fetchAnnouncements();
             });
     }
 

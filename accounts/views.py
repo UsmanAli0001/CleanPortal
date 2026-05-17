@@ -1551,24 +1551,36 @@ def admin_wallet_view(request):
     from datetime import timedelta
     from accounts.models import Payment
     
+    # Get current time and the start of today for proper calendar filtering
     now = timezone.now()
+    start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # Revenue Totals
-    weekly_rev = Payment.objects.filter(date__gte=now-timedelta(days=7), status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
-    monthly_rev = Payment.objects.filter(date__gte=now-timedelta(days=30), status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
-    yearly_rev = Payment.objects.filter(date__gte=now-timedelta(days=365), status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
+    # Boundaries for filtering
+    seven_days_ago = start_of_today - timedelta(days=6)  # Include today + past 6 days
+    thirty_days_ago = start_of_today - timedelta(days=29)
+    one_year_ago = start_of_today - timedelta(days=364)
+    
+    # Revenue Totals (Always use 'Paid' status)
+    weekly_rev = Payment.objects.filter(date__gte=seven_days_ago, status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
+    monthly_rev = Payment.objects.filter(date__gte=thirty_days_ago, status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
+    yearly_rev = Payment.objects.filter(date__gte=one_year_ago, status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
     total_rev = Payment.objects.filter(status='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
     
     # Period Filtering for Ledger
     period = request.GET.get('period', 'all')
-    recent_payments = Payment.objects.select_related('complaint').all()
+    # Filter by 'Paid' status as well to match the revenue cards
+    recent_payments = Payment.objects.select_related('complaint').filter(status='Paid')
     
+    period_label = "All Registered Payments"
     if period == 'weekly':
-        recent_payments = recent_payments.filter(date__gte=now-timedelta(days=7))
+        recent_payments = recent_payments.filter(date__gte=seven_days_ago)
+        period_label = "Last 7 Days Payments"
     elif period == 'monthly':
-        recent_payments = recent_payments.filter(date__gte=now-timedelta(days=30))
+        recent_payments = recent_payments.filter(date__gte=thirty_days_ago)
+        period_label = "Last 30 Days Payments"
     elif period == 'yearly':
-        recent_payments = recent_payments.filter(date__gte=now-timedelta(days=365))
+        recent_payments = recent_payments.filter(date__gte=one_year_ago)
+        period_label = "Last 365 Days Payments"
         
     recent_payments = recent_payments.order_by('-date')[:100]
     
@@ -1579,6 +1591,7 @@ def admin_wallet_view(request):
         'total_revenue': total_rev,
         'recent_payments': recent_payments,
         'current_period': period,
+        'period_label': period_label,
     }
     return render(request, 'accounts/admin/admin_wallet.html', context)
 
@@ -2790,7 +2803,12 @@ def schedule_public_view(request):
             Q(area_name__icontains=query)
         )
     
-    active_alerts = ScheduleAlert.objects.filter(is_active=True).order_by('-created_at')
+    now = timezone.now()
+    active_alerts = ScheduleAlert.objects.filter(is_active=True).filter(
+        Q(visibility_duration='permanent') |
+        Q(visibility_duration='24h', created_at__gte=now - timedelta(hours=24)) |
+        Q(visibility_duration='until_resolved', status__in=['active', 'in_progress', 'delayed'])
+    ).order_by('-created_at')
     
     # Logic to determine status
     schedule_list = []
@@ -2854,9 +2872,18 @@ def admin_schedule_manage(request):
                 area=request.POST['area'],
                 service_id=request.POST['service_id'],
                 title=request.POST['title'],
-                message=request.POST['message']
+                message=request.POST['message'],
+                priority=request.POST.get('priority', 'medium'),
+                status=request.POST.get('status', 'active'),
+                start_date=request.POST.get('start_date') or None,
+                end_date=request.POST.get('end_date') or None,
+                supervisor_name=request.POST.get('supervisor_name'),
+                helpline_number=request.POST.get('helpline_number'),
+                response_team_contact=request.POST.get('response_team_contact'),
+                visibility_duration=request.POST.get('visibility_duration', 'permanent'),
+                is_active=True
             )
-            messages.success(request, "Emergency alert posted.")
+            messages.success(request, "Advanced Schedule Alert posted successfully!")
             
         elif action == 'toggle_holiday':
             HolidayConfig.objects.update_or_create(
@@ -2890,6 +2917,24 @@ def admin_schedule_manage(request):
         elif action == 'delete_alert':
             ScheduleAlert.objects.filter(id=request.POST.get('id')).delete()
             messages.warning(request, "Alert removed.")
+
+        elif action == 'edit_alert':
+            aid = request.POST.get('id')
+            alert = ScheduleAlert.objects.get(id=aid)
+            alert.area = request.POST['area']
+            alert.service_id = request.POST['service_id']
+            alert.title = request.POST['title']
+            alert.message = request.POST['message']
+            alert.priority = request.POST.get('priority', 'medium')
+            alert.status = request.POST.get('status', 'active')
+            alert.start_date = request.POST.get('start_date') or None
+            alert.end_date = request.POST.get('end_date') or None
+            alert.supervisor_name = request.POST.get('supervisor_name')
+            alert.helpline_number = request.POST.get('helpline_number')
+            alert.response_team_contact = request.POST.get('response_team_contact')
+            alert.visibility_duration = request.POST.get('visibility_duration', 'permanent')
+            alert.save()
+            messages.success(request, "Alert updated successfully.")
 
         return redirect('service_admin')
         
@@ -3087,6 +3132,11 @@ def admin_notifications(request):
         elif action == 'delete_announcement':
             Announcement.objects.filter(id=request.POST.get('id')).delete()
             messages.warning(request, "Announcement removed.")
+            
+        elif action == 'delete_all_announcements':
+            count = Announcement.objects.all().count()
+            Announcement.objects.all().delete()
+            messages.warning(request, f"Successfully cleared {count} active announcements.")
             
         return redirect('admin_notifications')
 

@@ -564,15 +564,47 @@ class MunicipalServiceSchedule(models.Model):
         return f"{self.service.name} - {self.area_name}"
 
 class ScheduleAlert(models.Model):
+    PRIORITY_CHOICES = [
+        ('critical', '🔴 Critical'),
+        ('high', '🟠 High'),
+        ('medium', '🟡 Medium'),
+        ('low', '🟢 Low'),
+    ]
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('in_progress', 'In Progress'),
+        ('resolved', 'Resolved'),
+        ('delayed', 'Delayed'),
+        ('closed', 'Closed'),
+    ]
+    VISIBILITY_CHOICES = [
+        ('24h', 'Show for 24 hours'),
+        ('until_resolved', 'Show until resolved'),
+        ('permanent', 'Permanent notice'),
+    ]
+
     area = models.CharField(max_length=150)
     service = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE)
     title = models.CharField(max_length=200, help_text="e.g., Pipe Burst Alert")
     message = models.TextField()
+    
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    
+    start_date = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateTimeField(null=True, blank=True)
+    
+    supervisor_name = models.CharField(max_length=100, blank=True, null=True)
+    helpline_number = models.CharField(max_length=20, blank=True, null=True)
+    response_team_contact = models.CharField(max_length=100, blank=True, null=True)
+    
+    visibility_duration = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='permanent')
+    
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"ALERT: {self.title} ({self.area})"
+        return f"[{self.get_priority_display()}] {self.title} ({self.area})"
 
 class HolidayConfig(models.Model):
     date = models.DateField(unique=True)

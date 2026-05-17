@@ -6,12 +6,14 @@
 {% block extra_head %}
 <style>
     .contact-hero {
-        background: radial-gradient(circle at top right, #1e40af, #0f172a);
-        padding: 100px 20px;
+        background-color: #0f172a;
+        padding: 117px 20px 320px 20px;
         text-align: center;
         color: white;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        z-index: 3;
     }
 
     .contact-hero::before {
@@ -21,31 +23,55 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 86c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm66 3c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm-46-4c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm37-3c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
-        opacity: 0.4;
+        background-image: url("{% static 'accounts/images/contactus.png' %}");
+        background-size: cover;
+        background-position: center;
+        opacity: 1;
+        z-index: 0;
+    }
+
+    .contact-hero::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.15);
+        z-index: 1;
     }
 
     .contact-hero h1 {
-        font-size: 3.5rem;
+        font-size: 4rem;
         font-weight: 800;
         margin-bottom: 20px;
         letter-spacing: -2px;
         position: relative;
-        z-index: 1;
+        z-index: 2;
+        color: #0f962c;
+        /* Vibrant Light Blue */
+        text-shadow: 0 0 15px rgba(96, 165, 250, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.9);
+    }
+
+    .contact-hero h1 span {
+        color: #0d3972;
+        /* Vibrant Green */
+        text-shadow: 0 0 15px rgba(74, 222, 128, 0.7), 2px 2px 5px rgba(0, 0, 0, 0.9);
     }
 
     .contact-hero p {
         font-size: 1.3rem;
-        opacity: 0.9;
+        opacity: 1;
         max-width: 700px;
         margin: 0 auto;
         position: relative;
-        z-index: 1;
+        z-index: 2;
+        text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
     }
 
     .contact-container {
         max-width: 1200px;
-        margin: -80px auto 80px;
+        margin: 0 auto 80px;
         display: grid;
         grid-template-columns: 1fr 400px;
         gap: 30px;
@@ -60,7 +86,7 @@
         -webkit-backdrop-filter: blur(20px);
         border-radius: 30px;
         padding: 50px;
-        box-shadow: 0 25px 60px rgba(0,0,0,0.1);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.5);
     }
 
@@ -179,26 +205,26 @@
     @media (max-width: 992px) {
         .contact-container {
             grid-template-columns: 1fr;
-            margin-top: -40px;
+            margin-top: 0;
         }
+
         .contact-hero h1 {
             font-size: 2.5rem;
         }
     }
-
 </style>
 {% endblock %}
 
 {% block content %}
 <section class="contact-hero">
-    <h1>Get in Touch</h1>
-    <p>Have questions or feedback? We're here to help you contribute to a cleaner Gujrat.</p>
+    <h1>Get in <span>Touch</span></h1>
 </section>
 
 <div class="contact-container">
     <!-- Form Side -->
     <div class="contact-card">
-        <h2 style="color: var(--primary-blue); font-weight: 800; margin-bottom: 30px; letter-spacing: -0.5px;">Send Us a Message</h2>
+        <h2 style="color: var(--primary-blue); font-weight: 800; margin-bottom: 30px; letter-spacing: -0.5px;">Send Us a
+            Message</h2>
         <form action="{% url 'submit_contact' %}" method="POST">
             {% csrf_token %}
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -214,7 +240,8 @@
 
             <div class="form-group">
                 <label>Inquiry Category</label>
-                <select name="category" class="form-control" required style="appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231a1f3c%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1.2rem top 50%; background-size: 0.65rem auto;">
+                <select name="category" class="form-control" required
+                    style="appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231a1f3c%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1.2rem top 50%; background-size: 0.65rem auto;">
                     <option value="General Inquiry">General Inquiry</option>
                     <option value="Service Complaint">Service Complaint</option>
                     <option value="Billing Issue">Billing Issue</option>
@@ -225,12 +252,14 @@
 
             <div class="form-group">
                 <label>Subject</label>
-                <input type="text" name="subject" class="form-control" placeholder="Briefly what is this about?" required>
+                <input type="text" name="subject" class="form-control" placeholder="Briefly what is this about?"
+                    required>
             </div>
 
             <div class="form-group">
                 <label>Message Details</label>
-                <textarea name="message" class="form-control" rows="5" placeholder="Deeply explain your query here..." required></textarea>
+                <textarea name="message" class="form-control" rows="5" placeholder="Deeply explain your query here..."
+                    required></textarea>
             </div>
 
             <button type="submit" class="submit-btn" id="submitBtn">
@@ -245,7 +274,7 @@
         <div>
             <h2 style="font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px;">Contact Info</h2>
             <p style="color: rgba(255,255,255,0.6); margin-bottom: 30px;">Reach out through any of these channels.</p>
-            
+
             <div style="display: flex; flex-direction: column; gap: 35px;">
                 <div class="info-item">
                     <div class="info-icon"><i data-lucide="phone"></i></div>
@@ -281,7 +310,7 @@
     // Subtle button animation
     const btn = document.getElementById('submitBtn');
     if (btn) {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', function (e) {
             // Only if form is valid
             const form = this.closest('form');
             if (form.checkValidity()) {
@@ -293,10 +322,10 @@
 
     // Input focus enhancements
     document.querySelectorAll('.form-control').forEach(el => {
-        el.addEventListener('focus', function() {
+        el.addEventListener('focus', function () {
             this.parentElement.querySelector('label').style.color = '#3b82f6';
         });
-        el.addEventListener('blur', function() {
+        el.addEventListener('blur', function () {
             this.parentElement.querySelector('label').style.color = 'var(--primary-blue)';
         });
     });

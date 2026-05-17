@@ -36,9 +36,9 @@ def notify_admin(type, message, link):
     all_recipients = list(set(filter(None, staff_emails + special_recipients)))
 
     # Skip email for update alerts to prevent spamming staff/supervisors
-    if type == 'update':
-        return notif
-
+    # UPDATED: We now suppress all Admin/System alert emails to prevent inbox flooding.
+    # Notifications are still recorded for the Admin Dashboard.
+    """
     for recipient_email in all_recipients:
         target_user = User.objects.filter(email=recipient_email).first()
         user_name = (target_user.first_name or target_user.username) if target_user else recipient_email.split('@')[0]
@@ -52,6 +52,7 @@ def notify_admin(type, message, link):
             action_url=link,
             action_text="View Details"
         )
+    """
     return notif
 
 def send_aesthetic_email(subject, recipient_email, user_name, message_title, message_content, action_url=None, action_text=None):

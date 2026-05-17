@@ -95,6 +95,47 @@
     .stat-card .stat-value { font-size: 1.4rem; font-weight: 900; color: #1e293b; display: flex; align-items: center; gap: 8px; margin: 0; line-height: 1; }
     .stat-card .sub-label { font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 50px; display: inline-flex; align-items: center; }
 
+    /* Form Styles for Modals - Max Compact */
+    .fg { margin-bottom: 6px; display: flex; flex-direction: column; gap: 2px; }
+    .fl { font-size: 0.55rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .fi { width: 100%; padding: 5px 10px; border-radius: 5px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 0.75rem; transition: all 0.3s; background: #f8fafc; }
+    .fi:focus { outline: none; border-color: #3b82f6; background: white; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1); }
+    textarea.fi { resize: none; min-height: 45px; }
+
+    .btn-glow-green {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    .btn-glow-green:hover {
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.6) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .btn-glow-blue {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    .btn-glow-blue:hover {
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.6) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .btn-glow-red {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    .btn-glow-red:hover {
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .modal.glow-green {
+        border: 2px solid rgba(16, 185, 129, 0.3) !important;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.5), 0 0 50px rgba(16, 185, 129, 0.2) !important;
+    }
+
+    .modal.glow-blue {
+        border: 2px solid rgba(37, 99, 235, 0.3) !important;
+        box-shadow: 0 0 25px rgba(37, 99, 235, 0.5), 0 0 50px rgba(37, 99, 235, 0.2) !important;
+    }
+
 </style>
 {% endblock %}
 
@@ -105,9 +146,9 @@
         <p>Manage city-wide bookings, timetables, and emergency alerts.</p>
     </div>
     <div style="display:flex; gap:10px">
-        <button class="btn-manage" onclick="openModal('scheduleModal')"><i data-lucide="calendar"></i> Add Timetable</button>
-        <button class="btn-manage" onclick="openModal('categoryModal')" style="background:var(--accent-green)"><i data-lucide="plus"></i> New Service</button>
-        <button class="btn-manage" onclick="openModal('alertModal')" style="background:#ef4444"><i data-lucide="bell"></i> Post Alert</button>
+        <button class="btn-manage btn-glow-blue" onclick="openAddSchedule()"><i data-lucide="calendar"></i> Add Timetable</button>
+        <button class="btn-manage btn-glow-green" onclick="openAddCategory()" style="background:var(--accent-green)"><i data-lucide="plus"></i> New Service</button>
+        <button class="btn-manage" onclick="openAddAlert()" style="background:#ef4444"><i data-lucide="bell"></i> Post Alert</button>
     </div>
 </div>
 
@@ -160,6 +201,7 @@
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th>Icon</th>
                     <th>Service</th>
                     <th>Area Name</th>
                     <th>Timings</th>
@@ -170,6 +212,21 @@
             <tbody>
                 {% for s in schedules %}
                 <tr>
+                    <td>
+                        {% if 'Drainage' in s.service.name %}
+                            <i data-lucide="waves" style="width: 24px; height: 24px; color: #2563eb"></i>
+                        {% elif 'Water' in s.service.name %}
+                            <i data-lucide="droplet" style="width: 24px; height: 24px; color: #2563eb"></i>
+                        {% elif 'Light' in s.service.name %}
+                            <i data-lucide="lightbulb" style="width: 24px; height: 24px; color: #2563eb"></i>
+                        {% elif 'Cleaning' in s.service.name %}
+                            <i data-lucide="wind" style="width: 24px; height: 24px; color: #2563eb"></i>
+                        {% elif 'Garbage' in s.service.name %}
+                            <i data-lucide="trash-2" style="width: 24px; height: 24px; color: #2563eb"></i>
+                        {% else %}
+                            <i data-lucide="settings" style="width: 24px; height: 24px; color: #2563eb"></i>
+                        {% endif %}
+                    </td>
                     <td><strong>{{ s.service.name }}</strong></td>
                     <td>{{ s.area_name }}</td>
                     <td>{{ s.start_time|time:"H:i" }} - {{ s.end_time|time:"H:i" }}</td>
@@ -210,18 +267,18 @@
                 <tr>
                     <td>
                         {% if 'Drainage' in cat.name %}
-                            <i data-lucide="waves" style="width: 24px; height: 24px; color: var(--primary-blue)"></i>
-                        {% elif 'Water' in cat.name %}
-                            <i data-lucide="droplet" style="width: 24px; height: 24px; color: var(--primary-blue)"></i>
-                        {% elif 'Light' in cat.name %}
-                            <i data-lucide="lightbulb" style="width: 24px; height: 24px; color: var(--primary-blue)"></i>
-                        {% elif 'Cleaning' in cat.name %}
-                            <i data-lucide="wind" style="width: 24px; height: 24px; color: var(--primary-blue)"></i>
-                        {% elif 'Garbage' in cat.name %}
-                            <i data-lucide="trash-2" style="width: 24px; height: 24px; color: var(--primary-blue)"></i>
-                        {% else %}
-                            <i data-lucide="settings" style="width: 24px; height: 24px; color: var(--primary-blue)"></i>
-                        {% endif %}
+                            <i data-lucide="waves" style="width: 24px; height: 24px; color: #10b981"></i>
+{% elif 'Water' in cat.name %}
+                            <i data-lucide="droplet" style="width: 24px; height: 24px; color: #10b981"></i>
+{% elif 'Light' in cat.name %}
+                            <i data-lucide="lightbulb" style="width: 24px; height: 24px; color: #10b981"></i>
+{% elif 'Cleaning' in cat.name %}
+                            <i data-lucide="wind" style="width: 24px; height: 24px; color: #10b981"></i>
+{% elif 'Garbage' in cat.name %}
+                            <i data-lucide="trash-2" style="width: 24px; height: 24px; color: #10b981"></i>
+{% else %}
+                            <i data-lucide="settings" style="width: 24px; height: 24px; color: #10b981"></i>
+{% endif %}
                     </td>
                     <td><strong>{{ cat.name }}</strong><br><small>{{ cat.description|truncatechars:40 }}</small></td>
                     <td>Rs. {{ cat.base_price }}</td>
@@ -253,14 +310,61 @@
 
 
     <div class="admin-card" style="padding:25px">
-        <h3 style="font-weight:800; font-size:1rem; margin-bottom:20px; color:var(--primary-blue)">Active Alerts</h3>
+        <h3 style="font-weight:800; font-size:1rem; margin-bottom:20px; color:var(--primary-blue)">Active Schedule Alerts</h3>
         {% for a in alerts %}
-        <div style="padding:15px; background:#fef2f2; border-left:4px solid #ef4444; border-radius:8px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center">
-            <div>
-                <strong style="color:#991b1b">{{ a.title }} ({{ a.area }})</strong>
-                <p style="margin:5px 0 0; color:#b91c1c; font-size:0.9rem">{{ a.message }}</p>
+        <div style="padding:20px; background:#fef2f2; border-left:4px solid #ef4444; border-radius:12px; margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start">
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; background: white; border: 1px solid #fee2e2; color: #ef4444;">
+                            {{ a.get_priority_display }}
+                        </span>
+                        <span style="font-size: 0.65rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; background: #ef4444; color: white; text-transform: uppercase;">
+                            {{ a.status }}
+                        </span>
+                        <span style="font-size: 0.75rem; font-weight: 700; color: #991b1b;">
+                            <i data-lucide="map-pin" style="width: 14px; display: inline; vertical-align: middle;"></i> {{ a.area }}
+                        </span>
+                    </div>
+                    <strong style="color:#991b1b; font-size: 1.1rem; display: block; margin-bottom: 5px;">{{ a.title }}</strong>
+                    <p style="margin:5px 0 15px; color:#b91c1c; font-size:0.95rem; line-height: 1.5;">{{ a.message }}</p>
+                    
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px; font-size: 0.8rem; color: #7f1d1d; background: rgba(255,255,255,0.5); padding: 10px 15px; border-radius: 8px;">
+                        {% if a.start_date %}
+                            <span><strong>Starts:</strong> {{ a.start_date|date:"d M, H:i" }}</span>
+                        {% endif %}
+                        {% if a.end_date %}
+                            <span><strong>Resolution:</strong> {{ a.end_date|date:"d M, H:i" }}</span>
+                        {% endif %}
+                        <span><strong>Service:</strong> {{ a.service.name }}</span>
+                    </div>
+
+                    {% if a.supervisor_name or a.helpline_number %}
+                    <div style="margin-top: 15px; display: flex; gap: 20px; font-size: 0.8rem; border-top: 1px dashed rgba(239, 68, 68, 0.2); padding-top: 10px;">
+                        {% if a.supervisor_name %}<span><i data-lucide="user" style="width: 14px; display: inline;"></i> {{ a.supervisor_name }}</span>{% endif %}
+                        {% if a.helpline_number %}<span><i data-lucide="phone" style="width: 14px; display: inline;"></i> {{ a.helpline_number }}</span>{% endif %}
+                        {% if a.response_team_contact %}<span><i data-lucide="users" style="width: 14px; display: inline;"></i> {{ a.response_team_contact }}</span>{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div style="display: flex; gap: 8px; margin-left: 20px;">
+                    <button class="abtn edit" style="width: 40px; height: 40px;" 
+                        onclick="openEditAlert('{{ a.id }}', '{{ a.priority }}', '{{ a.status }}', '{{ a.start_date|date:'Y-m-d\TH:i' }}', '{{ a.end_date|date:'Y-m-d\TH:i' }}', '{{ a.area|escapejs }}', '{{ a.service.id }}', '{{ a.title|escapejs }}', '{{ a.message|escapejs }}', '{{ a.supervisor_name|escapejs }}', '{{ a.helpline_number|escapejs }}', '{{ a.response_team_contact|escapejs }}', '{{ a.visibility_duration }}')">
+                        <i data-lucide="edit-3"></i>
+                    </button>
+                    <form action="{% url 'admin_schedule_manage' %}" method="post" style="margin: 0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="delete_alert">
+                        <input type="hidden" name="id" value="{{ a.id }}">
+                        <button class="abtn del" style="width: 40px; height: 40px;"><i data-lucide="trash-2"></i></button>
+                    </form>
+                </div>
             </div>
-            <form action="{% url 'admin_schedule_manage' %}" method="post">{% csrf_token %}<input type="hidden" name="action" value="delete_alert"><input type="hidden" name="id" value="{{ a.id }}"><button class="abtn del"><i data-lucide="trash-2"></i></button></form>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #e2e8f0;">
+            <i data-lucide="bell-off" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
+            <p>No active emergency alerts for city schedules.</p>
         </div>
         {% endfor %}
     </div>
@@ -273,8 +377,8 @@
 
 <!-- Category Modal -->
 <div id="categoryModal" class="modal-bg">
-    <div class="modal">
-        <h2 id="catModalTitle" style="font-weight:800; color:var(--primary-blue)">Add New Service</h2>
+    <div class="modal glow-green">
+        <h2 id="catModalTitle" style="font-weight:800; color:#10b981">Add New Service</h2>
         <form action="{% url 'manage_categories' %}" method="POST">
             {% csrf_token %}
             <input type="hidden" name="action" id="catAction" value="add">
@@ -291,8 +395,8 @@
             </div>
             <div class="fg" style="margin-top:15px"><label class="fl">Description</label><textarea class="fi" name="description" id="catDesc" rows="3"></textarea></div>
             <div style="display:flex; gap:12px; margin-top:25px">
-                <button type="submit" class="btn-manage" style="background: #1e40af; color: white !important; border: 2px solid #1e40af !important; border-radius: 50px; flex:1; justify-content:center; font-weight: 800;">Save Service</button>
-                <button type="button" class="btn-manage" style="background: #eff6ff; color: #1e40af !important; border: 2px solid #1e40af !important; border-radius: 50px; flex:1; justify-content:center; font-weight: 800;" onclick="closeModal('categoryModal')">Cancel</button>
+                <button type="submit" class="btn-manage btn-glow-green" style="background: #10b981; color: white !important; border: 2px solid #10b981 !important; border-radius: 50px; flex:1; justify-content:center; font-weight: 800;">Save Service</button>
+                <button type="button" class="btn-manage" style="background: rgba(16, 185, 129, 0.1); color: #10b981 !important; border: 2px solid #10b981 !important; border-radius: 50px; flex:1; justify-content:center; font-weight: 800;" onclick="closeModal('categoryModal')">Cancel</button>
             </div>
         </form>
     </div>
@@ -300,8 +404,8 @@
 
 <!-- Add/Edit Schedule Modal -->
 <div id="scheduleModal" class="modal-bg">
-    <div class="modal">
-        <h2 id="schedModalTitle" style="font-weight:800; color:var(--primary-blue)">Add Municipal Timetable</h2>
+    <div class="modal glow-blue">
+        <h2 id="schedModalTitle" style="font-weight:800; color:#2563eb">Add Municipal Timetable</h2>
         <form action="{% url 'admin_schedule_manage' %}" method="POST">
             {% csrf_token %}
             <input type="hidden" name="action" id="schedAction" value="add_schedule">
@@ -331,7 +435,7 @@
                 </div>
             </div>
             <div style="display:flex; gap:12px; margin-top:25px">
-                <button type="submit" class="btn-manage" style="background: #1e40af; color: white !important; border: 2px solid #1e40af !important; border-radius: 50px; flex:1; justify-content:center; font-weight: 800;">Save Timetable</button>
+                <button type="submit" class="btn-manage btn-glow-blue" style="background: #1e40af; color: white !important; border: 2px solid #1e40af !important; border-radius: 50px; flex:1; justify-content:center; font-weight: 800;">Save Timetable</button>
                 <button type="button" class="btn-manage" style="background: #eff6ff; color: #1e40af !important; border: 2px solid #1e40af !important; border-radius: 50px; flex:1; justify-content:center; font-weight: 800;" onclick="closeModal('scheduleModal')">Cancel</button>
             </div>
         </form>
@@ -342,23 +446,101 @@
 
 <!-- Alert Modal -->
 <div id="alertModal" class="modal-bg">
-    <div class="modal">
-        <h2 style="font-weight:800; color:var(--primary-blue)">Post Emergency Alert</h2>
+    <div class="modal" style="width: 550px; padding: 15px; border-radius: 15px; overflow: hidden; box-shadow: 0 0 25px rgba(239, 68, 68, 0.5), 0 0 50px rgba(239, 68, 68, 0.2); border: 2px solid rgba(239, 68, 68, 0.3);">
+        <h2 id="alertModalTitle" style="font-weight:900; color:#ef4444; margin-bottom: 10px; font-size: 1.1rem; text-align: center; text-transform: uppercase; letter-spacing: 1px;">Post Emergency Alert</h2>
+        
         <form action="{% url 'admin_schedule_manage' %}" method="POST">
             {% csrf_token %}
-            <input type="hidden" name="action" value="post_alert">
-            <div class="fg" style="margin-top:20px"><label class="fl">Affected Area</label><input class="fi" name="area" required></div>
-            <div class="fg" style="margin-top:15px">
-                <label class="fl">Related Service</label>
-                <select name="service_id" class="fi" required>
-                    {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
+            <input type="hidden" name="action" id="alertAction" value="post_alert">
+            <input type="hidden" name="id" id="alertId">
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="fg">
+                    <label class="fl">Alert Priority Level</label>
+                    <select name="priority" id="alertPriority" class="fi">
+                        <option value="low">🟢 Low</option>
+                        <option value="medium" selected>🟡 Medium</option>
+                        <option value="high">🟠 High</option>
+                        <option value="critical">🔴 Critical</option>
+                    </select>
+                </div>
+                <div class="fg">
+                    <label class="fl">Alert Status</label>
+                    <select name="status" id="alertStatus" class="fi">
+                        <option value="active">Active</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="delayed">Delayed</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="fg">
+                    <label class="fl">Start Date & Time</label>
+                    <input type="datetime-local" name="start_date" id="alertStart" class="fi">
+                </div>
+                <div class="fg">
+                    <label class="fl">Expected Ending Date & Time</label>
+                    <input type="datetime-local" name="end_date" id="alertEnd" class="fi">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="fg">
+                    <label class="fl">Affected Area</label>
+                    <input class="fi" name="area" id="alertArea" placeholder="e.g. Model Town" required>
+                </div>
+                <div class="fg">
+                    <label class="fl">Related Service</label>
+                    <select name="service_id" id="alertService" class="fi" required>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="fg">
+                <label class="fl">Alert Headline</label>
+                <input class="fi" name="title" id="alertTitle" placeholder="e.g. Drainage Blockage Alert" required>
+            </div>
+
+            <div class="fg">
+                <label class="fl">Detailed Message</label>
+                <textarea class="fi" name="message" id="alertMessage" rows="2" placeholder="Describe the disruption in detail..." required></textarea>
+            </div>
+
+            <div style="border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 5px;">
+                <label style="font-size: 0.5rem; font-weight: 900; color: #1e40af; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+                    <i data-lucide="contact" style="width: 10px;"></i> Contact Info
+                </label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="fg">
+                        <input type="text" name="supervisor_name" id="alertSupervisor" class="fi" placeholder="Supervisor">
+                    </div>
+                    <div class="fg">
+                        <input type="text" name="helpline_number" id="alertPhone" class="fi" placeholder="Helpline">
+                    </div>
+                </div>
+                <div class="fg">
+                    <input type="text" name="response_team_contact" id="alertTeam" class="fi" placeholder="Response Team">
+                </div>
+            </div>
+
+            <div class="fg">
+                <label class="fl">Visibility Duration</label>
+                <select name="visibility_duration" id="alertDuration" class="fi">
+                    <option value="24h">Show for 24 hours</option>
+                    <option value="until_resolved">Show until resolved</option>
+                    <option value="permanent" selected>Permanent notice</option>
                 </select>
             </div>
-            <div class="fg" style="margin-top:15px"><label class="fl">Alert Title</label><input class="fi" name="title" required></div>
-            <div class="fg" style="margin-top:15px"><label class="fl">Message</label><textarea class="fi" name="message" rows="4" required></textarea></div>
-            <div style="display:flex; gap:12px; margin-top:25px">
-                <button type="submit" class="btn-manage" style="flex:1; justify-content:center; background:#ef4444">Post Alert Now</button>
-                <button type="button" class="btn-manage" style="background: #eff6ff; color: #1e40af !important; border: 2px solid #1e40af !important; border-radius: 50px; flex:1; justify-content:center; font-weight: 800;" onclick="closeModal('alertModal')">Cancel</button>
+
+            <div style="display:flex; gap:10px; margin-top:10px">
+                <button type="submit" id="alertSubmitBtn" class="btn-manage btn-glow-red" style="flex:2; justify-content:center; background:#ef4444; border-radius: 6px; font-weight: 800; padding: 6px; font-size: 0.7rem;">Broadcast Alert</button>
+                <button type="button" class="btn-manage" style="background: rgba(239, 68, 68, 0.1); color: #ef4444 !important; border: 1px solid #ef4444 !important; border-radius: 6px; flex:1; justify-content:center; font-weight: 700; padding: 6px; font-size: 0.7rem;" onclick="closeModal('alertModal')">Cancel</button>
             </div>
         </form>
     </div>
@@ -373,6 +555,18 @@
     function openModal(id) { document.getElementById(id).classList.add('open'); }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
+    function openAddCategory() {
+        document.getElementById('catModalTitle').innerText = 'Add New Service';
+        document.getElementById('catAction').value = 'add';
+        document.getElementById('catId').value = '';
+        document.getElementById('catName').value = '';
+        document.getElementById('catPrice').value = '';
+        document.getElementById('catMult').value = '1.5';
+        document.getElementById('catIcon').value = 'bi-gear';
+        document.getElementById('catDesc').value = '';
+        openModal('categoryModal');
+    }
+
     function openEditCategory(id, name, price, urgentPrice, advanceFee, mult, icon, desc) {
         document.getElementById('catModalTitle').innerText = 'Edit Service';
         document.getElementById('catAction').value = 'edit';
@@ -385,6 +579,19 @@
         document.getElementById('catIcon').value = icon;
         document.getElementById('catDesc').value = desc;
         openModal('categoryModal');
+    }
+
+    function openAddSchedule() {
+        document.getElementById('schedModalTitle').innerText = 'Add Municipal Timetable';
+        document.getElementById('schedAction').value = 'add_schedule';
+        document.getElementById('schedId').value = '';
+        document.getElementById('schedService').value = '';
+        document.getElementById('schedArea').value = '';
+        document.getElementById('schedStart').value = '';
+        document.getElementById('schedEnd').value = '';
+        document.getElementById('schedFreq').value = 'Daily';
+        document.getElementById('schedDay').value = '';
+        openModal('scheduleModal');
     }
 
     function openEditSchedule(id, svc, area, start, end, freq, day, notes) {
@@ -401,5 +608,44 @@
     }
 
 
+    function openAddAlert() {
+        document.getElementById('alertModalTitle').innerText = 'Post Emergency Alert';
+        document.getElementById('alertAction').value = 'post_alert';
+        document.getElementById('alertId').value = '';
+        document.getElementById('alertPriority').value = 'medium';
+        document.getElementById('alertStatus').value = 'active';
+        document.getElementById('alertStart').value = '';
+        document.getElementById('alertEnd').value = '';
+        document.getElementById('alertArea').value = '';
+        document.getElementById('alertService').value = '';
+        document.getElementById('alertTitle').value = '';
+        document.getElementById('alertMessage').value = '';
+        document.getElementById('alertSupervisor').value = '';
+        document.getElementById('alertPhone').value = '';
+        document.getElementById('alertTeam').value = '';
+        document.getElementById('alertDuration').value = 'permanent';
+        document.getElementById('alertSubmitBtn').innerText = 'Broadcast Advanced Alert';
+        openModal('alertModal');
+    }
+
+    function openEditAlert(id, priority, status, start, end, area, svc, title, msg, supervisor, phone, team, duration) {
+        document.getElementById('alertModalTitle').innerText = 'Edit Emergency Alert';
+        document.getElementById('alertAction').value = 'edit_alert';
+        document.getElementById('alertId').value = id;
+        document.getElementById('alertPriority').value = priority;
+        document.getElementById('alertStatus').value = status;
+        document.getElementById('alertStart').value = start;
+        document.getElementById('alertEnd').value = end;
+        document.getElementById('alertArea').value = area;
+        document.getElementById('alertService').value = svc;
+        document.getElementById('alertTitle').value = title;
+        document.getElementById('alertMessage').value = msg;
+        document.getElementById('alertSupervisor').value = supervisor;
+        document.getElementById('alertPhone').value = phone;
+        document.getElementById('alertTeam').value = team;
+        document.getElementById('alertDuration').value = duration;
+        document.getElementById('alertSubmitBtn').innerText = 'Update Alert';
+        openModal('alertModal');
+    }
 </script>
 {% endblock %}
