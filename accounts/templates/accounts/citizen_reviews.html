@@ -62,17 +62,38 @@
 
     /* Premium Header Design */
     .hero-section {
-        background: var(--glass-bg);
+        position: relative;
+        background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)) padding-box,
+                    linear-gradient(135deg, #3b82f6, #10b981, #06b6d4, #10b981, #3b82f6) border-box;
+        border: 3px solid transparent;
+        background-size: 400% 400%;
+        animation: borderGlowShift 8s ease infinite;
         backdrop-filter: blur(20px);
         border-radius: 28px;
-        border: 1px solid var(--glass-border);
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.06);
         padding: 40px;
         margin-bottom: 40px;
         display: grid;
         grid-template-columns: 1.2fr 0.8fr;
         gap: 30px;
         align-items: center;
+        /* Gorgeous ambient blue-green outer glow shadow */
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.22), 
+                    0 0 30px rgba(16, 185, 129, 0.18),
+                    0 15px 30px rgba(0, 0, 0, 0.03);
+        transition: all 0.4s ease;
+    }
+
+    .hero-section:hover {
+        box-shadow: 0 0 25px rgba(59, 130, 246, 0.35), 
+                    0 0 50px rgba(16, 185, 129, 0.3),
+                    0 20px 40px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+
+    @keyframes borderGlowShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
     .hero-text h1 {
@@ -90,7 +111,7 @@
         font-size: 1.1rem;
         color: #475569;
         line-height: 1.5;
-        margin-bottom: 30px;
+        margin: 0;
     }
 
     /* Rating Stats Component */
@@ -267,18 +288,8 @@
     <!-- Premium Header -->
     <header class="hero-section" data-aos="fade-down">
         <div class="hero-text">
-            <h1>Community <br>Voice</h1>
+            <h1>Community Voice</h1>
             <p>Real stories and honest feedback from our citizens. Join thousands in building a cleaner, smarter, and more sustainable city together.</p>
-            <div class="hero-btns">
-                <a href="{% url 'submit_review' %}" class="btn-premium primary">
-                    <i data-lucide="sparkles"></i>
-                    <span>Share Your Experience</span>
-                </a>
-                <a href="{% url 'dashboard' %}" class="btn-premium secondary">
-                    <i data-lucide="layout-dashboard"></i>
-                    <span>Go to Dashboard</span>
-                </a>
-            </div>
         </div>
 
         <div class="rating-summary-card">
@@ -367,8 +378,7 @@
             <i data-lucide="message-square" style="width: 40px; height: 40px;"></i>
         </div>
         <h2 style="font-weight: 800; color: #1e293b;">Be the Pioneer</h2>
-        <p style="color: #64748b; font-size: 1.1rem; max-width: 400px; margin: 15px auto 30px;">Share your first experience and help your neighbors make informed decisions.</p>
-        <a href="{% url 'submit_review' %}" class="btn-premium primary">Start Your Review</a>
+        <p style="color: #64748b; font-size: 1.1rem; max-width: 400px; margin: 15px auto 30px;">There are no reviews yet. Reviews will appear here once they are submitted.</p>
     </div>
     {% endif %}
 </div>

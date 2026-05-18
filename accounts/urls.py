@@ -19,7 +19,7 @@ from .views import (
     admin_wallet_view,
     impact_gallery_view, complaint_history_view, admin_complaint_history_view,
     wallet_view, wallet_deposit, wallet_deposit_success, link_stripe_account,
-    admin_feedback_view, delete_feedback_admin, citizen_reviews_view, submit_review_view,
+    admin_feedback_view, delete_feedback_admin, citizen_reviews_view,
     admin_notifications, notifications_view, service_history_view,
     admin_holiday_management, holiday_details_view, services_view,
     admin_contact_messages, admin_reply_contact, delete_contact_message,
@@ -49,7 +49,7 @@ urlpatterns = [
     path('pay_fee/', pay_fee, name='pay_fee'),
     path('submit_feedback/', submit_feedback, name='submit_feedback'),
     path('citizen-reviews/', citizen_reviews_view, name='citizen_reviews'),
-    path('citizen-reviews/submit/', submit_review_view, name='submit_review'),
+
 
     # Announcements API & Views
     path('notifications/', notifications_view, name='notifications'),

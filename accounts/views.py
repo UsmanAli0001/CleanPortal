@@ -3222,9 +3222,7 @@ def admin_holiday_management(request):
     }
     return render(request, 'accounts/admin/holiday_management.html', context)
 
-@login_required(login_url='login')
-def submit_review_view(request):
-    return render(request, 'accounts/submit_review.html')
+
 
 @login_required(login_url='login')
 def service_history_view(request):
