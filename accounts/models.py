@@ -175,14 +175,25 @@ class Complaint(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.complaint_id:
-            # Find the first available numeric ID to fill gaps in the sequence
-            n = 1
+            # Find the maximum numeric ID so far to ensure strict sequence without filling gaps
+            all_ids = Complaint.objects.filter(complaint_id__startswith="GRT-2026-").values_list('complaint_id', flat=True)
+            max_num = 0
+            for cid in all_ids:
+                try:
+                    num = int(cid.split('-')[-1])
+                    if num > max_num:
+                        max_num = num
+                except (ValueError, IndexError):
+                    pass
+            next_num = max_num + 1
+            
+            # Keep incrementing next_num if for some reason that ID already exists
             while True:
-                candidate_id = f"GRT-2026-{str(n).zfill(4)}"
+                candidate_id = f"GRT-2026-{str(next_num).zfill(4)}"
                 if not Complaint.objects.filter(complaint_id=candidate_id).exists():
                     self.complaint_id = candidate_id
                     break
-                n += 1
+                next_num += 1
         super().save(*args, **kwargs)
 
 @receiver(post_save, sender=Complaint)

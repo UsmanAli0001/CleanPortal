@@ -2,11 +2,11 @@ from django import forms
 from django.contrib.auth.models import User
 
 class LoginForm(forms.Form):
-    email = forms.EmailField(widget=forms.EmailInput(attrs={
-        'placeholder': 'Enter your email',
+    email = forms.CharField(widget=forms.TextInput(attrs={
+        'placeholder': 'Enter your email or username',
         'class': 'form-input',
         'required': 'required',
-        'autocomplete': 'email'
+        'autocomplete': 'username'
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'placeholder': 'Enter your password',

@@ -186,11 +186,20 @@ def login_view(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
+            email_or_username = form.cleaned_data['email']
             password = form.cleaned_data['password']
             remember_me = form.cleaned_data['remember_me']
 
-            user = authenticate(request, username=email, password=password)
+            # Lookup user by either username or email (case-insensitive)
+            user_obj = User.objects.filter(
+                Q(username__iexact=email_or_username) | 
+                Q(email__iexact=email_or_username)
+            ).first()
+
+            if user_obj:
+                user = authenticate(request, username=user_obj.username, password=password)
+            else:
+                user = authenticate(request, username=email_or_username, password=password)
 
             if user is not None:
                 if not user.is_active:
@@ -1739,6 +1748,18 @@ def update_complaint(request, id):
         after_image = request.FILES.get('after_image')
 
         old_status = complaint.status
+
+        # If staff is not assigned yet, and no staff_id is provided in the post
+        if not complaint.assigned_to and not staff_id:
+            messages.error(request, "You must assign a staff member before updating this complaint.")
+            return redirect('complaints')
+
+        # If transitioning to "In Progress", ensure a vehicle is assigned under Fleet Tracker
+        if status == 'In Progress':
+            has_vehicle = Vehicle.objects.filter(current_complaint=complaint).exists()
+            if not has_vehicle:
+                messages.error(request, "You must assign a vehicle in the 'Register Vehicle' form under Fleet Tracker before setting the status to 'In Progress'.")
+                return redirect('complaints')
 
         if staff_id:
             complaint.assigned_to = Staff.objects.get(id=staff_id)
