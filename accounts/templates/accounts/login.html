@@ -80,17 +80,23 @@
         }
 
         .brand-logo {
-            width: 65px;
-            height: 65px;
+            width: 75px;
+            height: 75px;
             margin: 0 auto 15px;
-            background: linear-gradient(135deg, #3b82f6, #1e3a8a);
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px rgba(22, 163, 74, 0.25);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            overflow: hidden;
+        }
+
+        .brand-logo img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
         }
 
         .brand h1 {
@@ -101,8 +107,8 @@
         }
 
         .brand h1 span {
-            color: #2563eb;
-            text-shadow: 0 0 20px rgba(37, 99, 235, 0.2);
+            color: var(--primary-green);
+            text-shadow: 0 0 20px rgba(22, 163, 74, 0.2);
         }
 
         .brand p {
@@ -475,12 +481,7 @@
     <div class="auth-card">
         <div class="brand">
             <div class="brand-logo">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                    <path d="M2 17l10 5 10-5"></path>
-                    <path d="M2 12l10 5 10-5"></path>
-                </svg>
+                <img src="{% static 'accounts/images/newlogo_emblem.png' %}" alt="Clean Pak Portal Logo">
             </div>
             <h1>Clean Pak <span>Portal</span></h1>
             <p>Login to your portal</p>
