@@ -317,7 +317,7 @@
         </thead>
         <tbody>
             {% for c in complaints %}
-            <tr class="complaint-row">
+            <tr class="complaint-row" data-status="{{ c.status }}" data-priority="{{ c.priority }}">
                 <td>
                     <span class="complaint-id">{{c.complaint_id}}</span>
                     <div style="font-size: 0.65rem; color: #64748b; margin-top: 5px; font-weight: 600; display: flex; flex-direction: column; gap: 3px;">
@@ -388,12 +388,12 @@
                     </div>
                 </td>
                 <td>
-                    <form class="manage-form" method="POST" action="{% url 'update_complaint' c.id %}" enctype="multipart/form-data" onsubmit="return validateComplaintUpdate(this, '{{ c.status }}')" data-vehicle-assigned="{% if c.tracked_vehicle %}true{% else %}false{% endif %}">
+                    <form class="manage-form" method="POST" action="{% url 'update_complaint' c.id %}" enctype="multipart/form-data" onsubmit="return validateComplaintUpdate(this, '{{ c.status }}')" data-vehicle-assigned="{% if c.tracked_vehicle %}true{% else %}false{% endif %}" data-vehicle-status="{% if c.tracked_vehicle %}{{ c.tracked_vehicle.status }}{% elif c.assigned_to and c.assigned_to.assigned_vehicle.first %}{{ c.assigned_to.assigned_vehicle.first.status }}{% endif %}">
                         {% csrf_token %}
                         <select name="status" class="manage-input">
-                            <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %}>Pending</option>
-                            <option value="Verified" {% if c.status == 'Verified' %}selected{% endif %}>Verified</option>
-                            <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %} {% if c.status == 'Completed' or c.status == 'In Progress' or c.status == 'Verified' %}disabled style="color: #cbd5e1;"{% endif %}>Pending</option>
+                            <option value="Verified" {% if c.status == 'Verified' %}selected{% endif %} {% if c.status == 'Completed' or c.status == 'In Progress' %}disabled style="color: #cbd5e1;"{% endif %}>Verified</option>
+                            <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %} {% if c.status == 'Completed' %}disabled style="color: #cbd5e1;"{% endif %}>In Progress</option>
                             <option value="Completed" {% if c.status == 'Completed' %}selected{% endif %}>Completed</option>
                         </select>
 
@@ -450,29 +450,21 @@
 <script>
     function filterComplaints() {
         const searchInput = document.getElementById("complaintSearch");
-        const searchFilter = searchInput.value.toLowerCase();
+        const searchFilter = (searchInput.value || "").trim().toLowerCase();
         
         const statusInput = document.getElementById("statusFilter");
-        const statusFilter = statusInput.value.toLowerCase();
+        const statusFilter = (statusInput.value || "").trim().toLowerCase();
         
         const priorityInput = document.getElementById("priorityFilter");
-        const priorityFilter = priorityInput.value.toLowerCase();
+        const priorityFilter = (priorityInput.value || "").trim().toLowerCase();
         
         const table = document.getElementById("complaintsTable");
         const tr = table.getElementsByClassName("complaint-row");
 
         for (let i = 0; i < tr.length; i++) {
             const rowText = tr[i].textContent.toLowerCase();
-            const statusTd = tr[i].getElementsByTagName("td")[2];
-            
-            // Get all badges in the status column
-            const badges = statusTd ? statusTd.querySelectorAll(".status-badge") : [];
-            
-            // Primary status is the first badge
-            const rowStatus = badges.length > 0 ? badges[0].textContent.trim().toLowerCase() : "";
-            
-            // Priority is the second badge (Normal/Urgent)
-            const rowPriority = badges.length > 1 ? badges[1].textContent.trim().toLowerCase() : "";
+            const rowStatus = (tr[i].getAttribute("data-status") || "").trim().toLowerCase();
+            const rowPriority = (tr[i].getAttribute("data-priority") || "").trim().toLowerCase();
             
             const matchesSearch = rowText.includes(searchFilter);
             const matchesStatus = statusFilter === "" || rowStatus === statusFilter;
@@ -564,6 +556,69 @@
                 Toast.show('Vehicle Assignment Required', errorMsg, 'error');
             } else if (window.Toast) {
                 window.Toast.show('Vehicle Assignment Required', errorMsg, 'error');
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+
+        // 3. Vehicle completion validation for 'Completed' status
+        const vehicleStatus = form.getAttribute('data-vehicle-status');
+        if (selectedStatus === 'Completed') {
+            if (!isVehicleAssigned && !vehicleStatus) {
+                const errorMsg = 'Cannot complete complaint. No vehicle is assigned to this complaint. You must assign a vehicle and set its status to "Completed" first.';
+                if (typeof Toast !== 'undefined') {
+                    Toast.show('Vehicle Assignment Required', errorMsg, 'error');
+                } else if (window.Toast) {
+                    window.Toast.show('Vehicle Assignment Required', errorMsg, 'error');
+                } else {
+                    alert(errorMsg);
+                }
+                return false;
+            }
+            if (vehicleStatus !== 'Completed') {
+                const errorMsg = 'Cannot complete complaint. The assigned vehicle\'s status must first be set to "Completed" in Fleet Admin.';
+                if (typeof Toast !== 'undefined') {
+                    Toast.show('Vehicle Completion Required', errorMsg, 'error');
+                } else if (window.Toast) {
+                    window.Toast.show('Vehicle Completion Required', errorMsg, 'error');
+                } else {
+                    alert(errorMsg);
+                }
+                return false;
+            }
+        }
+        
+        // 4. Status Transition Validation
+        const cStatus = currentStatus;
+        if (cStatus === 'Completed' && ['In Progress', 'Verified', 'Pending'].includes(selectedStatus)) {
+            const errorMsg = `Cannot change status from 'Completed' to '${selectedStatus}'.`;
+            if (typeof Toast !== 'undefined') {
+                Toast.show('Invalid Transition', errorMsg, 'error');
+            } else if (window.Toast) {
+                window.Toast.show('Invalid Transition', errorMsg, 'error');
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+        if (cStatus === 'In Progress' && ['Verified', 'Pending'].includes(selectedStatus)) {
+            const errorMsg = `Cannot change status from 'In Progress' to '${selectedStatus}'.`;
+            if (typeof Toast !== 'undefined') {
+                Toast.show('Invalid Transition', errorMsg, 'error');
+            } else if (window.Toast) {
+                window.Toast.show('Invalid Transition', errorMsg, 'error');
+            } else {
+                alert(errorMsg);
+            }
+            return false;
+        }
+        if (cStatus === 'Verified' && ['Pending'].includes(selectedStatus)) {
+            const errorMsg = `Cannot change status from 'Verified' to '${selectedStatus}'.`;
+            if (typeof Toast !== 'undefined') {
+                Toast.show('Invalid Transition', errorMsg, 'error');
+            } else if (window.Toast) {
+                window.Toast.show('Invalid Transition', errorMsg, 'error');
             } else {
                 alert(errorMsg);
             }

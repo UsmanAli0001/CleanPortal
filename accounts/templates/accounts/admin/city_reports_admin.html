@@ -325,6 +325,27 @@ animation-delay: 1.1s;
     color: #1e293b;
     margin-right: 3px;
 }
+
+.glowing-blue-btn {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white !important;
+    padding: 10px 24px !important;
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6), 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.glowing-blue-btn:hover {
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.9), 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    color: white !important;
+}
 {% endblock %}
 
 {% block admin_content %}
@@ -334,12 +355,9 @@ animation-delay: 1.1s;
         <p>Operational performance monitoring and resource optimization for Gujrat.</p>
     </div>
     <div style="display: flex; gap: 15px; align-items: center;">
-
-
-        <button class="btn-hero secondary" style="padding: 10px 20px;" onclick="window.print()"><i
-                data-lucide="download"></i> Export PDF</button>
-        <button class="btn-hero primary" style="padding: 10px 20px;" onclick="window.location.reload()"><i
-                data-lucide="refresh-cw"></i> Live Sync</button>
+        <button class="glowing-blue-btn" onclick="window.print()">
+            <i data-lucide="download"></i> Export PDF
+        </button>
     </div>
 </div>
 

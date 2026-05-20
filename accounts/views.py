@@ -1749,6 +1749,21 @@ def update_complaint(request, id):
 
         old_status = complaint.status
 
+        # Validate status transitions
+        if status:
+            status_lower = status.lower()
+            old_status_lower = old_status.lower() if old_status else ""
+            
+            if old_status_lower == "completed" and status_lower in ["in progress", "verified", "pending"]:
+                messages.error(request, f"Status cannot be changed from 'Completed' to '{status}'.")
+                return redirect('complaints')
+            elif old_status_lower == "in progress" and status_lower in ["verified", "pending"]:
+                messages.error(request, f"Status cannot be changed from 'In Progress' to '{status}'.")
+                return redirect('complaints')
+            elif old_status_lower == "verified" and status_lower in ["pending"]:
+                messages.error(request, f"Status cannot be changed from 'Verified' to '{status}'.")
+                return redirect('complaints')
+
         # If staff is not assigned yet, and no staff_id is provided in the post
         if not complaint.assigned_to and not staff_id:
             messages.error(request, "You must assign a staff member before updating this complaint.")
@@ -1759,6 +1774,20 @@ def update_complaint(request, id):
             has_vehicle = Vehicle.objects.filter(current_complaint=complaint).exists()
             if not has_vehicle:
                 messages.error(request, "You must assign a vehicle in the 'Register Vehicle' form under Fleet Tracker before setting the status to 'In Progress'.")
+                return redirect('complaints')
+
+        # If transitioning to "Completed", ensure the assigned vehicle's status is "Completed"
+        if status == 'Completed':
+            vehicle = Vehicle.objects.filter(current_complaint=complaint).first()
+            if not vehicle and complaint.assigned_to:
+                vehicle = Vehicle.objects.filter(assigned_driver=complaint.assigned_to).first()
+
+            if not vehicle:
+                messages.error(request, "Cannot complete complaint. No vehicle is assigned to this complaint.")
+                return redirect('complaints')
+
+            if vehicle.status != 'Completed':
+                messages.error(request, f"Cannot complete complaint. The assigned vehicle ({vehicle.vehicle_id})'s status must first be set to 'Completed' in Fleet Admin.")
                 return redirect('complaints')
 
         if staff_id:
