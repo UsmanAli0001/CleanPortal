@@ -386,9 +386,23 @@ def admin_complaint_history_view(request):
     return render(request, 'accounts/admin/complaint_history_admin.html', context)
 
 def logout_view(request):
+    is_admin = False
+    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+        is_admin = True
+    
+    referer = request.META.get('HTTP_REFERER', '')
+    if 'admin' in referer:
+        is_admin = True
+
     logout(request)
-    messages.success(request,"Logged out")
-    return redirect('login')
+    
+    if is_admin:
+        messages.success(request, "Admin Logout successfully")
+        return redirect('admin:login')
+    else:
+        messages.success(request, "Logged out")
+        return redirect('login')
+
 
 
 # --- UTILITIES ---
@@ -1548,7 +1562,72 @@ def admin_dashboard(request):
     }
     
     return render(request, 'accounts/admin/admin_dashboard.html', context)
-    
+
+@login_required
+def api_overdue_complaints(request):
+    """Returns complaints that have exceeded their SLA time threshold.
+    Normal complaints: 8 hours, Urgent complaints: 3 hours.
+    Only considers non-completed, paid complaints."""
+    if not request.user.is_staff:
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    now = timezone.now()
+    normal_threshold = now - timedelta(hours=8)
+    urgent_threshold = now - timedelta(hours=3)
+
+    # Normal complaints older than 8 hours that are NOT completed/cancelled
+    overdue_normal = Complaint.objects.filter(
+        priority='Normal',
+        payment_status=True,
+        created_at__lte=normal_threshold
+    ).exclude(status__in=['Completed', 'Cancelled']).order_by('-created_at')
+
+    # Urgent complaints older than 3 hours that are NOT completed/cancelled
+    overdue_urgent = Complaint.objects.filter(
+        priority='Urgent',
+        payment_status=True,
+        created_at__lte=urgent_threshold
+    ).exclude(status__in=['Completed', 'Cancelled']).order_by('-created_at')
+
+    results = []
+    for c in overdue_urgent:
+        elapsed = now - c.created_at
+        hours = int(elapsed.total_seconds() // 3600)
+        mins = int((elapsed.total_seconds() % 3600) // 60)
+        results.append({
+            'id': c.complaint_id,
+            'type': c.complaint_type,
+            'area': c.area,
+            'priority': 'Urgent',
+            'status': c.status,
+            'name': c.name,
+            'created_at': c.created_at.strftime('%d %b %Y, %I:%M %p'),
+            'elapsed': f'{hours}h {mins}m',
+            'threshold': '3 hours',
+        })
+
+    for c in overdue_normal:
+        elapsed = now - c.created_at
+        hours = int(elapsed.total_seconds() // 3600)
+        mins = int((elapsed.total_seconds() % 3600) // 60)
+        results.append({
+            'id': c.complaint_id,
+            'type': c.complaint_type,
+            'area': c.area,
+            'priority': 'Normal',
+            'status': c.status,
+            'name': c.name,
+            'created_at': c.created_at.strftime('%d %b %Y, %I:%M %p'),
+            'elapsed': f'{hours}h {mins}m',
+            'threshold': '8 hours',
+        })
+
+    return JsonResponse({
+        'status': 'success',
+        'overdue_count': len(results),
+        'complaints': results
+    })
+
 @login_required
 def admin_wallet_view(request):
     """Administrative view for system revenue totals and transaction records."""
@@ -1742,6 +1821,9 @@ def update_complaint(request, id):
         messages.error(request, "Access Denied: Administrative permissions required.")
         return redirect('dashboard')
     complaint = Complaint.objects.get(id=id)
+    if complaint.status == 'Completed':
+        messages.error(request, "Cannot update complaint. This complaint has already been completed.")
+        return redirect('complaints')
     if request.method == "POST":
         staff_id = request.POST.get('staff')
         status = request.POST.get('status')

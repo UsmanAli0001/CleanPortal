@@ -187,11 +187,220 @@ flex-grow: 1;
 }
 
 .module-info p {
-margin: 0 0 20px;
-font-size: 0.85rem;
-color: #64748b;
-line-height: 1.6;
-flex-grow: 1;
+    margin: 0 0 20px;
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.6;
+    flex-grow: 1;
+}
+
+/* ===== Overdue Toast Notification System ===== */
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    scrollbar-width: none;
+    pointer-events: none;
+}
+.toast-container::-webkit-scrollbar { display: none; }
+
+.overdue-toast {
+    pointer-events: all;
+    min-width: 380px;
+    max-width: 440px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    animation: toastSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(120%);
+}
+
+.overdue-toast.toast-exit {
+    animation: toastSlideOut 0.4s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+}
+
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateX(120%); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes toastSlideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(120%); }
+}
+
+.toast-accent {
+    height: 4px;
+    width: 100%;
+}
+.toast-accent.urgent {
+    background: linear-gradient(90deg, #ef4444 0%, #f97316 100%);
+}
+.toast-accent.normal {
+    background: linear-gradient(90deg, #f59e0b 0%, #eab308 100%);
+}
+
+.toast-body {
+    padding: 16px 18px;
+}
+
+.toast-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.toast-priority-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+.toast-priority-badge.urgent {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+.toast-priority-badge.normal {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.toast-dismiss {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 4px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.toast-dismiss:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.toast-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toast-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.toast-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.toast-detail .label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.toast-detail .value {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.toast-elapsed {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.toast-elapsed .elapsed-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.toast-elapsed .elapsed-value {
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+.toast-elapsed .elapsed-value.urgent { color: #dc2626; }
+.toast-elapsed .elapsed-value.normal { color: #d97706; }
+
+.toast-progress {
+    height: 3px;
+    width: 100%;
+    background: #f1f5f9;
+}
+.toast-progress-bar {
+    height: 100%;
+    border-radius: 0 0 16px 16px;
+    animation: toastProgress 8s linear forwards;
+}
+.toast-progress-bar.urgent {
+    background: linear-gradient(90deg, #ef4444, #f97316);
+}
+.toast-progress-bar.normal {
+    background: linear-gradient(90deg, #f59e0b, #eab308);
+}
+
+@keyframes toastProgress {
+    from { width: 100%; }
+    to   { width: 0%; }
+}
+
+/* Overdue summary badge on dashboard */
+.overdue-summary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid;
+}
+.overdue-summary-badge.has-overdue {
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.2);
+    animation: overduePulse 2s infinite;
+}
+.overdue-summary-badge.all-clear {
+    background: rgba(16, 185, 129, 0.08);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+@keyframes overduePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+    50%      { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
 }
 
 {% endblock %}
@@ -402,5 +611,142 @@ flex-grow: 1;
 </div>
 {% endblock %}
 
-{% block admin_extra_js %}{% endblock %}
+{% block admin_extra_js %}
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Track which complaint IDs we've already shown toasts for in this session
+    const shownToasts = new Set();
+    let overdueData = [];
+
+    function fetchOverdueComplaints() {
+        fetch("{% url 'api_overdue_complaints' %}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    overdueData = data.complaints;
+                    updateOverdueBadge(data.overdue_count);
+
+                    // Show toasts for NEW overdue complaints not yet shown
+                    data.complaints.forEach((c, idx) => {
+                        if (!shownToasts.has(c.id)) {
+                            shownToasts.add(c.id);
+                            // Stagger toast appearance
+                            setTimeout(() => showOverdueToast(c), idx * 600);
+                        }
+                    });
+                }
+            })
+            .catch(err => console.error('Overdue check failed:', err));
+    }
+
+    function updateOverdueBadge(count) {
+        // Update or create badge in page header
+        let badge = document.getElementById('overdueBadge');
+        if (!badge) {
+            const header = document.querySelector('.page-header');
+            if (header) {
+                badge = document.createElement('div');
+                badge.id = 'overdueBadge';
+                badge.className = 'overdue-summary-badge';
+                badge.onclick = () => {
+                    // Re-trigger all current toasts
+                    shownToasts.clear();
+                    document.getElementById('toastContainer').innerHTML = '';
+                    overdueData.forEach((c, idx) => {
+                        shownToasts.add(c.id);
+                        setTimeout(() => showOverdueToast(c), idx * 600);
+                    });
+                };
+                header.appendChild(badge);
+            }
+        }
+        if (badge) {
+            if (count > 0) {
+                badge.className = 'overdue-summary-badge has-overdue';
+                badge.innerHTML = `<i data-lucide="alert-triangle" style="width:16px;height:16px;"></i> ${count} Overdue Complaint${count > 1 ? 's' : ''}`;
+            } else {
+                badge.className = 'overdue-summary-badge all-clear';
+                badge.innerHTML = `<i data-lucide="check-circle" style="width:16px;height:16px;"></i> All Complaints On Track`;
+            }
+            lucide.createIcons();
+        }
+    }
+
+    function showOverdueToast(complaint) {
+        const container = document.getElementById('toastContainer');
+        const priorityClass = complaint.priority === 'Urgent' ? 'urgent' : 'normal';
+        const priorityIcon = complaint.priority === 'Urgent' ? '🔴' : '🟡';
+        const thresholdMsg = complaint.priority === 'Urgent'
+            ? 'Exceeded 3-hour SLA'
+            : 'Exceeded 8-hour SLA';
+
+        const toast = document.createElement('div');
+        toast.className = 'overdue-toast';
+        toast.id = `toast-${complaint.id}`;
+        toast.innerHTML = `
+            <div class="toast-accent ${priorityClass}"></div>
+            <div class="toast-body">
+                <div class="toast-header">
+                    <span class="toast-priority-badge ${priorityClass}">
+                        ${priorityIcon} ${complaint.priority} — OVERDUE
+                    </span>
+                    <button class="toast-dismiss" onclick="dismissToast('${complaint.id}')">
+                        <i data-lucide="x" style="width:16px;height:16px;"></i>
+                    </button>
+                </div>
+                <div class="toast-title">
+                    ${complaint.id} — ${complaint.type}
+                </div>
+                <div class="toast-detail-grid">
+                    <div class="toast-detail">
+                        <span class="label">Area</span>
+                        <span class="value">${complaint.area}</span>
+                    </div>
+                    <div class="toast-detail">
+                        <span class="label">Citizen</span>
+                        <span class="value">${complaint.name}</span>
+                    </div>
+                    <div class="toast-detail">
+                        <span class="label">Current Status</span>
+                        <span class="value">${complaint.status}</span>
+                    </div>
+                    <div class="toast-detail">
+                        <span class="label">Submitted</span>
+                        <span class="value">${complaint.created_at}</span>
+                    </div>
+                </div>
+                <div class="toast-elapsed">
+                    <span class="elapsed-label">${thresholdMsg}</span>
+                    <span class="elapsed-value ${priorityClass}">${complaint.elapsed} elapsed</span>
+                </div>
+            </div>
+            <div class="toast-progress">
+                <div class="toast-progress-bar ${priorityClass}"></div>
+            </div>
+        `;
+
+        container.appendChild(toast);
+        lucide.createIcons();
+
+        // Auto-dismiss after 8 seconds
+        setTimeout(() => dismissToast(complaint.id), 8000);
+    }
+
+    window.dismissToast = function(complaintId) {
+        const toast = document.getElementById(`toast-${complaintId}`);
+        if (toast && !toast.classList.contains('toast-exit')) {
+            toast.classList.add('toast-exit');
+            setTimeout(() => toast.remove(), 400);
+        }
+    };
+
+    // Initial fetch and poll every 60 seconds
+    fetchOverdueComplaints();
+    setInterval(fetchOverdueComplaints, 60000);
+});
+</script>
+{% endblock %}
 

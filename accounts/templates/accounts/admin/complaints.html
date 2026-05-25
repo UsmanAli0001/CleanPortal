@@ -390,14 +390,14 @@
                 <td>
                     <form class="manage-form" method="POST" action="{% url 'update_complaint' c.id %}" enctype="multipart/form-data" onsubmit="return validateComplaintUpdate(this, '{{ c.status }}', '{{ c.id }}')" data-vehicle-assigned="{% if c.tracked_vehicle %}true{% else %}false{% endif %}" data-vehicle-status="{% if c.tracked_vehicle %}{{ c.tracked_vehicle.status }}{% elif c.assigned_to and c.assigned_to.assigned_vehicle.first %}{{ c.assigned_to.assigned_vehicle.first.status }}{% endif %}">
                         {% csrf_token %}
-                        <select name="status" class="manage-input" onchange="checkStatusChange(this, '{{ c.id }}', '{% if c.tracked_vehicle %}true{% else %}false{% endif %}')">
+                        <select name="status" class="manage-input" onchange="checkStatusChange(this, '{{ c.id }}', '{% if c.tracked_vehicle %}true{% else %}false{% endif %}')" {% if c.status == 'Completed' %}disabled{% endif %}>
                             <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %} {% if c.status == 'Completed' or c.status == 'In Progress' or c.status == 'Verified' %}disabled style="color: #cbd5e1;"{% endif %}>Pending</option>
                             <option value="Verified" {% if c.status == 'Verified' %}selected{% endif %} {% if c.status == 'Completed' or c.status == 'In Progress' %}disabled style="color: #cbd5e1;"{% endif %}>Verified</option>
                             <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %} {% if c.status == 'Completed' %}disabled style="color: #cbd5e1;"{% endif %}>In Progress</option>
                             <option value="Completed" {% if c.status == 'Completed' %}selected{% endif %}>Completed</option>
                         </select>
 
-                        <select name="staff" class="manage-input" {% if c.assigned_to %}disabled{% endif %}>
+                        <select name="staff" class="manage-input" {% if c.assigned_to or c.status == 'Completed' %}disabled{% endif %}>
                             <option value="">Assign Staff...</option>
                             {% for s in staff %}
                             <option value="{{s.id}}" {% if c.assigned_to and c.assigned_to.id == s.id %}selected{% endif %}>
@@ -414,6 +414,11 @@
                         </div>
 
                         <div class="form-group-full" style="display: flex; gap: 8px; align-items: center;">
+                            {% if c.status == 'Completed' %}
+                            <div style="flex: 1; text-align: center; background: #f0fdf4; color: #166534; font-weight: 800; font-size: 0.8rem; padding: 8px 12px; border-radius: 8px; border: 1.5px solid #bbf7d0; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> Resolved & Locked
+                            </div>
+                            {% else %}
                             <button type="submit" class="btn-manage btn-update" style="flex: 1; margin-top: 0;">
                                 <i data-lucide="refresh-cw" style="width: 14px;"></i> Update Record
                             </button>
@@ -421,6 +426,7 @@
                                 <i data-lucide="edit" style="width: 16px;"></i>
                                 <input type="file" name="after_image" accept="image/*" style="display: none;">
                             </label>
+                            {% endif %}
                             <a href="javascript:void(0)" class="btn-delete-icon" 
                                title="Delete Permanently"
                                onclick="deleteComplaint(this, '{{ c.id }}', '{{ c.complaint_id }}')">

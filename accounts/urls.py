@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    login_view, register_view, dashboard_view, logout_view, admin_dashboard,
+    login_view, register_view, dashboard_view, logout_view, admin_dashboard, api_overdue_complaints,
     staff_management, complaints, update_complaint, delete_complaint_admin, admin_zone_management,
     register_complaint, track_complaint, download_complaint_report, home, about_view, submit_contact,
     pricing_catalog_view, reports_view, contact_view, pay_fee, view_reports,
@@ -90,6 +90,7 @@ urlpatterns = [
 
     # Admin Module
     path('admin-dashboard/', admin_dashboard, name="admin_dashboard"),
+    path('api/overdue-complaints/', api_overdue_complaints, name='api_overdue_complaints'),
     path('staff/', staff_management, name="staff"),
     path('complaints/', complaints, name="complaints"),
     path('admin-complaint-history/', admin_complaint_history_view, name="admin_complaint_history"),
