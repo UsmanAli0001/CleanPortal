@@ -780,3 +780,67 @@ class AdminNotification(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+@receiver(post_save, sender=Complaint)
+def auto_publish_completed_complaint_to_gallery(sender, instance, **kwargs):
+    """Automatically create or update a GalleryItem when a complaint is completed with both before and after pictures."""
+    if instance.status == 'Completed':
+        before_img = instance.image
+        after_img = instance.after_image or instance.proof_image
+        
+        # Only publish to gallery if both before and after images exist
+        if before_img and after_img:
+            from django.utils import timezone
+            
+            # Map complaint type to standard gallery category details
+            category_mapping = {
+                'street cleaning': ('Street Cleaning', 'broom', '#10b981'),
+                'garbage issue': ('Garbage Pickup', 'trash', '#f59e0b'),
+                'water issue': ('Water Supply', 'droplet', '#3b82f6'),
+                'street light issue': ('Street Light', 'sun', '#eab308'),
+                'drainage issue': ('Drainage', 'pipette', '#64748b'),
+            }
+            
+            comp_type_lower = instance.complaint_type.lower() if instance.complaint_type else ""
+            cat_name, cat_icon, cat_color = category_mapping.get(
+                comp_type_lower, 
+                (instance.complaint_type or 'General Cleanup', 'image', '#3b82f6')
+            )
+            
+            # Get or create the GalleryCategory
+            category_obj, _ = GalleryCategory.objects.get_or_create(
+                name=cat_name,
+                defaults={'icon': cat_icon, 'color': cat_color}
+            )
+            
+            # Construct description and title
+            title = f"Resolved: {cat_name} in {instance.area}"
+            description = f"Successfully resolved the {instance.complaint_type} issue in {instance.area}. Clean Pak Portal continues to serve Gujrat with efficient municipal sanitation! Original details: {instance.description}"
+            
+            # Get or create GalleryItem for this complaint to avoid duplicates
+            gallery_item, created = GalleryItem.objects.get_or_create(
+                complaint=instance,
+                defaults={
+                    'category': category_obj,
+                    'title': title,
+                    'description': description,
+                    'area': instance.area,
+                    'status': 'Completed',
+                    'before_image': before_img,
+                    'after_image': after_img,
+                    'published_at': timezone.now(),
+                    'show_on_homepage': True,
+                    'allow_likes': True
+                }
+            )
+            
+            # If it already existed, update images and details to keep it in sync
+            if not created:
+                gallery_item.category = category_obj
+                gallery_item.title = title
+                gallery_item.description = description
+                gallery_item.area = instance.area
+                gallery_item.before_image = before_img
+                gallery_item.after_image = after_img
+                gallery_item.save()

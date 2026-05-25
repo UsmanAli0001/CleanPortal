@@ -711,6 +711,20 @@
         };
     }
 
+    // Mapping from complaint type to vehicle type value (case-insensitive keys)
+    const complaintToVehicleMap = {
+        'street cleaning': 'Street cleaning',
+        'garbage issue': 'Garbage issue',
+        'water issue': 'Water issue',
+        'street light issue': 'Street light issue',
+        'drainage issue': 'Drainage issue',
+    };
+
+    function getVehicleTypeForComplaint(complaintType) {
+        if (!complaintType) return null;
+        return complaintToVehicleMap[complaintType.toLowerCase()] || null;
+    }
+
     function handleComplaintSelectionChange(selectEl) {
         const selectedOption = selectEl.options[selectEl.selectedIndex];
         if (!selectedOption) return;
@@ -721,14 +735,25 @@
         const assignedZoneSelect = document.getElementById('add-assigned-zone');
         const estimatingTimeInput = document.getElementById('add-estimating-time');
         
-        // Auto-set Vehicle Type based on complaint type
+        // Auto-set Vehicle Type based on complaint type using the mapping
         if (complaintType && vehicleTypeSelect) {
-            vehicleTypeSelect.value = complaintType;
+            const mappedType = getVehicleTypeForComplaint(complaintType);
+            if (mappedType) {
+                vehicleTypeSelect.value = mappedType;
+            }
         }
         
         // Auto-set Complaint Type (assigned_zone) based on complaint type
         if (complaintType && assignedZoneSelect) {
-            assignedZoneSelect.value = complaintType;
+            // Try exact match first, then case-insensitive
+            let matched = false;
+            for (let i = 0; i < assignedZoneSelect.options.length; i++) {
+                if (assignedZoneSelect.options[i].value.toLowerCase() === complaintType.toLowerCase()) {
+                    assignedZoneSelect.value = assignedZoneSelect.options[i].value;
+                    matched = true;
+                    break;
+                }
+            }
         }
         
         if (estimatingTimeInput) {
@@ -738,6 +763,18 @@
                 estimatingTimeInput.value = '6-8 Hours';
             } else {
                 estimatingTimeInput.value = '';
+            }
+        }
+    }
+
+    // Auto-set Vehicle Type when Complaint Type (assigned_zone) dropdown changes
+    function handleAssignedZoneChange(selectEl) {
+        const selectedValue = selectEl.value;
+        const vehicleTypeSelect = document.getElementById('add-vehicle-type');
+        if (selectedValue && vehicleTypeSelect) {
+            const mappedType = getVehicleTypeForComplaint(selectedValue);
+            if (mappedType) {
+                vehicleTypeSelect.value = mappedType;
             }
         }
     }
