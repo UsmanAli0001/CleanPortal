@@ -1773,8 +1773,8 @@ def update_complaint(request, id):
         if status == 'In Progress':
             has_vehicle = Vehicle.objects.filter(current_complaint=complaint).exists()
             if not has_vehicle:
-                messages.error(request, "You must assign a vehicle in the 'Register Vehicle' form under Fleet Tracker before setting the status to 'In Progress'.")
-                return redirect('complaints')
+                messages.info(request, "A vehicle must be assigned under Fleet Tracker before setting the status to 'In Progress'. Please register/assign a vehicle here.")
+                return redirect(f"/fleet/admin/?assign_complaint={complaint.id}")
 
         # If transitioning to "Completed", ensure the assigned vehicle's status is "Completed"
         if status == 'Completed':
@@ -2337,7 +2337,7 @@ def fleet_admin_view(request):
         'total_count': vehicles.count(),
         'v_types': v_types,
         'supervisors': supervisors,
-        'all_complaints': Complaint.objects.filter(payment_status=True).order_by('-created_at'),
+        'all_complaints': Complaint.objects.filter(payment_status=True, tracked_vehicle__isnull=True).order_by('-created_at'),
         'is_supervisor': is_supervisor,
         'assigned_zone_obj': assigned_zone_obj,
         'all_users': User.objects.all(),
@@ -3299,12 +3299,13 @@ def get_admin_notifications(request):
     if not request.user.is_staff:
         return JsonResponse({'status': 'error', 'message': 'Forbidden'}, status=403)
     
-    # Get operational alerts
-    admin_notifs = AdminNotification.objects.all().order_by('-created_at')[:50]
-    # Get public system announcements
-    public_announcements = Announcement.objects.filter(is_active=True).order_by('-created_at')[:10]
+    # Get unread operational alerts
+    admin_notifs = AdminNotification.objects.filter(is_read=False).order_by('-created_at')[:50]
+    # Get unread public system announcements for this user
+    read_ann_ids = AnnouncementRead.objects.filter(user=request.user).values_list('announcement_id', flat=True)
+    public_announcements = Announcement.objects.filter(is_active=True).exclude(id__in=read_ann_ids).order_by('-created_at')[:10]
     
-    unread_count = AdminNotification.objects.filter(is_read=False).count()
+    unread_count = admin_notifs.count()
     
     data = []
     # Add Admin Notifications
@@ -3329,7 +3330,7 @@ def get_admin_notifications(request):
             'type_display': 'System Announcement',
             'message': a.message,
             'link': reverse('notifications'),
-            'is_read': True, # Announcements are generally informational for admins here
+            'is_read': False, # Returned announcements are unread
             'created_at': a.created_at.strftime('%Y-%m-%d %H:%M')
         })
     
@@ -3347,7 +3348,14 @@ def mark_admin_notifications_read(request):
     if not request.user.is_staff:
         return JsonResponse({'status': 'error', 'message': 'Forbidden'}, status=403)
     
+    # 1. Mark admin notifications as read
     AdminNotification.objects.filter(is_read=False).update(is_read=True)
+    
+    # 2. Mark active announcements as read for this user
+    active_announcements = Announcement.objects.filter(is_active=True)
+    for ann in active_announcements:
+        AnnouncementRead.objects.get_or_create(user=request.user, announcement=ann)
+        
     return JsonResponse({'status': 'success'})
 
 @login_required

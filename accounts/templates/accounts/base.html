@@ -1072,9 +1072,9 @@
                                     onmouseout="this.style.filter='none'">
                                     <i data-lucide="check-check" style="width: 16px; height: 16px;"></i>
                                 </button>
-                                <a href="{% url 'notifications' %}"
-                                    style="font-size: 0.75rem; font-weight: 700; color: #6366f1; text-decoration: none;">View
-                                    Inbox</a>
+                                <a href="javascript:void(0)" onclick="clearAllNavNotifications(event)"
+                                    style="font-size: 0.75rem; font-weight: 700; color: #6366f1; text-decoration: none;">Clear
+                                    All</a>
                             </div>
                         </div>
                         <div class="nav-dropdown-body" id="globalNavDropdownList">
@@ -1183,10 +1183,11 @@
 
                         const list = document.getElementById('globalNavDropdownList');
                         if (list) {
-                            if (data.announcements.length === 0) {
+                            const unreadAnnouncements = data.announcements.filter(a => !a.is_read);
+                            if (unreadAnnouncements.length === 0) {
                                 list.innerHTML = '<div class="nav-dropdown-empty"><i data-lucide="check-circle" style="width: 40px; height: 40px; color: #10b981; margin-bottom: 10px;"></i><br>All Caught Up!</div>';
                             } else {
-                                list.innerHTML = data.announcements.slice(0, 5).map(ann => {
+                                list.innerHTML = unreadAnnouncements.slice(0, 5).map(ann => {
                                     let icon = 'bell';
                                     if (ann.type === 'personal') icon = 'mail';
                                     if (ann.type === 'status_update') icon = 'activity';
@@ -1221,7 +1222,6 @@
 
         function clearAllNavNotifications(event) {
             if (event) event.stopPropagation();
-            if (!confirm('Clear all notifications?')) return;
 
             fetch("{% url 'delete_all_notifications' %}")
                 .then(res => res.json())
@@ -1383,10 +1383,11 @@
 
                             const list = document.getElementById('globalNavDropdownList');
                             if (list) {
-                                if (data.announcements.length === 0) {
+                                const unreadAnnouncements = data.announcements.filter(a => !a.is_read);
+                                if (unreadAnnouncements.length === 0) {
                                     list.innerHTML = '<div class="nav-dropdown-empty"><i data-lucide="check-circle" style="width: 40px; height: 40px; color: #10b981; margin-bottom: 10px;"></i><br>All Caught Up!</div>';
                                 } else {
-                                    list.innerHTML = data.announcements.slice(0, 5).map(ann => {
+                                    list.innerHTML = unreadAnnouncements.slice(0, 5).map(ann => {
                                         let icon = 'bell';
                                         if (ann.type === 'personal') icon = 'mail';
                                         if (ann.type === 'status_update') icon = 'activity';

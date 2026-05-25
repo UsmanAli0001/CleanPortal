@@ -504,27 +504,27 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 0.75rem;">Vehicle ID</label>
-                        <input type="text" name="vehicle_id" class="form-input"
+                        <input type="text" name="vehicle_id" id="add-vehicle-id" class="form-input"
                             style="padding: 10px 12px; font-size: 0.85rem;" placeholder="GT-2001" required>
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label class="form-label" style="font-size: 0.75rem;">Plate Number</label>
-                        <input type="text" name="plate_number" class="form-input"
+                        <input type="text" name="plate_number" id="add-plate-number" class="form-input"
                             style="padding: 10px 12px; font-size: 0.85rem;" placeholder="ABC-123">
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label class="form-label" style="font-size: 0.75rem;">Driver Name</label>
-                        <input type="text" name="driver_name" class="form-input"
+                        <input type="text" name="driver_name" id="add-driver-name" class="form-input"
                             style="padding: 10px 12px; font-size: 0.85rem;" placeholder="Ali Hassan" required>
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label class="form-label" style="font-size: 0.75rem;">Contact Number</label>
-                        <input type="text" name="driver_phone" class="form-input"
+                        <input type="text" name="driver_phone" id="add-driver-phone" class="form-input"
                             style="padding: 10px 12px; font-size: 0.85rem;" placeholder="03XX-XXXXXXX" required>
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label class="form-label" style="font-size: 0.75rem;">Vehicle Type</label>
-                        <select class="form-input" name="vehicle_type" style="padding: 10px 12px; font-size: 0.85rem;">
+                        <select class="form-input" name="vehicle_type" id="add-vehicle-type" style="padding: 10px 12px; font-size: 0.85rem;">
                             <option value="Garbage issue">Garbage truck</option>
                             <option value="Drainage issue">Drain cleaner truck</option>
                             <option value="Street light issue">Lift truck</option>
@@ -534,7 +534,7 @@
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label class="form-label" style="font-size: 0.75rem;">Complaint Type</label>
-                        <select class="form-input" name="assigned_zone" style="padding: 10px 12px; font-size: 0.85rem;">
+                        <select class="form-input" name="assigned_zone" id="add-assigned-zone" style="padding: 10px 12px; font-size: 0.85rem;">
                             <option value="">No Specific Type</option>
                             {% for cat in categories %}
                             <option value="{{ cat.name }}">{{ cat.name }}</option>
@@ -553,7 +553,7 @@
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label class="form-label" style="font-size: 0.75rem;">Estimating Time</label>
-                        <input type="text" name="estimating_time" class="form-input"
+                        <input type="text" name="estimating_time" id="add-estimating-time" class="form-input"
                             style="padding: 10px 12px; font-size: 0.85rem;" placeholder="e.g. 2 Hours">
                     </div>
                 </div>
@@ -566,10 +566,10 @@
 
             <div class="form-group" style="margin-bottom: 10px;">
                 <label class="form-label" style="font-size: 0.75rem;">Immediate Assignment (Optional)</label>
-                <select class="form-input" name="current_complaint" style="padding: 10px 12px; font-size: 0.85rem;">
-                    <option value="">Routine Patrol / None</option>
+                <select class="form-input" name="current_complaint" id="add-complaint" style="padding: 10px 12px; font-size: 0.85rem;" onchange="handleComplaintSelectionChange(this)">
+                    <option value="" data-type="" data-priority="">Routine Patrol / None</option>
                     {% for c in all_complaints %}
-                    <option value="{{ c.id }}">{{ c.complaint_id }} - {{ c.area }}</option>
+                    <option value="{{ c.id }}" data-type="{{ c.complaint_type }}" data-priority="{{ c.priority }}">{{ c.complaint_id }} - {{ c.area }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -662,7 +662,102 @@
 
 {% block admin_extra_js %}
 <script>
-    function openAddModal() { document.getElementById('add-modal').classList.add('open'); }
+    function generateUniqueVehicleDetails() {
+        const existingIds = new Set();
+        const existingPlates = new Set();
+        
+        // Find existing IDs and plate numbers in the registry table
+        const idCells = document.querySelectorAll('.vehicle-table tbody tr td div style');
+        // Let's select more robustly: select all cells/elements
+        const rows = document.querySelectorAll('.vehicle-table tbody tr');
+        rows.forEach(row => {
+            const cells = row.getElementsByTagName('td');
+            if (cells.length > 0) {
+                // First column contains Vehicle ID (first div) and Plate Number (second div)
+                const idEl = cells[0].querySelector('div div');
+                const plateEl = cells[0].querySelector('div div:nth-child(2)');
+                if (idEl) existingIds.add(idEl.textContent.trim());
+                if (plateEl) existingPlates.add(plateEl.textContent.trim());
+            }
+        });
+
+        let nextNum = 2001;
+        let newId = `GT-${nextNum}`;
+        while (existingIds.has(newId)) {
+            nextNum++;
+            newId = `GT-${nextNum}`;
+        }
+
+        let plateNum = 123;
+        let newPlate = `ABC-${plateNum}`;
+        while (existingPlates.has(newPlate)) {
+            plateNum++;
+            newPlate = `ABC-${plateNum}`;
+        }
+
+        const driverNames = [
+            'Ali Hassan', 'Usman Ahmed', 'Bilal Khan', 'Zain Ul Abidin', 
+            'Muhammad Rizwan', 'Hamza Tariq', 'Faisal Shah', 'Ahmad Raza',
+            'Umer Farooq', 'Sajid Mehmood'
+        ];
+        const randomDriver = driverNames[Math.floor(Math.random() * driverNames.length)];
+        const randomPhone = `03` + Math.floor(100000000 + Math.random() * 900000000);
+
+        return {
+            vehicleId: newId,
+            plateNumber: newPlate,
+            driverName: randomDriver,
+            driverPhone: randomPhone
+        };
+    }
+
+    function handleComplaintSelectionChange(selectEl) {
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        if (!selectedOption) return;
+        const complaintType = selectedOption.getAttribute('data-type');
+        const priority = selectedOption.getAttribute('data-priority');
+        
+        const vehicleTypeSelect = document.getElementById('add-vehicle-type');
+        const assignedZoneSelect = document.getElementById('add-assigned-zone');
+        const estimatingTimeInput = document.getElementById('add-estimating-time');
+        
+        // Auto-set Vehicle Type based on complaint type
+        if (complaintType && vehicleTypeSelect) {
+            vehicleTypeSelect.value = complaintType;
+        }
+        
+        // Auto-set Complaint Type (assigned_zone) based on complaint type
+        if (complaintType && assignedZoneSelect) {
+            assignedZoneSelect.value = complaintType;
+        }
+        
+        if (estimatingTimeInput) {
+            if (priority === 'Urgent') {
+                estimatingTimeInput.value = '2-3 Hours';
+            } else if (priority === 'Normal') {
+                estimatingTimeInput.value = '6-8 Hours';
+            } else {
+                estimatingTimeInput.value = '';
+            }
+        }
+    }
+
+    function openAddModal() {
+        const details = generateUniqueVehicleDetails();
+        
+        const idInput = document.getElementById('add-vehicle-id');
+        const plateInput = document.getElementById('add-plate-number');
+        const driverInput = document.getElementById('add-driver-name');
+        const phoneInput = document.getElementById('add-driver-phone');
+        
+        if (idInput) idInput.value = details.vehicleId;
+        if (plateInput) plateInput.value = details.plateNumber;
+        if (driverInput) driverInput.value = details.driverName;
+        if (phoneInput) phoneInput.value = details.driverPhone;
+
+        document.getElementById('add-modal').classList.add('open');
+    }
+
     function closeAddModal() { document.getElementById('add-modal').classList.remove('open'); }
 
     function openEditModal(btn) {
@@ -736,6 +831,22 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Check if we need to pre-assign a complaint from redirect query param
+        const urlParams = new URLSearchParams(window.location.search);
+        const assignComplaint = urlParams.get('assign_complaint');
+        if (assignComplaint) {
+            openAddModal();
+            const selectEl = document.getElementById('add-complaint');
+            if (selectEl) {
+                selectEl.value = assignComplaint;
+                // Highlight the select input to show it was auto-selected
+                selectEl.style.borderColor = 'var(--accent-emerald)';
+                selectEl.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.2)';
+                // Automatically auto-fill the mapped vehicle type and estimating time details!
+                handleComplaintSelectionChange(selectEl);
+            }
+        }
     });
 </script>
 {% endblock %}

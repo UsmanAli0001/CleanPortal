@@ -388,9 +388,9 @@
                     </div>
                 </td>
                 <td>
-                    <form class="manage-form" method="POST" action="{% url 'update_complaint' c.id %}" enctype="multipart/form-data" onsubmit="return validateComplaintUpdate(this, '{{ c.status }}')" data-vehicle-assigned="{% if c.tracked_vehicle %}true{% else %}false{% endif %}" data-vehicle-status="{% if c.tracked_vehicle %}{{ c.tracked_vehicle.status }}{% elif c.assigned_to and c.assigned_to.assigned_vehicle.first %}{{ c.assigned_to.assigned_vehicle.first.status }}{% endif %}">
+                    <form class="manage-form" method="POST" action="{% url 'update_complaint' c.id %}" enctype="multipart/form-data" onsubmit="return validateComplaintUpdate(this, '{{ c.status }}', '{{ c.id }}')" data-vehicle-assigned="{% if c.tracked_vehicle %}true{% else %}false{% endif %}" data-vehicle-status="{% if c.tracked_vehicle %}{{ c.tracked_vehicle.status }}{% elif c.assigned_to and c.assigned_to.assigned_vehicle.first %}{{ c.assigned_to.assigned_vehicle.first.status }}{% endif %}">
                         {% csrf_token %}
-                        <select name="status" class="manage-input">
+                        <select name="status" class="manage-input" onchange="checkStatusChange(this, '{{ c.id }}', '{% if c.tracked_vehicle %}true{% else %}false{% endif %}')">
                             <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %} {% if c.status == 'Completed' or c.status == 'In Progress' or c.status == 'Verified' %}disabled style="color: #cbd5e1;"{% endif %}>Pending</option>
                             <option value="Verified" {% if c.status == 'Verified' %}selected{% endif %} {% if c.status == 'Completed' or c.status == 'In Progress' %}disabled style="color: #cbd5e1;"{% endif %}>Verified</option>
                             <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %} {% if c.status == 'Completed' %}disabled style="color: #cbd5e1;"{% endif %}>In Progress</option>
@@ -529,7 +529,23 @@
         }
     }
 
-    function validateComplaintUpdate(form, currentStatus) {
+    function checkStatusChange(selectEl, complaintId, isVehicleAssignedStr) {
+        if (selectEl.value === 'In Progress' && isVehicleAssignedStr === 'false') {
+            const infoMsg = 'A vehicle must be assigned under Fleet Tracker before setting the status to "In Progress". Redirecting to Fleet Admin...';
+            if (typeof Toast !== 'undefined') {
+                Toast.show('Vehicle Assignment Required', infoMsg, 'error');
+            } else if (window.Toast) {
+                window.Toast.show('Vehicle Assignment Required', infoMsg, 'error');
+            } else {
+                alert(infoMsg);
+            }
+            setTimeout(() => {
+                window.location.href = `/fleet/admin/?assign_complaint=${complaintId}`;
+            }, 800);
+        }
+    }
+
+    function validateComplaintUpdate(form, currentStatus, complaintId) {
         const statusSelect = form.querySelector('select[name="status"]');
         const staffSelect = form.querySelector('select[name="staff"]');
         
@@ -551,14 +567,17 @@
         // 2. Vehicle validation for 'In Progress' status
         const isVehicleAssigned = form.getAttribute('data-vehicle-assigned') === 'true';
         if (selectedStatus === 'In Progress' && !isVehicleAssigned) {
-            const errorMsg = 'You must assign a vehicle in the "Register Vehicle" form under Fleet Tracker before setting the status to "In Progress".';
+            const infoMsg = 'A vehicle must be assigned under Fleet Tracker before setting the status to "In Progress". Redirecting to Fleet Admin...';
             if (typeof Toast !== 'undefined') {
-                Toast.show('Vehicle Assignment Required', errorMsg, 'error');
+                Toast.show('Vehicle Assignment Required', infoMsg, 'error');
             } else if (window.Toast) {
-                window.Toast.show('Vehicle Assignment Required', errorMsg, 'error');
+                window.Toast.show('Vehicle Assignment Required', infoMsg, 'error');
             } else {
-                alert(errorMsg);
+                alert(infoMsg);
             }
+            setTimeout(() => {
+                window.location.href = `/fleet/admin/?assign_complaint=${complaintId}`;
+            }, 800);
             return false;
         }
 
