@@ -471,13 +471,12 @@
                                     data-estimating-time="{{ v.estimating_time|escapejs }}"
                                     onclick="openEditModal(this)" title="Update Status"><i data-lucide="edit-3"
                                         style="width: 14px; height: 14px;"></i></button>
-                                <form action="{% url 'fleet_delete_vehicle' v.id %}" method="post"
-                                    style="display:inline" onsubmit="return confirm('Delete this vehicle?')">
-                                    {% csrf_token %}
-                                    <button type="submit" class="abtn del"
-                                        style="padding: 4px 6px; width: 28px; height: 28px;" title="Remove"><i
-                                            data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
-                                </form>
+            <form action="{% url 'fleet_delete_vehicle' v.id %}" method="post" class="delete-form" style="display:inline" onsubmit="return confirm('Delete this vehicle?')">
+    {% csrf_token %}
+    <button type="submit" class="abtn del" style="padding: 4px 6px; width: 28px; height: 28px;" title="Remove">
+        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+    </button>
+</form>
                             </div>
                         </td>
                     </tr>
@@ -514,13 +513,20 @@
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label class="form-label" style="font-size: 0.75rem;">Driver Name</label>
-                        <input type="text" name="driver_name" id="add-driver-name" class="form-input"
-                            style="padding: 10px 12px; font-size: 0.85rem;" placeholder="Ali Hassan" required>
+                        <select name="assigned_driver" id="add-assigned-driver" class="form-input" style="padding: 10px 12px; font-size: 0.85rem;" onchange="handleDriverSelectionChange(this)" required>
+                            <option value="">-- Select Driver --</option>
+                            {% for d in drivers %}
+                            <option value="{{ d.id }}" data-name="{{ d.name }}" data-phone="{{ d.phone }}" data-vehicle-id="{{ d.driver_detail.vehicle_assignment|default:'' }}" data-plate-number="{{ d.driver_detail.plate_number|default:'' }}">
+                                {{ d.name }}{% if d.driver_detail.plate_number %} ({{ d.driver_detail.plate_number }}){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="driver_name" id="add-driver-name">
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label class="form-label" style="font-size: 0.75rem;">Contact Number</label>
                         <input type="text" name="driver_phone" id="add-driver-phone" class="form-input"
-                            style="padding: 10px 12px; font-size: 0.85rem;" placeholder="03XX-XXXXXXX" required>
+                            style="padding: 10px 12px; font-size: 0.85rem;" placeholder="03XX-XXXXXXX" readonly required>
                     </div>
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label class="form-label" style="font-size: 0.75rem;">Vehicle Type</label>
@@ -779,18 +785,44 @@
         }
     }
 
-    function openAddModal() {
-        const details = generateUniqueVehicleDetails();
+    function handleDriverSelectionChange(selectEl) {
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        const idInput = document.getElementById('add-vehicle-id');
+        const plateInput = document.getElementById('add-plate-number');
+        const nameInput = document.getElementById('add-driver-name');
+        const phoneInput = document.getElementById('add-driver-phone');
         
+        if (!selectedOption || !selectedOption.value) {
+            if (nameInput) nameInput.value = '';
+            if (phoneInput) phoneInput.value = '';
+            if (idInput) idInput.value = '';
+            if (plateInput) plateInput.value = '';
+            return;
+        }
+
+        const name = selectedOption.getAttribute('data-name');
+        const phone = selectedOption.getAttribute('data-phone');
+        const vehicleId = selectedOption.getAttribute('data-vehicle-id');
+        const plateNumber = selectedOption.getAttribute('data-plate-number');
+
+        if (nameInput) nameInput.value = name || '';
+        if (phoneInput) phoneInput.value = phone || '';
+        if (idInput) idInput.value = vehicleId || '';
+        if (plateInput) plateInput.value = plateNumber || '';
+    }
+
+    function openAddModal() {
         const idInput = document.getElementById('add-vehicle-id');
         const plateInput = document.getElementById('add-plate-number');
         const driverInput = document.getElementById('add-driver-name');
         const phoneInput = document.getElementById('add-driver-phone');
+        const driverSelect = document.getElementById('add-assigned-driver');
         
-        if (idInput) idInput.value = details.vehicleId;
-        if (plateInput) plateInput.value = details.plateNumber;
-        if (driverInput) driverInput.value = details.driverName;
-        if (phoneInput) phoneInput.value = details.driverPhone;
+        if (idInput) idInput.value = '';
+        if (plateInput) plateInput.value = '';
+        if (driverInput) driverInput.value = '';
+        if (phoneInput) phoneInput.value = '';
+        if (driverSelect) driverSelect.value = '';
 
         document.getElementById('add-modal').classList.add('open');
     }
@@ -866,6 +898,56 @@
         if (countSpan) countSpan.textContent = visibleCount;
     }
 
+    // Utility to get CSRF token from cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Attach AJAX submit handler to all delete forms
+    function attachDeleteHandlers() {
+        const deleteForms = document.querySelectorAll('.delete-form');
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                // Optional confirmation already handled via onsubmit attribute
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'deleted') {
+                        const row = form.closest('tr');
+                        if (row) {
+                            row.remove();
+                        }
+                    } else {
+                        alert('Deletion failed: ' + (data.error || 'Unknown error'));
+                    }
+                } else {
+                    alert('Server error while deleting.');
+                }
+            });
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
@@ -884,6 +966,9 @@
                 handleComplaintSelectionChange(selectEl);
             }
         }
+
+        // Call attachDeleteHandlers after other DOMContentLoaded logic
+        attachDeleteHandlers();
     });
 </script>
 {% endblock %}

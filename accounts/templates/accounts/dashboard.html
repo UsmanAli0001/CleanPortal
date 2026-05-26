@@ -655,11 +655,11 @@
     </div>
     <div class="feature-card card-purple">
         <div>
-            <div class="icon-box"><img src="{% static 'accounts/images/zone.png' %}" class="feature-icon"></div>
-            <h4>Zone Coverage</h4>
-            <p>Explore city-wide coverage maps and sanitation boundaries for your specific location.</p>
+            <div class="icon-box"><img src="https://cdn-icons-png.flaticon.com/512/3342/3342137.png" class="feature-icon" alt="Photo Gallery"></div>
+            <h4>Photo Gallery</h4>
+            <p>Explore the visual journey of our city's cleaning projects and community impact photos.</p>
         </div>
-        <a href="{% url 'zone_management' %}" class="btn-dash"><i data-lucide="map"></i> View Boundaries</a>
+        <a href="{% url 'gallery_page' %}" class="btn-dash"><i data-lucide="camera"></i> View Gallery</a>
     </div>
     <div class="feature-card card-info">
         <div>
@@ -669,6 +669,15 @@
         </div>
         <a href="{% url 'vehicle_tracking' %}" class="btn-dash"><i data-lucide="truck"></i> Live Tracking</a>
     </div>
+    <div class="feature-card card-purple">
+        <div>
+            <div class="icon-box"><img src="{% static 'accounts/images/scheduled.png' %}" class="feature-icon"></div>
+            <h4>Service Schedule</h4>
+            <p>Check the latest municipal cleanup schedules and important city-wide event calendars.</p>
+        </div>
+        <a href="{% url 'schedule' %}" class="btn-dash"><i data-lucide="calendar"></i> City Calendar</a>
+    </div>
+
     <div class="feature-card card-success">
         <div>
             <div class="icon-box">
@@ -680,36 +689,27 @@
         </div>
         <a href="{% url 'payment_details' %}" class="btn-dash"><i data-lucide="credit-card"></i> Per Km Fees</a>
     </div>
+    <div class="feature-card card-info">
+        <div>
+            <div class="icon-box"><img src="https://uxwing.com/wp-content/themes/uxwing/download/banking-finance/gold-coin-pakistan-rupee-icon.png"
+                    class="feature-icon" alt="Prices"></div>
+            <h4>Pricing Catalog</h4>
+            <p>View official service rates, category definitions, and transparent pricing structures.</p>
+        </div>
+        <a href="{% url 'pricing_catalog' %}" class="btn-dash"><i data-lucide="list"></i> View Catalog</a>
+    </div>
+
+
+
+
 
     <div class="feature-card card-purple">
         <div>
-            <div class="icon-box"><img src="{% static 'accounts/images/scheduled.png' %}" class="feature-icon"></div>
-            <h4>Service Schedule</h4>
-            <p>Check the latest municipal cleanup schedules and important city-wide event calendars.</p>
+            <div class="icon-box"><img src="{% static 'accounts/images/zone.png' %}" class="feature-icon"></div>
+            <h4>Zone Coverage</h4>
+            <p>Explore city-wide coverage maps and sanitation boundaries for your specific location.</p>
         </div>
-        <a href="{% url 'schedule' %}" class="btn-dash"><i data-lucide="calendar"></i> City Calendar</a>
-    </div>
-    <div class="feature-card card-success" id="alertsCard">
-        <div class="badge" id="alertBadge">0</div>
-        <div>
-            <div class="icon-box"><img src="{% static 'accounts/images/notification.png' %}" class="feature-icon"></div>
-            <h4>System Alerts</h4>
-            <p>Receive critical updates, weather advisories, and system notifications instantly.</p>
-        </div>
-        <a href="{% url 'notifications' %}" class="btn-dash"><i data-lucide="bell"></i> Check Inbox</a>
-    </div>
-
-
-
-
-
-    <div class="feature-card card-success">
-        <div>
-            <div class="icon-box"><img src="{% static 'accounts/images/feedback.png' %}" class="feature-icon"></div>
-            <h4>Citizen Voice</h4>
-            <p>Share your experiences or browse through community reviews to see municipal progress.</p>
-        </div>
-        <a href="{% url 'citizen_reviews' %}" class="btn-dash"><i data-lucide="message-square"></i> Browse Feedback</a>
+        <a href="{% url 'zone_management' %}" class="btn-dash"><i data-lucide="map"></i> View Boundaries</a>
     </div>
     <div class="feature-card card-info">
         <div>
@@ -728,23 +728,23 @@
         </div>
         <a href="{% url 'reports' %}" class="btn-dash"><i data-lucide="bar-chart-3"></i> Public Records</a>
     </div>
-    <div class="feature-card card-info">
+    <div class="feature-card card-success" id="alertsCard">
+        <div class="badge" id="alertBadge">0</div>
         <div>
-            <div class="icon-box"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135706.png"
-                    class="feature-icon" alt="Prices"></div>
-            <h4>Pricing Catalog</h4>
-            <p>View official service rates, category definitions, and transparent pricing structures.</p>
+            <div class="icon-box"><img src="{% static 'accounts/images/notification.png' %}" class="feature-icon"></div>
+            <h4>System Alerts</h4>
+            <p>Receive critical updates, weather advisories, and system notifications instantly.</p>
         </div>
-        <a href="{% url 'pricing_catalog' %}" class="btn-dash"><i data-lucide="list"></i> View Catalog</a>
+        <a href="{% url 'notifications' %}" class="btn-dash"><i data-lucide="bell"></i> Check Inbox</a>
     </div>
 
-    <div class="feature-card card-purple">
+    <div class="feature-card card-success">
         <div>
-            <div class="icon-box"><i data-lucide="image" style="width: 40px; height: 40px; color: #7c3aed;"></i></div>
-            <h4>Photo Gallery</h4>
-            <p>Explore the visual journey of our city's cleaning projects and community impact photos.</p>
+            <div class="icon-box"><img src="{% static 'accounts/images/feedback.png' %}" class="feature-icon"></div>
+            <h4>Citizen Voice</h4>
+            <p>Share your experiences or browse through community reviews to see municipal progress.</p>
         </div>
-        <a href="{% url 'gallery_page' %}" class="btn-dash"><i data-lucide="camera"></i> View Gallery</a>
+        <a href="{% url 'citizen_reviews' %}" class="btn-dash"><i data-lucide="message-square"></i> Browse Feedback</a>
     </div>
 </div>
 

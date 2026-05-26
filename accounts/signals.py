@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from .models import (
     Complaint, Feedback, GalleryLike, Vehicle, AdminNotification, Staff,
     Payment, ContactMessage, ServiceBooking, GalleryItem, Zone, Notification,
-    ComplaintTimeline, Announcement
+    ComplaintTimeline, Announcement, DriverDetail
 )
 from allauth.account.signals import user_signed_up
 from allauth.account.models import EmailAddress
@@ -799,3 +799,40 @@ def allauth_welcome_email(request, user, **kwargs):
     we just log this event for Allauth registrations.
     """
     print(f"DEBUG: Allauth signup detected for {user.username}. Email will be handled by User post_save signal.")
+
+
+@receiver(post_save, sender=DriverDetail)
+def auto_register_vehicle_from_driver(sender, instance, created, **kwargs):
+    if instance.vehicle_assignment:
+        vehicle_id = instance.vehicle_assignment.strip().upper()
+        
+        # Unassign this driver from other vehicles
+        Vehicle.objects.filter(assigned_driver=instance.staff).exclude(vehicle_id=vehicle_id).update(
+            assigned_driver=None,
+            driver_name='',
+            driver_phone=''
+        )
+        
+        # Get or create the vehicle mapping
+        vehicle, created_vehicle = Vehicle.objects.get_or_create(
+            vehicle_id=vehicle_id,
+            defaults={
+                'driver_name': instance.staff.name,
+                'driver_phone': instance.staff.phone,
+                'plate_number': instance.plate_number or '',
+                'assigned_driver': instance.staff,
+                'is_active': True,
+                'status': 'Idle',
+                'assigned_zone': instance.staff.area,
+            }
+        )
+        
+        if not created_vehicle:
+            # Update the existing vehicle details with driver registration info
+            vehicle.driver_name = instance.staff.name
+            vehicle.driver_phone = instance.staff.phone
+            vehicle.plate_number = instance.plate_number or ''
+            vehicle.assigned_driver = instance.staff
+            vehicle.assigned_zone = instance.staff.area
+            vehicle.save()
+

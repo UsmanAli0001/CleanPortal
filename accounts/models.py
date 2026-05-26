@@ -271,6 +271,7 @@ class DriverDetail(models.Model):
     license_expiry = models.DateField(null=True, blank=True)
     license_category = models.CharField(max_length=50, null=True, blank=True)
     vehicle_assignment = models.CharField(max_length=100, null=True, blank=True)
+    plate_number = models.CharField(max_length=50, null=True, blank=True)
     experience_years = models.IntegerField(null=True, blank=True)
 
     def __str__(self):

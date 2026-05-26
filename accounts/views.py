@@ -1313,7 +1313,11 @@ def admin_city_reports_view(request):
         area_complaints = [counts_dict.get(a, 0) for a in display_areas]
 
         # 4. Staff Performance
-        staff_qs = Staff.objects.annotate(
+        staff_qs = Staff.objects.exclude(
+            email__startswith="driver"
+        ).exclude(
+            email__startswith="worker"
+        ).annotate(
             total_assigned=Count('complaint', filter=Q(complaint__created_at__date__gte=start_date)),
             total_completed=Count('complaint', filter=Q(complaint__status='Completed', complaint__created_at__date__gte=start_date))
         ).order_by('-total_assigned')[:5]
@@ -1691,13 +1695,26 @@ def staff_management(request):
     if request.method == "POST":
         action = request.POST.get('action')
         if action == 'add':
+            role = request.POST.get('role')
+            name = request.POST['name']
+            email = request.POST.get('email')
+            if not email and role in ['Driver', 'Worker']:
+                import re
+                cleaned = re.sub(r'\s*\d+\s*$', '', name)
+                cleaned = cleaned.strip().lower()
+                cleaned = re.sub(r'[^a-z0-9\s.]', '', cleaned)
+                cleaned = re.sub(r'[\s.]+', '.', cleaned)
+                if not cleaned:
+                    cleaned = role.lower()
+                email = f"{cleaned}@example.com"
+
             s = Staff.objects.create(
-                name=request.POST['name'],
-                email=request.POST.get('email'),
+                name=name,
+                email=email,
                 phone=request.POST['phone'],
                 cnic=request.POST.get('cnic'),
                 address=request.POST.get('address'),
-                role=request.POST['role'],
+                role=role,
                 area=request.POST['area'],
                 salary=request.POST.get('salary') or 0
             )
@@ -1711,6 +1728,7 @@ def staff_management(request):
                     license_expiry=request.POST.get('license_expiry') or None,
                     license_category=request.POST.get('license_category'),
                     vehicle_assignment=request.POST.get('vehicle_assignment'),
+                    plate_number=request.POST.get('plate_number'),
                     experience_years=request.POST.get('experience_years') or None
                 )
             elif role == 'Operator':
@@ -1746,11 +1764,22 @@ def staff_management(request):
             sid = request.POST.get('id')
             s = Staff.objects.get(id=sid)
             s.name = request.POST['name']
-            s.email = request.POST.get('email')
+            role = request.POST['role']
+            email = request.POST.get('email')
+            if not email and role in ['Driver', 'Worker']:
+                import re
+                cleaned = re.sub(r'\s*\d+\s*$', '', s.name)
+                cleaned = cleaned.strip().lower()
+                cleaned = re.sub(r'[^a-z0-9\s.]', '', cleaned)
+                cleaned = re.sub(r'[\s.]+', '.', cleaned)
+                if not cleaned:
+                    cleaned = role.lower()
+                email = f"{cleaned}@example.com"
+            s.email = email
             s.phone = request.POST['phone']
             s.cnic = request.POST.get('cnic')
             s.address = request.POST.get('address')
-            s.role = request.POST['role']
+            s.role = role
             s.area = request.POST['area']
             s.salary = request.POST.get('salary') or 0
             s.save()
@@ -1763,6 +1792,7 @@ def staff_management(request):
                 detail.license_expiry = request.POST.get('license_expiry') or None
                 detail.license_category = request.POST.get('license_category')
                 detail.vehicle_assignment = request.POST.get('vehicle_assignment')
+                detail.plate_number = request.POST.get('plate_number')
                 detail.experience_years = request.POST.get('experience_years') or None
                 detail.save()
             elif role == 'Operator':
@@ -1808,7 +1838,7 @@ def complaints(request):
         messages.error(request, "Access Denied: Administrative permissions required.")
         return redirect('dashboard')
     data = Complaint.objects.filter(payment_status=True).order_by('id')
-    staff = Staff.objects.all()
+    staff = Staff.objects.filter(role__in=['Supervisor', 'Operator'])
 
     return render(request, 'accounts/admin/complaints.html', {
         'complaints': data,
@@ -2381,9 +2411,10 @@ def fleet_admin_view(request):
         messages.error(request, 'Access denied. Staff permissions required.')
         return redirect('dashboard')
     # _seed_fleet()
-    vehicles = Vehicle.objects.all().order_by('vehicle_id')
+    vehicles = Vehicle.objects.all().order_by('-created_at')
     zones = Zone.objects.all()
     supervisors = Staff.objects.filter(role='Supervisor')
+    drivers = Staff.objects.filter(role='Driver').select_related('driver_detail')
     
     # If the user is a supervisor, filter the data to their assigned zone
     is_supervisor = False
@@ -2419,6 +2450,7 @@ def fleet_admin_view(request):
         'total_count': vehicles.count(),
         'v_types': v_types,
         'supervisors': supervisors,
+        'drivers': drivers,
         'all_complaints': Complaint.objects.filter(payment_status=True, tracked_vehicle__isnull=True).order_by('-created_at'),
         'is_supervisor': is_supervisor,
         'assigned_zone_obj': assigned_zone_obj,
@@ -2570,7 +2602,7 @@ def fleet_edit_vehicle(request, pk):
 
 @login_required(login_url='login')
 def fleet_delete_vehicle(request, pk):
-    """Delete a vehicle from the fleet."""
+    """Delete a vehicle from the fleet. Supports AJAX to avoid full page refresh."""
     if not request.user.is_staff:
         messages.error(request, 'Access denied.')
         return redirect('dashboard')
@@ -2579,8 +2611,16 @@ def fleet_delete_vehicle(request, pk):
             vehicle = Vehicle.objects.get(pk=pk)
             vid = vehicle.vehicle_id
             vehicle.delete()
+            # If AJAX request, return JSON response
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'status': 'deleted',
+                    'vehicle_id': vid,
+                })
             messages.warning(request, f'Vehicle {vid} deleted.')
         except Vehicle.DoesNotExist:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'error', 'error': 'Vehicle not found.'}, status=404)
             messages.error(request, 'Vehicle not found.')
     return redirect('fleet_admin')
 

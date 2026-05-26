@@ -14,6 +14,18 @@
         --danger-red: #c62828;
     }
 
+    table.admin-table {
+        counter-reset: rowNumber;
+    }
+    table.admin-table tbody tr {
+        counter-increment: rowNumber;
+    }
+    table.admin-table tbody tr td.row-num::before {
+        content: counter(rowNumber);
+        font-weight: 700;
+        color: #475569;
+    }
+
     .staff-stats {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -380,6 +392,7 @@
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th>Sr. No.</th>
                     <th>Supervisor</th>
                     <th>Supervisor ID</th>
                     <th>Department / Zone</th>
@@ -392,6 +405,7 @@
                 {% for s in staff %}
                 {% if s.role == 'Supervisor' %}
                 <tr>
+                    <td class="row-num" style="font-weight: bold; color: #475569; padding-left: 20px;"></td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="width: 35px; height: 35px; background: #fdf2f8; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #be185d; font-weight: 800;">
@@ -436,6 +450,7 @@
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th>Sr. No.</th>
                     <th>Staff Member</th>
                     <th>Operator ID</th>
                     <th>Shift</th>
@@ -448,6 +463,7 @@
                 {% for s in staff %}
                 {% if s.role == 'Operator' %}
                 <tr>
+                    <td class="row-num" style="font-weight: bold; color: #475569; padding-left: 20px;"></td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="width: 35px; height: 35px; background: #fff7ed; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #c2410c; font-weight: 800;">
@@ -492,8 +508,9 @@
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th>Sr. No.</th>
                     <th>Staff Member</th>
-                    <th>License / Vehicle</th>
+                    <th>Vehicle / Plate</th>
                     <th>Contact</th>
                     <th>Area</th>
                     <th>Salary</th>
@@ -505,6 +522,7 @@
                 {% for s in staff %}
                 {% if s.role == 'Driver' %}
                 <tr>
+                    <td class="row-num" style="font-weight: bold; color: #475569; padding-left: 20px;"></td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="width: 35px; height: 35px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #1d4ed8; font-weight: 800;">
@@ -517,15 +535,16 @@
                         </div>
                     </td>
                     <td>
-                        <div style="font-weight: 600; color: #1e293b;">{{ s.driver_detail.license_number|default:"N/A" }}</div>
-                        <div style="font-size: 0.7rem; color: #94a3b8;">{{ s.driver_detail.vehicle_assignment|default:"No vehicle" }}</div>
+                      <div style="font-weight: 600; color: #1e293b;">
+                        {{ s.driver_detail.vehicle_assignment|default:"N/A" }}{% if s.driver_detail.plate_number %} - {{ s.driver_detail.plate_number }}{% endif %}
+                      </div>
                     </td>
                     <td><span style="font-weight: 600; color: #64748b;">{{ s.phone }}</span></td>
                     <td><div style="font-weight: 600; color: #1e293b;">{{ s.area }}</div></td>
                     <td><span style="font-weight: 800; color: #16a34a;">Rs. {{ s.salary|default:"0.00" }}</span></td>
                     <td><span style="font-weight: 600; color: #64748b;">{{ s.driver_detail.experience_years|default:"0" }} yr</span></td>
                     <td>
-                        <button class="action-btn btn-edit" onclick="openEditModal({{ s.id }}, '{{ s.name }}', '{{ s.email|default:'' }}', '{{ s.phone }}', '{{ s.cnic|default:'' }}', '{{ s.address|default:''|escapejs }}', '{{ s.role }}', '{{ s.area }}', '{{ s.worker_detail.age|default:'' }}', '{{ s.worker_detail.duties|default:''|escapejs }}', '{{ s.salary|default:'' }}', '{{ s.worker_detail.duty_time|default:'' }}', '{{ s.driver_detail.experience_years|default:s.operator_detail.experience_years|default:'' }}', '{{ s.driver_detail.dob|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_number|default:'' }}', '{{ s.driver_detail.license_expiry|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_category|default:'' }}', '{{ s.driver_detail.vehicle_assignment|default:'' }}', '{{ s.operator_detail.operator_id|default:'' }}', '{{ s.operator_detail.shift_assignment|default:'' }}', '{{ s.operator_detail.operational_qualification|default:'' }}', '{{ s.operator_detail.certifications|default:''|escapejs }}', '{{ s.supervisor_detail.supervisor_id|default:'' }}', '{{ s.supervisor_detail.department_zone|default:'' }}', '{{ s.supervisor_detail.management_experience|default:'' }}', '{{ s.supervisor_detail.staff_supervised|default:'' }}', '{{ s.supervisor_detail.education_level|default:'' }}', '{{ s.supervisor_detail.supervisory_certification|default:'' }}', '{{ s.supervisor_detail.key_responsibilities|default:''|escapejs }}')">
+                        <button class="action-btn btn-edit" onclick="openEditModal({{ s.id }}, '{{ s.name }}', '{{ s.email|default:'' }}', '{{ s.phone }}', '{{ s.cnic|default:'' }}', '{{ s.address|default:''|escapejs }}', '{{ s.role }}', '{{ s.area }}', '{{ s.worker_detail.age|default:'' }}', '{{ s.worker_detail.duties|default:''|escapejs }}', '{{ s.salary|default:'' }}', '{{ s.worker_detail.duty_time|default:'' }}', '{{ s.driver_detail.experience_years|default:s.operator_detail.experience_years|default:'' }}', '{{ s.driver_detail.dob|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_number|default:'' }}', '{{ s.driver_detail.license_expiry|date:'Y-m-d'|default:'' }}', '{{ s.driver_detail.license_category|default:'' }}', '{{ s.driver_detail.vehicle_assignment|default:'' }}', '{{ s.driver_detail.plate_number|default:'' }}', '{{ s.operator_detail.operator_id|default:'' }}', '{{ s.operator_detail.shift_assignment|default:'' }}', '{{ s.operator_detail.operational_qualification|default:'' }}', '{{ s.operator_detail.certifications|default:''|escapejs }}', '{{ s.supervisor_detail.supervisor_id|default:'' }}', '{{ s.supervisor_detail.department_zone|default:'' }}', '{{ s.supervisor_detail.management_experience|default:'' }}', '{{ s.supervisor_detail.staff_supervised|default:'' }}', '{{ s.supervisor_detail.education_level|default:'' }}', '{{ s.supervisor_detail.supervisory_certification|default:'' }}', '{{ s.supervisor_detail.key_responsibilities|default:''|escapejs }}')">
                             <i data-lucide="edit-3" style="width: 14px;"></i>
                         </button>
                         <form method="POST" style="display: inline;">
@@ -553,6 +572,7 @@
         <table class="admin-table">
             <thead>
                 <tr>
+                    <th>Sr. No.</th>
                     <th>Worker</th>
                     <th>Duties</th>
                     <th>Shift Time</th>
@@ -565,6 +585,7 @@
                 {% for s in staff %}
                 {% if s.role == 'Worker' %}
                 <tr>
+                    <td class="row-num" style="font-weight: bold; color: #475569; padding-left: 20px;"></td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div style="width: 35px; height: 35px; background: #f3f4f6; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #374151; font-weight: 800;">
@@ -675,8 +696,12 @@
                             <input type="date" name="license_expiry" id="f_license_expiry">
                         </div>
                         <div class="form-group">
-                            <label>Vehicle Assignment</label>
-                            <input type="text" name="vehicle_assignment" id="f_vehicle_assignment" placeholder="Vehicle ID / Plate">
+                            <label>Vehicle ID</label>
+                            <input type="text" name="vehicle_assignment" id="f_vehicle_assignment" placeholder="e.g. GT-110">
+                        </div>
+                        <div class="form-group">
+                            <label>Plate Number</label>
+                            <input type="text" name="plate_number" id="f_plate_number" placeholder="e.g. GJT-110">
                         </div>
                         <div class="form-group">
                             <label>Date of Birth</label>
@@ -816,7 +841,7 @@
         document.body.style.overflow = 'hidden';
     }
 
-    function openEditModal(id, name, email, phone, cnic, address, role, area, age, duties, salary, duty_time, exp, dob, lic_num, lic_exp, lic_cat, vehicle, op_id, shift, qual, certs, sup_id, dept, mgmt_exp, staff_count, edu, sup_cert, resp) {
+    function openEditModal(id, name, email, phone, cnic, address, role, area, age, duties, salary, duty_time, exp, dob, lic_num, lic_exp, lic_cat, vehicle, plate, op_id, shift, qual, certs, sup_id, dept, mgmt_exp, staff_count, edu, sup_cert, resp) {
         document.getElementById('modalTitle').innerText = 'Edit Staff Details';
         document.getElementById('formAction').value = 'edit';
         document.getElementById('staffId').value = id;
@@ -835,6 +860,7 @@
         document.getElementById('f_license_category').value = lic_cat;
         document.getElementById('f_license_expiry').value = lic_exp;
         document.getElementById('f_vehicle_assignment').value = vehicle;
+        document.getElementById('f_plate_number').value = plate;
         document.getElementById('f_dob').value = dob;
         document.getElementById('f_driver_exp').value = exp;
 
