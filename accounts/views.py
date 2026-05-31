@@ -862,7 +862,7 @@ def admin_gallery_view(request):
     featured_posts = GalleryItem.objects.filter(is_featured=True).count()
     hidden_posts = GalleryItem.objects.filter(show_on_homepage=False).count()
     
-    today = timezone.now().date()
+    today = timezone.localtime(timezone.now()).date()
     
     def get_gallery_trend(days_count=None, months_count=None, is_all=False):
         if is_all:
