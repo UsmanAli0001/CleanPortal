@@ -185,14 +185,14 @@
                 <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i data-lucide="clock"></i></div>
                 <div class="stat-info">
                     <h4>Pending</h4>
-                    <p>{{ contact_messages|dictsortreversed:"is_replied"|slice:":-1"|length }}</p> <!-- Simplified logic for demo template -->
+                    <p>{{ pending_count }}</p>
                 </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i data-lucide="check-circle"></i></div>
                 <div class="stat-info">
                     <h4>Replied</h4>
-                    <p>{{ contact_messages|dictsort:"is_replied"|slice:"1:"|length }}</p>
+                    <p>{{ replied_count }}</p>
                 </div>
             </div>
         </div>

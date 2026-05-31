@@ -1472,7 +1472,13 @@ def admin_contact_messages(request):
         return redirect('dashboard')
         
     messages_list = ContactMessage.objects.all().order_by('-created_at')
-    return render(request, 'accounts/admin/contact_messages.html', {'contact_messages': messages_list})
+    pending_count = messages_list.filter(is_replied=False).count()
+    replied_count = messages_list.filter(is_replied=True).count()
+    return render(request, 'accounts/admin/contact_messages.html', {
+        'contact_messages': messages_list,
+        'pending_count': pending_count,
+        'replied_count': replied_count
+    })
 
 @login_required
 def admin_reply_contact(request, id):

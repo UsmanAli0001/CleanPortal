@@ -144,6 +144,15 @@
 </style>
 {% endblock %}
 
+{% block nav_links %}{% endblock %}
+
+{% block notification_bell %}
+<a href="{% url 'admin_dashboard' %}" class="nav-dashboard-btn" style="text-decoration: none; color: var(--white); font-weight: 800; font-size: 0.95rem; padding: 8px 12px; border-radius: 8px; transition: all 0.25s ease; position: relative; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); margin-right: 15px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05);" onmouseover="this.style.color='#38bdf8'; this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='var(--white)'; this.style.background='rgba(255,255,255,0.05)'">
+    Dashboard
+</a>
+{{ block.super }}
+{% endblock %}
+
 {% block content %}
 <div class="admin-page">
     <div class="reply-container">
