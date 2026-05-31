@@ -1312,11 +1312,9 @@ def admin_city_reports_view(request):
             if area not in display_areas: display_areas.append(area)
         area_complaints = [counts_dict.get(a, 0) for a in display_areas]
 
-        # 4. Staff Performance
-        staff_qs = Staff.objects.exclude(
-            email__startswith="driver"
-        ).exclude(
-            email__startswith="worker"
+        # 4. Staff Performance (Supervisors & Operators only)
+        staff_qs = Staff.objects.filter(
+            role__in=['Supervisor', 'Operator']
         ).annotate(
             total_assigned=Count('complaint', filter=Q(complaint__created_at__date__gte=start_date)),
             total_completed=Count('complaint', filter=Q(complaint__status='Completed', complaint__created_at__date__gte=start_date))
