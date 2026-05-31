@@ -507,16 +507,8 @@ def admin_contact_notification(sender, instance, created, **kwargs):
     if created:
         notify_admin(
             type='complaint',
-            message=f"📧 New Inquiry! {instance.name} sent a message regarding {instance.category}.",
+            message=f"📧 Inquiry Received from {instance.name} regarding '{instance.category}': Thank you for reaching out to us regarding '{instance.category}'. Our support team has received your message and will get back to you shortly.",
             link=reverse('admin_contact_messages')
-        )
-        # Send receipt to user
-        send_aesthetic_email(
-            subject="We've received your inquiry",
-            recipient_email=instance.email,
-            user_name=instance.name,
-            message_title="Inquiry Received",
-            message_content=f"Thank you for reaching out to us regarding '{instance.category}'. Our support team has received your message and will get back to you shortly."
         )
     elif instance.is_replied and instance.reply:
         recipient = User.objects.filter(email=instance.email).first()
